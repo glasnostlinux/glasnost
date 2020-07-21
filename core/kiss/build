@@ -1,0 +1,27 @@
+#!/bin/sh -e
+
+install -D kiss         "$1/usr/bin/kiss"
+install -D kiss_path.sh "$1/etc/profile.d/kiss_path.sh"
+
+# Replace set of base packages
+
+sed -i -e 's/baselayout|binutils|bison|busybox|bzip2|curl|flex|gcc|git|/baselayout|bison|busybox|bzip2|cmake|curl|expat|flex|git|gzip|kiss|libffi|/g' \
+    -e 's/gzip|kiss|libressl|linux-headers|m4|make|musl|pkgconf|xz|zlib/libressl|linux-headers|llvm|m4|make|musl|pkgconf|python|sqlite|xz|zlib/g' \
+    contrib/kiss-reset
+
+# Install kiss utilities.
+cp contrib/* "$1/usr/bin/"
+
+# Install distribution documentation.
+for doc in docs/site/*.txt; do
+    install -Dm644 "$doc" "$1/usr/share/doc/kiss/${doc##*/}"
+done
+
+# Install the Wiki.
+cp -r wiki "$1/usr/share/doc/kiss/wiki"
+
+# Remove unnecessary pages.
+rm -f "$1/usr/share/doc/kiss/wiki/README.txt" \
+      "$1/usr/share/doc/kiss/news.txt" \
+      "$1/usr/share/doc/kiss/blog.txt" \
+      "$1/usr/share/doc/kiss/screenshots.txt"

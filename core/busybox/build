@@ -1,0 +1,64 @@
+#!/bin/sh -e
+
+# clang/llvm seems to produce binaries which segfault on aarch64 if used with -Os.
+# Remove that option if present
+CFLAGS=$(echo $CFLAGS | sed 's/-Os//g')
+CXXFLAGS=$(echo $CXXFLAGS | sed 's/-Os//g')
+
+# CFLAGS cleanup
+# See http://lists.busybox.net/pipermail/busybox/2019-October/087558.html
+sed -i -e 's:-static-libgcc:-static:' Makefile.flags
+sed -i -r -e 's:[[:space:]]?-(Werror|Os|falign-(functions|jumps|loops|labels)=1|finline-limit=0|fomit-frame-pointer)\>::g' Makefile.flags
+sed -i '/^#error Aborting compilation./d' applets/applets.c
+sed -i 's:-Wl,--gc-sections::' Makefile
+
+for patch in *.patch; do
+    patch -p1 < "$patch"
+done
+
+# Build and install regular busybox.
+# This excludes utilities which require 'suid' to function.
+make CC="${CC:-cc}" HOSTCC="${CC:-cc}"
+make CONFIG_PREFIX="$1/usr" install
+
+# Rename the binary temporarily.
+mv "$1/usr/bin/busybox" "$1/usr/bin/busybox-nosuid"
+
+# Build and install suid busybox.
+# This _only_ includes utlities which require 'suid' to function.
+cp -f .config-suid .config
+make CC="${CC:-cc}" HOSTCC="${CC:-cc}"
+make CONFIG_PREFIX="$1/usr" install
+
+# Aptly name the busybox binaries.
+mv -f "$1/usr/bin/busybox"        "$1/usr/bin/busybox-suid"
+mv -f "$1/usr/bin/busybox-nosuid" "$1/usr/bin/busybox"
+
+# Install the non-suid symlinks.
+"$1/usr/bin/busybox" --list | while read -r bin; do
+    ln -s busybox "$1/usr/bin/$bin"
+done
+
+# Install the suid symlinks.
+"$1/usr/bin/busybox-suid" --list | while read -r bin; do
+    ln -s busybox-suid "$1/usr/bin/$bin"
+done
+
+# Set suid on busybox suid.
+chmod u+s "$1/usr/bin/busybox-suid"
+
+# The acpid command requires that this directory exist
+# and does not automatically create it..
+mkdir -p "$1/etc/acpid"
+
+# Install runit services.
+install -Dm755 acpid.run           "$1/etc/sv/acpid/run"
+install -Dm755 crond.run           "$1/etc/sv/crond/run"
+install -Dm755 syslogd.run         "$1/etc/sv/syslogd/run"
+install -Dm755 mdev.run            "$1/etc/sv/mdev/run"
+ln -s /run/runit/supervise.acpid   "$1/etc/sv/acpid/supervise"
+ln -s /run/runit/supervise.crond   "$1/etc/sv/crond/supervise"
+ln -s /run/runit/supervise.syslogd "$1/etc/sv/syslogd/supervise"
+ln -s /run/runit/supervise.mdev    "$1/etc/sv/mdev/supervise"
+
+install -Dm644 mdev.conf "$1/etc/mdev.conf"
