@@ -1,1 +1,1 @@
-export KISS_PATH=/var/db/kiss/glasnost/core:/var/db/kiss/repo/core:/var/db/kiss/repo/extra:/var/db/kiss/repo/xorg
+export KISS_PATH=/var/db/kiss/glasnost/core:/var/db/kiss/repo/core:/var/db/kiss/repo/extra:/var/db/kiss/repo/xorg:/var/db/kiss/community/community
