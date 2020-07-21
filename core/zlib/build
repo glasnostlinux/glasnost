@@ -1,0 +1,11 @@
+#!/bin/sh -e
+
+export CFLAGS="-fPIC $CFLAGS"
+
+./configure \
+    --prefix=/usr \
+    --libdir=/usr/lib \
+    --shared
+
+make
+make DESTDIR="$1" install
