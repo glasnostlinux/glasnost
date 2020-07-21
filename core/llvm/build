@@ -15,7 +15,7 @@ export triple=$(cc -dumpmachine)
 
 case $triple in
    aarch64-unknown-linux-musl) export BUILDTARGETS="AArch64;ARM";;
-   x86_64-pc-linux-musl) export BUILDTARGETS="x86_64;AMDGPU";;
+   x86_64-pc-linux-musl) export BUILDTARGETS="X86;AMDGPU";;
    *) export BUILDTARGETS="host;";;
 esac
 
