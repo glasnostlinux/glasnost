@@ -6,6 +6,7 @@ export triple=$(cc -dumpmachine)
 case $triple in
    aarch64-unknown-linux-musl) export LIBARCH="aarch64";;
    x86_64-pc-linux-musl) export LIBARCH="x86_64";;
+   powerpc64le-linux-musl) export LIBARCH="powerpc64le";;
 esac
 
 echo "Building target: $LIBARCH"
