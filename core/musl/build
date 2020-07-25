@@ -1,5 +1,10 @@
 #!/bin/sh -e
 
+# Disable lto
+# Example: https://github.com/InBetweenNames/gentooLTO/issues/244
+export CFLAGS=$(echo $CFLAGS | sed 's/-flto//g')
+export CXXFLAGS=$(echo $CFLAGS | sed 's/-flto//g')
+
 # Determine arch
 export triple=$(cc -dumpmachine)
 
