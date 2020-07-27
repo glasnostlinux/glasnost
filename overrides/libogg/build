@@ -1,0 +1,11 @@
+#!/bin/sh -e
+
+# clang doesn't like the extra optimization flags
+sed -i -r 's/(\-O4)|(\-O20)//g' configure.ac
+sed -i -r 's/(\-O4)|(\-O20)//g' configure
+
+./configure \
+    --prefix=/usr
+
+make
+make DESTDIR="$1" install
