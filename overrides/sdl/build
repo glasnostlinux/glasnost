@@ -9,7 +9,7 @@ cp /usr/share/libtool/build-aux/config.guess build-scripts/
 
 ./configure \
     --prefix=/usr \
-    --build=$(cc -dumpmachine)
+    --disable-nls
 
 make
 make DESTDIR="$1" install
