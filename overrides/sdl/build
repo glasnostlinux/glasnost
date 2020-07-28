@@ -4,6 +4,9 @@
 sed -e '/_XData32/s:register long:register _Xconst long:' \
     -i src/video/x11/SDL_x11sym.h
 
+# Fix build type detection.
+cp /usr/share/libtool/build-aux/config.guess build-scripts/
+
 ./configure \
     --prefix=/usr \
     --build=$(cc -dumpmachine)
