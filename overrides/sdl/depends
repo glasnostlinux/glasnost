@@ -1,1 +1,2 @@
-/var/db/kiss/community/community/sdl/depends
+libtool       make
+linux-headers make
