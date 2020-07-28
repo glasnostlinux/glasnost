@@ -1,9 +1,9 @@
 #!/bin/sh -e
 
-# clang/llvm seems to produce binaries which segfault on aarch64 if used with -Os.
+# clang/llvm seems to produce binaries which segfault if used with -Ox
 # Remove that option if present
-CFLAGS=$(echo $CFLAGS | sed 's/-Os//g')
-CXXFLAGS=$(echo $CXXFLAGS | sed 's/-Os//g')
+CFLAGS=$(echo $CFLAGS | sed -r 's/-O(0|1|2|3|s|fast)//g')
+CXXFLAGS=$(echo $CXXFLAGS | sed -r 's/-O(0|1|2|3|s|fast)//g')
 
 # CFLAGS cleanup
 # See http://lists.busybox.net/pipermail/busybox/2019-October/087558.html
