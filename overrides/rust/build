@@ -41,8 +41,8 @@ vendor         = true
 sanitizers     = false
 profiler       = false
 full-bootstrap = false
-rustc          = "$PWD/$ARCH/usr/bin/rustc"
-cargo          = "$PWD/$ARCH/usr/bin/cargo"
+rustc          = "$PWD/$ARCH/bin/rustc"
+cargo          = "$PWD/$ARCH/bin/cargo"
 
 [install]
 prefix = "/usr"
