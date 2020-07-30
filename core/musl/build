@@ -2,9 +2,9 @@
 
 # Disable lto
 # Example: https://github.com/InBetweenNames/gentooLTO/issues/244
-export CFLAGS=$(echo $CFLAGS | sed 's/-flto//g')
-export CXXFLAGS=$(echo $CXXFLAGS | sed 's/-flto//g')
-export LDFLAGS=$(echo $LDFLAGS | sed 's/-flto//g')
+export CFLAGS=$(echo $CFLAGS | sed 's/(-flto){1}(=?)(\w*)( ?)//g')
+export CXXFLAGS=$(echo $CXXFLAGS | sed 's/(-flto){1}(=?)(\w*)( ?)//g')
+export LDFLAGS=$(echo $LDFLAGS | sed 's/(-flto){1}(=?)(\w*)( ?)//g')
 
 # Determine arch
 export triple=$(cc -dumpmachine)
