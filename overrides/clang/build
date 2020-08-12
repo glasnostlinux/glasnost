@@ -1,0 +1,7 @@
+#!/bin/sh -e
+
+# Clang is included in the core "llvm" packge,
+# so this is just a dummy file.
+# Possible break clang out into a separate package in future?
+
+install -Dm644 clang_dummyfile "$1/usr/share/clang_dummyfile"
