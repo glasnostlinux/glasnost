@@ -1,5 +1,5 @@
 ba0495f12c7d4e8735f3fa9e036bfafd1ae58c26910393201e95b9d13c80cd7c  rustc-1.45.0-src.tar.gz
-ecebdc55ab8d67eab82e4c3c781e0dd7d727acaa01ee8ccfc02513e90126858d  glasnost-rust-bootstrap-x86_64-1.45.0_2.tar.xz
+83fde814ad45370fba99b3a2f47d3c944b3d96515034174c0d5944ee6c726179  glasnost-rust-bootstrap-x86_64-1.45.0_3.tar.xz
 a8c10f98cda7835c400390dcf20585f875a1f1395d288f9c0b5ad967571daa5b  glasnost-rust-bootstrap-aarch64-1.45.0_1.tar.xz
 903880513dc61427bfedcd99c9b8a4b8156952b9cc5c486e29e5d5a2a77b484a  libressl-3.1.X.patch
 a9ef005d7a83036d2af3d0040b1daadc874f1af287bc02a8fddf8b34682739bc  llvm-clang.patch
