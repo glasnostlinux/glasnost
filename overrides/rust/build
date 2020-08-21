@@ -24,7 +24,7 @@ echo "Building target: $ARCH"
 
 cat > config.toml <<EOF
 [llvm]
-link-shared = true
+link-shared = false
 use-libcxx  = true
 
 [build]
