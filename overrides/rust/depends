@@ -1,1 +1,8 @@
-/var/db/kiss/repo/extra/rust/depends
+cmake  make
+curl   make
+libressl
+llvm
+pkgconf make
+python  make
+xz
+zlib
