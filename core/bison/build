@@ -1,0 +1,11 @@
+#!/bin/sh -e
+
+./configure \
+    --disable-nls \
+    --prefix=/usr
+
+# This is done due to bison having parallel build problems
+unset MAKEFLAGS
+
+make
+make DESTDIR="$1" install
