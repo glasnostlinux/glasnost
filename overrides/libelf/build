@@ -15,23 +15,17 @@
 # elftoolchain requires BSD make to build. Rather than package BSD make,
 # let's just do the equivalent ourselves in shell. This is fairly simple
 # as all we're building is 'libelf' and not the entire toolchain.
-export CFLAGS="-fPIC $CFLAGS"
+export CFLAGS="-fPIC -O2 $CFLAGS"
 export LDFLAGS="-shared $LDFLAGS"
 
 # Patch unneeded in next release.
 patch -p1 < libelf-linux.patch
 
-# Set arch specific options
-export triple=$(cc -dumpmachine)
-case $triple in
-   aarch64-unknown-linux-musl) export BUILDTARGET="EM_AARCH64";;
-   x86_64-pc-linux-musl) export BUILDTARGET="EM_X86_64";;
-   powerpc64le-linux-musl) export BUILDTARGET="EM_PPC";;
-   *) export BUILDTARGETS="EM_X86_64";;
-esac
+# Patch for Linux>5.8. Thanks konimex/E5ten.
+patch -p1 < gelf_symshndx.patch
 
 # Generate needed header file.
-common/native-elf-format | sed "s/unknown/$BUILDTARGET/g" > common/native-elf-format.h
+common/native-elf-format | sed 's/unknown/EM_PPC/g' > common/native-elf-format.h
 
 # Generate needed .c files using m4.
 for file in libelf/*.m4; do
