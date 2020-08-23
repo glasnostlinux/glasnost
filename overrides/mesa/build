@@ -42,6 +42,7 @@ export CFLAGS="$CFLAGS -DGLX_X86_READONLY_TEXT"
 # https://bugs.freedesktop.org/show_bug.cgi?id=35268
 # https://github.com/mesa3d/mesa/commit/9f37c9903b87f86a533bfaffa72f0ecb285b02b2
 sed -i "/pre_args += '-DUSE_ELF_TLS'/d" meson.build
+sed -i 's/STN_UNDEF/SHN_UNDEF/g' src/amd/common/ac_rtld.c
 
 meson \
     --prefix=/usr \
