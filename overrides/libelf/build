@@ -19,10 +19,10 @@ export CFLAGS="-fPIC -O2 $CFLAGS"
 export LDFLAGS="-shared $LDFLAGS"
 
 # Patch unneeded in next release.
-patch -p1 < libelf-linux.patch
+patch -p1 < elfdef2.patch
 
 # Patch for Linux>5.8. Thanks konimex/E5ten.
-patch -p1 < gelf_symshndx.patch
+patch -p1 < nu.patch
 
 # Generate needed header file.
 common/native-elf-format | sed 's/unknown/EM_PPC/g' > common/native-elf-format.h
