@@ -1,0 +1,18 @@
+#!/bin/sh -e
+
+export triple=$(cc -dumpmachine)
+case $triple in
+   aarch64-unknown-linux-musl) export BUILD=$(cc -dumpmachine);;
+   x86_64-pc-unknown-linux-musl) export BUILD=$(cc -dumpmachine);;
+   powerpc64le-unknown-linux-musl) export BUILD="powerpc64le-musl-linux";;
+   *) echo "Unsupported architecture"; exit 1;;
+esac
+
+echo "Building targets: $BUILD"
+
+./configure \
+    --prefix=/usr \
+    --build=$BUILD
+
+make
+make DESTDIR="$1" install

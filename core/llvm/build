@@ -84,7 +84,6 @@ install -m755 c99 "$1/usr/bin/c99"
 
 # For GCC compatibility
 cd $1/usr/bin/
-ln -s -f llvm-as      as
 ln -s -f llvm-ranlib  ranlib
 ln -s -f llvm-readobj readelf
 ln -s -f llvm-strip   strip
@@ -92,5 +91,3 @@ ln -s -f llvm-nm      nm
 ln -s -f llvm-objcopy objcopy
 ln -s -f llvm-objdump objdump
 ln -s -f llvm-strings strings
-ln -s -f clang        gcc
-ln -s -f clang++      g++
