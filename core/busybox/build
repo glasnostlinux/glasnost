@@ -12,6 +12,7 @@ sed -i -e 's:-static-libgcc:-static:' Makefile.flags
 sed -i -r -e 's:[[:space:]]?-(Werror|Os|falign-(functions|jumps|loops|labels)=1|finline-limit=0|fomit-frame-pointer)\>::g' Makefile.flags
 sed -i '/^#error Aborting compilation./d' applets/applets.c
 sed -i 's:-Wl,--gc-sections::' Makefile
+sed -i 's:gcc:cc:' Makefile
 
 for patch in *.patch; do
     patch -p1 < "$patch"
@@ -19,7 +20,7 @@ done
 
 # Build and install regular busybox.
 # This excludes utilities which require 'suid' to function.
-make CC="${CC:-cc}" HOSTCC="${CC:-cc}"
+make
 make CONFIG_PREFIX="$1/usr" install
 
 
@@ -40,7 +41,7 @@ mv "$1/usr/bin/busybox" "$1/usr/bin/busybox-nosuid"
 # Build and install suid busybox.
 # This _only_ includes utlities which require 'suid' to function.
 cp -f .config-suid .config
-make CC="${CC:-cc}" HOSTCC="${CC:-cc}"
+make
 make CONFIG_PREFIX="$1/usr" install
 
 # Aptly name the busybox binaries.
