@@ -10,6 +10,9 @@ sed -i 's/libmount_dep.found()/false/' meson.build
 find . -type f -name meson.build -exec \
     sed -i "/subdir('tests')/d;/subdir('fuzzing')/d" {} +
 
+# Fix clang strictness issue:
+sed -i 's/(GTokenType) value_p->v_symbol/GPOINTER_TO_INT (value_p->v_symbol)/g' json-glib/json-glib/json-scanner.c
+
 meson \
     --prefix=/usr \
     -Dlibmount=disabled \
@@ -22,8 +25,6 @@ meson \
 
 ninja -C build
 ninja -C build install
-
-patch -p1 < clang.patch
 
 # json-glib is a separate package which we build alongside
 # glib (as if they were one and the same). The upstream for
