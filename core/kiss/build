@@ -3,9 +3,8 @@
 install -D kiss         "$1/usr/bin/kiss"
 
 # Replace set of base packages
-
 sed -i -e 's/baselayout|binutils|bison|busybox|bzip2|curl|flex|gcc|git|/baselayout|bison|busybox|bzip2|cmake|curl|expat|flex|git|gzip|kiss|libffi|/g' \
-    -e 's/gzip|kiss|libressl|linux-headers|m4|make|musl|pkgconf|xz|zlib/libressl|linux-headers|llvm|m4|make|musl|pkgconf|python|sqlite|xz|zlib/g' \
+    -e 's/gzip|kiss|libressl|linux-headers|llvm|m4|make|musl|pkgconf|xz|zlib/gzip|kiss|libressl|linux-headers|llvm|m4|make|musl|pkgconf|python|sqlite|xz|zlib/g' \
     contrib/kiss-reset
 
 # Install kiss utilities.
