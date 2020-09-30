@@ -56,6 +56,7 @@ cmake -B build \
     -DLLVM_ENABLE_TERMINFO=OFF \
     -DLLVM_HOST_TRIPLE="$triple" \
     -DLLVM_INSTALL_BINUTILS_SYMLINKS=ON \
+    -DLLVM_INSTALL_UTILS=ON \
     -DLLVM_LINK_LLVM_DYLIB=ON \
     -DLLVM_TARGETS_TO_BUILD="$BUILDTARGETS" \
     -Wno-dev llvm
@@ -91,3 +92,5 @@ ln -s -f llvm-nm      nm
 ln -s -f llvm-objcopy objcopy
 ln -s -f llvm-objdump objdump
 ln -s -f llvm-strings strings
+touch $1/usr/lib/crtbeginS.o
+touch $1/usr/lib/crtendS.o
