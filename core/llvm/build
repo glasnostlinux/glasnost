@@ -93,4 +93,6 @@ ln -s -f llvm-objcopy objcopy
 ln -s -f llvm-objdump objdump
 ln -s -f llvm-strings strings
 touch $1/usr/lib/crtbeginS.o
+touch $1/usr/lib/crtbeginT.o
 touch $1/usr/lib/crtendS.o
+touch $1/usr/lib/crtend.o
