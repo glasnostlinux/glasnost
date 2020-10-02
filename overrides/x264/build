@@ -6,6 +6,9 @@ export CXXFLAGS="$CXXFLAGS -fno-lto"
 
 patch -p1 < x264-no-bash.patch
 
+export CC=clang
+export CXX=clang++
+
 ./configure \
     --prefix=/usr \
     --disable-swscale \
