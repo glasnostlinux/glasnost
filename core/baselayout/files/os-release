@@ -1,0 +1,8 @@
+NAME="Glasnost Linux"
+PRETTY_NAME="Glasnost Linux"
+ID=glasnost
+BUILD_ID=rolling
+HOME_URL="https://glasnost.org"
+DOCUMENTATION_URL="https://glasnost.org"
+SUPPORT_URL="https://github.com/glasnostlinux"
+BUG_REPORT_URL="https://github.com/glasnostlinux"
