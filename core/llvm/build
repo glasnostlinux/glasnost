@@ -20,6 +20,9 @@ esac
 
 echo "Building targets: $BUILDTARGETS"
 
+export CFLAGS="$CFLAGS -g"
+export CXXFLAGS="$CXXFLAGS -g"
+
 cmake -B build \
     -DCLANG_DEFAULT_CXX_STDLIB=libc++ \
     -DCLANG_DEFAULT_RTLIB=compiler-rt \

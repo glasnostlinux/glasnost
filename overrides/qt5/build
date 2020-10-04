@@ -4,6 +4,9 @@ for patch in *.patch; do
     patch -p1 < "$patch"
 done
 
+# Fix clang config on musl
+sed -i 's/#if defined(__GLIBC__) && (__GLIBC__ >= 2)/#if !defined(__GLIBC__)/g' mkspecs/linux-clang/qplatformdefs.h
+
 # Don't link against execinfo.h.
 sed -i 's/define QLOG/define N/g' \
     ./src/corelib/global/qlogging.cpp
@@ -28,6 +31,7 @@ sed -i 's/define QLOG/define N/g' \
     -no-accessibility \
     -no-gtk \
     -no-glib \
+    -platform linux-clang-libc++ \
     -system-libjpeg \
     -system-libpng \
     -system-sqlite \

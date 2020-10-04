@@ -5,7 +5,10 @@
 sed -i '/net\/if/d' \
     media/mtransport/third_party/nICEr/src/stun/addrs-netlink.c
 
-patch -p1 < if_indextoname.patch
+patch -p1 < disable-moz-stackwalk.patch
+#patch -p1 < if_indextoname.patch
+patch -p1 < no-gtk2.patch
+#patch -p1 < msan.patch
 
 # Build autoconf 2.13 for Firefox's sole use.
 # See: https://bugzilla.mozilla.org/show_bug.cgi?id=104642
@@ -53,9 +56,13 @@ export CXX="${CXX:-/usr/bin/c++}"
 
 export LDFLAGS="$LDFLAGS -Wl,-rpath=/usr/lib/firefox "
 export RUSTFLAGS="$RUSTFLAGS -Cdebuginfo=0 "
-export MOZ_DEBUG_FLAGS=-g0
+export MOZ_DEBUG_FLAGS=-g
 export MOZ_NOSPAM=1
 export CXXSTDLIB=c++
+export HOST_CXXSTDLIB=c++
+
+export CFLAGS="$CFLAGS -g "
+export CXXFLAGS="$CXXFLAGS -g "
 
 ../configure \
     --prefix=/usr \
@@ -68,6 +75,7 @@ export CXXSTDLIB=c++
     --enable-application=browser \
     --enable-release \
     --enable-alsa \
+  --enable-debug \
     --without-system-nspr \
     --without-system-nss \
     --with-system-jpeg \
@@ -81,10 +89,10 @@ export CXXSTDLIB=c++
     --disable-tests \
     --disable-system-extension-dirs \
     --disable-parental-controls \
-    --disable-debug-symbols \
     --disable-callgrind \
     --disable-vtune \
     --disable-gold \
+   --disable-memory-sanitizer \
     --disable-jemalloc \
     --disable-pulseaudio \
     --disable-crashreporter \
