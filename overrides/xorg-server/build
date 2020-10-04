@@ -1,0 +1,29 @@
+#!/bin/sh -e
+
+# Enable wayland backend if wayland-protocols is installed.
+kiss l wayland-protocols && WAYLAND=enable
+
+patch -p1 < rootless_modesetting.patch
+patch -p1 < fix-crash.patch
+
+echo "Wayland is: ${WAYLAND:-disable}"
+
+exit 1
+
+./configure \
+    --prefix=/usr \
+    --localstatedir=/var \
+    --disable-systemd-logind \
+    --${WAYLAND:-disable}-xwayland \
+    --disable-unit-tests \
+    --enable-glx \
+    --enable-dri \
+    --enable-dri2 \
+    --enable-dri3 \
+    --enable-glamor \
+    --enable-xorg \
+    --with-sha1=libcrypto \
+    --with-systemd-daemon=off
+
+make
+make DESTDIR="$1" install
