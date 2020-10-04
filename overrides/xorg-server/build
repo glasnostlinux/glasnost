@@ -6,10 +6,6 @@ kiss l wayland-protocols && WAYLAND=enable
 patch -p1 < rootless_modesetting.patch
 patch -p1 < fix-crash.patch
 
-echo "Wayland is: ${WAYLAND:-disable}"
-
-exit 1
-
 ./configure \
     --prefix=/usr \
     --localstatedir=/var \
