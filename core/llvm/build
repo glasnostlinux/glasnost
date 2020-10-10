@@ -9,9 +9,9 @@ sed -i 's/!defined(_GCC_MAX_ALIGN_T)/& \&\& !defined(__DEFINED_max_align_t)/' li
 sed -i 's/set(COMPILER_RT_HAS_SANITIZER_COMMON TRUE)/set(COMPILER_RT_HAS_SANITIZER_COMMON FALSE)/' compiler-rt/cmake/config-ix.cmake
 
 export DESTDIR="$1"
-export triple=$(cc -dumpmachine)
+export TRIPLE=$(cc -dumpmachine)
 
-case $triple in
+case $TRIPLE in
    aarch64-unknown-linux-musl) export BUILDTARGETS="AArch64;ARM";;
    x86_64-pc-unknown-linux-musl) export BUILDTARGETS="X86;AMDGPU";;
    powerpc64le-unknown-linux-musl) export BUILDTARGETS="PowerPC;AMDGPU";;
@@ -19,9 +19,6 @@ case $triple in
 esac
 
 echo "Building targets: $BUILDTARGETS"
-
-export CFLAGS="$CFLAGS -g"
-export CXXFLAGS="$CXXFLAGS -g"
 
 cmake -B build \
     -DCLANG_DEFAULT_CXX_STDLIB=libc++ \
@@ -58,7 +55,7 @@ cmake -B build \
     -DLLVM_ENABLE_PROJECTS="clang;compiler-rt;libunwind;libcxxabi;libcxx;lld" \
     -DLLVM_ENABLE_RTTI=ON \
     -DLLVM_ENABLE_TERMINFO=OFF \
-    -DLLVM_HOST_TRIPLE="$triple" \
+    -DLLVM_HOST_TRIPLE="$TRIPLE" \
     -DLLVM_INSTALL_BINUTILS_SYMLINKS=ON \
     -DLLVM_INSTALL_UTILS=ON \
     -DLLVM_LINK_LLVM_DYLIB=ON \
