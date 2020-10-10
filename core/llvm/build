@@ -5,8 +5,12 @@
     patch -p1 < ../libcxx-musl.patch
 )
 
+#
 sed -i 's/!defined(_GCC_MAX_ALIGN_T)/& \&\& !defined(__DEFINED_max_align_t)/' libcxx/include/stddef.h
 sed -i 's/set(COMPILER_RT_HAS_SANITIZER_COMMON TRUE)/set(COMPILER_RT_HAS_SANITIZER_COMMON FALSE)/' compiler-rt/cmake/config-ix.cmake
+
+# Do not link to libexecinfo if it is present
+sed -i 's/set(HAVE_BACKTRACE ${Backtrace_FOUND})/set(HAVE_BACKTRACE 0)/g' llvm/cmake/config-ix.cmake
 
 export DESTDIR="$1"
 export TRIPLE=$(cc -dumpmachine)
@@ -93,6 +97,8 @@ ln -s -f llvm-nm      nm
 ln -s -f llvm-objcopy objcopy
 ln -s -f llvm-objdump objdump
 ln -s -f llvm-strings strings
+
+# ? link to clang_rt.crtbegin* etc?
 touch $1/usr/lib/crtbeginS.o
 touch $1/usr/lib/crtbeginT.o
 touch $1/usr/lib/crtendS.o
