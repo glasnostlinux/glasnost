@@ -10,13 +10,19 @@ for vendor in libc openssl-sys; do
 done
 
 # Determine arch
-export triple=$(cc -dumpmachine)
-case $triple in
+case $(cc -dumpmachine) in
    aarch64-unknown-linux-musl) export ARCH="aarch64";;
    x86_64-pc-linux-musl) export ARCH="x86_64";;
    powerpc64le-unknown-linux-musl) export ARCH="powerpc64le";;
    *) echo "Unsupported platform."; exit 1;;
 esac
+
+# Only add clang builtins if target is aarch64
+if [ $ARCH == "aarch64" ]
+then
+    echo "Applying aarch64 fix"
+    sed -i 's/\/\/armfix/#[link(name = "clang_rt.builtins-aarch64", kind = "static")]/' library/unwind/src/lib.rs
+fi
 
 echo "Building target: $ARCH"
 
