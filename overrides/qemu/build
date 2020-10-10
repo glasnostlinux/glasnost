@@ -1,0 +1,42 @@
+#!/bin/sh -e
+
+for patch in *.patch; do
+    patch -p0 < "$patch"
+done
+
+# Build qemu-system* binaries dynamically linked
+./configure \
+    --prefix=/usr \
+    --localstatedir=/var \
+    --sysconfdir=/etc \
+    --disable-debug-info \
+    --disable-gtk \
+    --disable-docs \
+    --enable-sdl \
+    --enable-kvm \
+    --enable-pie \
+    --enable-curses \
+    --disable-user \
+    --disable-linux-user \
+    --enable-system
+
+make
+make DESTDIR="$1" PREFIX=/usr install
+make clean
+
+# Build qemu Linux user binaries statically linked.
+./configure \
+    --prefix=/usr \
+    --localstatedir=/var \
+    --sysconfdir=/etc \
+    --disable-debug-info \
+    --disable-gtk \
+    --disable-docs \
+    --disable-user \
+    --enable-linux-user \
+    --disable-system \
+    --static \
+    --extra-ldflags="-lc++abi -lc++"
+
+make
+make DESTDIR="$1" PREFIX=/usr install
