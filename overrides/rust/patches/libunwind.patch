@@ -1,19 +1,6 @@
---- rustc-1.41.0-src/src/libunwind/lib.rs
-+++ rustc-1.41.0-src/src/libunwind/lib.rs
-@@ -21,8 +21,7 @@
- }
- 
- #[cfg(target_env = "musl")]
--#[link(name = "unwind", kind = "static", cfg(target_feature = "crt-static"))]
--#[link(name = "gcc_s", cfg(not(target_feature = "crt-static")))]
-+#[link(name = "unwind")]
-+//armfix
- extern "C" {}
- 
- #[cfg(target_os = "redox")]
---- rustc-1.41.0-src/src/libunwind/build.rs
-+++ rustc-1.41.0-src/src/libunwind/build.rs
-@@ -105,15 +105,6 @@
+--- a/library/unwind/build.rs
++++ a/library/unwind/build.rs
+@@ -145,15 +145,6 @@
              cfg.file(root.join("src").join(src));
          }
  
@@ -29,3 +16,17 @@
          cfg.compile("unwind");
      }
  }
+
+--- a/library/unwind/src/lib.rs
++++ a/library/unwind/src/lib.rs
+@@ -38,8 +38,8 @@
+ }
+ 
+ #[cfg(target_env = "musl")]
+-#[link(name = "unwind", kind = "static", cfg(target_feature = "crt-static"))]
+-#[link(name = "gcc_s", cfg(not(target_feature = "crt-static")))]
++#[link(name = "unwind")]
++//armfix
+ extern "C" {}
+ 
+ #[cfg(target_os = "redox")]
