@@ -98,7 +98,7 @@ ln -s -f llvm-objcopy objcopy
 ln -s -f llvm-objdump objdump
 ln -s -f llvm-strings strings
 
-# ? link to clang_rt.crtbegin* etc?
+# link to clang_rt.crtbegin* etc?
 touch $1/usr/lib/crtbeginS.o
 touch $1/usr/lib/crtbeginT.o
 touch $1/usr/lib/crtendS.o
