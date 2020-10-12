@@ -7,6 +7,9 @@ sed -i -e 's/baselayout|binutils|bison|busybox|bzip2|curl|flex|gcc|git|/baselayo
     -e 's/gzip|kiss|libressl|linux-headers|m4|make|musl|xz|zlib/gzip|kiss|libressl|linux-headers|llvm|m4|make|musl|python|sqlite|xz|zlib/g' \
     contrib/kiss-reset
 
+sed -i 's/baseinit|baselayout|gcc|e2fsprogs|musl|/baselayout|bison|busybox|bzip2|cmake|curl|expat|flex|git|gnugrep|gzip|kiss|libffi|/g' contrib/kiss-orphans
+sed -i 's/make|busybox|bzip2|grub|kiss|git/libressl|linux-headers|llvm|m4|make|musl|pkgconf|python|samurai|sqlite|sudo|xz|zlib/g' contrib/kiss-orphans
+
 # Install kiss utilities.
 cp contrib/* "$1/usr/bin/"
 
