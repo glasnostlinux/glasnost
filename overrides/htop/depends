@@ -1,1 +1,3 @@
-../../modules/community/community/htop/depends
+libexecinfo
+ncurses
+python make
