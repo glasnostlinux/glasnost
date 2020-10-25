@@ -10,9 +10,11 @@ export LDFLAGS=$(echo $LDFLAGS | sed -r 's/(-flto){1}(=?)(\w*)( ?)//g')
 export triple=$(cc -dumpmachine)
 
 case $triple in
-   aarch64-unknown-linux-musl) export LIBARCH="aarch64";;
-   x86_64-pc-linux-musl) export LIBARCH="x86_64";;
-   powerpc64le-linux-musl) export LIBARCH="powerpc64le";;
+   aarch64-glasnost-linux-musl) export LIBARCH="aarch64";;
+   x86_64-glasnost-linux-musl) export LIBARCH="x86_64";;
+   powerpc64le-glasnost-linux-musl) export LIBARCH="powerpc64le";;
+   powerpc64-glasnost-linux-musl) export LIBARCH="powerpc64";;
+   *) echo "Unsupported platform: $TRIPLE"; exit;;
 esac
 
 echo "Building target: $LIBARCH"

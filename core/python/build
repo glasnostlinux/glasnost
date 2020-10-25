@@ -13,7 +13,11 @@ export LDFLAGS="$LDFLAGS -fno-semantic-interposition"
 
 patch -p1 < python3-always-pip.patch
 
-ax_cv_c_float_words_bigendian=no ./configure \
+case $(cc -dumpmachine) in
+   powerpc64le-glasnost-linux-musl) $CONFFLAGS=ax_cv_c_float_words_bigendian=no;;
+esac
+
+$CONFFLAGS ./configure \
     --prefix=/usr \
     --enable-shared \
     --with-system-expat \

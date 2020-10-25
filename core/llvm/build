@@ -16,19 +16,20 @@ export DESTDIR="$1"
 export TRIPLE=$(cc -dumpmachine)
 
 case $TRIPLE in
-   aarch64-unknown-linux-musl) export BUILDTARGETS="AArch64;ARM";;
-   x86_64-pc-unknown-linux-musl) export BUILDTARGETS="X86;AMDGPU";;
-   powerpc64le-unknown-linux-musl) export BUILDTARGETS="PowerPC;AMDGPU";;
-   *) export BUILDTARGETS="host;";;
+   aarch64-glasnost-linux-musl) export BUILDTARGETS="AArch64;ARM" ARCH="aarch64";;
+   x86_64-pc-glasnost-linux-musl) export BUILDTARGETS="X86;AMDGPU" ARCH="x86_64-pc";;
+   powerpc64le-glasnost-linux-musl) export BUILDTARGETS="PowerPC;AMDGPU" ARCH="powerpc64le";;
+   powerpc64-glasnost-linux-musl) export BUILDTARGETS="PowerPC;AMDGPU" ARCH="powerpc64";;
+   *) echo "Unsupported platform: $TRIPLE"; exit;;
 esac
 
-echo "Building targets: $BUILDTARGETS"
+echo "Building targets: $ARCH, $BUILDTARGETS"
 
 cmake -B build \
     -DCLANG_DEFAULT_CXX_STDLIB=libc++ \
     -DCLANG_DEFAULT_RTLIB=compiler-rt \
     -DCLANG_DEFAULT_UNWINDLIB=libunwind \
-    -DCLANG_VENDOR=Glasnost \
+    -DCLANG_VENDOR=glasnost \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_CXX_COMPILER=clang++ \
     -DCMAKE_C_COMPILER=clang \
@@ -59,7 +60,7 @@ cmake -B build \
     -DLLVM_ENABLE_PROJECTS="clang;compiler-rt;libunwind;libcxxabi;libcxx;lld" \
     -DLLVM_ENABLE_RTTI=ON \
     -DLLVM_ENABLE_TERMINFO=OFF \
-    -DLLVM_HOST_TRIPLE="$TRIPLE" \
+    -DLLVM_HOST_TRIPLE="$ARCH-glasnost-linux-musl" \
     -DLLVM_INSTALL_BINUTILS_SYMLINKS=ON \
     -DLLVM_INSTALL_UTILS=ON \
     -DLLVM_LINK_LLVM_DYLIB=ON \
