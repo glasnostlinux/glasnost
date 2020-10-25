@@ -13,14 +13,13 @@ sed -i 's/set(COMPILER_RT_HAS_SANITIZER_COMMON TRUE)/set(COMPILER_RT_HAS_SANITIZ
 sed -i 's/set(HAVE_BACKTRACE ${Backtrace_FOUND})/set(HAVE_BACKTRACE 0)/g' llvm/cmake/config-ix.cmake
 
 export DESTDIR="$1"
-export TRIPLE=$(cc -dumpmachine)
 
-case $TRIPLE in
+case $(cc -dumpmachine) in
    aarch64-glasnost-linux-musl) export BUILDTARGETS="AArch64;ARM" ARCH="aarch64";;
-   x86_64-pc-glasnost-linux-musl) export BUILDTARGETS="X86;AMDGPU" ARCH="x86_64-pc";;
+   x86_64-glasnost-linux-musl) export BUILDTARGETS="X86;AMDGPU" ARCH="x86_64";;
    powerpc64le-glasnost-linux-musl) export BUILDTARGETS="PowerPC;AMDGPU" ARCH="powerpc64le";;
    powerpc64-glasnost-linux-musl) export BUILDTARGETS="PowerPC;AMDGPU" ARCH="powerpc64";;
-   *) echo "Unsupported platform: $TRIPLE"; exit 1;;
+   *) echo "Unsupported platform: $(cc -dumpmachine)"; exit 1;;
 esac
 
 echo "Building targets: $ARCH, $BUILDTARGETS"
