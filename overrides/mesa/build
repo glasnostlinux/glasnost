@@ -38,6 +38,17 @@ sed -i "/pre_args += '-DUSE_ELF_TLS'/d" meson.build
 # Fix build:
 sed -i 's/STN_UNDEF/SHN_UNDEF/g' src/amd/common/ac_rtld.c
 
+case $(cc -dumpmachine) in
+   aarch64-glasnost-linux-musl) ;;
+   x86_64-pc-glasnost-linux-musl) ;;
+   powerpc64le-glasnost-linux-musl) DRI=-Ddri-drivers=swrast GALL=-Dgallium-drivers=radeonsi,r300,r600 VULK=-Dvulkan-drivers=;;
+   powerpc64-glasnost-linux-musl) DRI=-Ddri-drivers=swrast GALL=-Dgallium-drivers=radeonsi,r300,r600 VULK=-Dvulkan-drivers=;;
+   *) echo "Unsupported platform: $TRIPLE"; exit;;
+esac
+
+
+
+
 meson \
     --prefix=/usr \
     --sysconfdir=/etc \
@@ -45,6 +56,9 @@ meson \
     --localstatedir=/var \
     --buildtype=release \
     -Dplatforms=${wayland:-x11,drm} \
+    $DRI \
+    $GALL \
+    $VULK \
     . output
 
 ninja -C output
