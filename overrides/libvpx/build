@@ -16,6 +16,7 @@ case $triple in
    aarch64-unknown-linux-musl) export _ARCH="armv8-linux-gcc";;
    x86_64-pc-linux-musl) export _ARCH="x86_64-linux-gcc";;
    powerpc64le-unknown-linux-musl) export _ARCH="ppc64le-linux-gcc";;
+   powerpc64-glasnost-linux-musl) export _ARCH="generic-gnu";;
    *) echo "Unsupported platform."; exit 1;;
 esac
 
