@@ -10,9 +10,18 @@ sed -i "s/\\'libraries\\': \\[\\'-latomic\\', \\],/###/g" tools/v8_gypfiles/v8.g
 # ppc fix:
 sed -i "s/, '-mminimal-toc'//g" common.gypi
 
-#export LDFLAGS="$LDFLAGS"
-export CFLAGS="$CFLAGS -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64"
-export CXXFLAGS="$CXXFLAGS -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64"
+# Confirm if these are not needed now:
+#export CFLAGS="$CFLAGS -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64"
+#export CXXFLAGS="$CXXFLAGS -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -lc++abi -lc++"
+
+case $(cc -dumpmachine) in
+   aarch64-glasnost-linux-musl) ;;
+   x86_64-glasnost-linux-musl) ;;
+   powerpc64le-glasnost-linux-musl) ;;
+   powerpc64-glasnost-linux-musl) GFLAGS="--dest-cpu=ppc64 --openssl-no-asm";;
+   *) echo "Unsupported platform: $(cc -dumpmachine)"; exit;;
+esac
+
 
 ./configure \
     --shared-zlib \
@@ -22,8 +31,7 @@ export CXXFLAGS="$CXXFLAGS -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64"
     --without-report \
     --without-node-snapshot \
     --without-node-code-cache \
-    --dest-cpu=ppc64 \
-    --openssl-no-asm \
+    $GFLAGS \
     --ninja
 
 ninja -C out/Release
