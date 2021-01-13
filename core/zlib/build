@@ -5,7 +5,8 @@ export CFLAGS="-fPIC $CFLAGS"
 ./configure \
     --prefix=/usr \
     --libdir=/usr/lib \
-    --shared
+    --shared \
+    --archs="-arch $(cat ${KISS_ROOT}/etc/os-arch)"
 
 make
 make DESTDIR="$1" install

@@ -1,0 +1,24 @@
+#!/bin/sh -e
+
+./configure \
+    --prefix=/usr \
+    --enable-ipv6 \
+    --enable-unix-sockets \
+    --enable-hidden-symbols \
+    --without-libidn \
+    --without-libidn2 \
+    --disable-manual \
+    --disable-ldap \
+    --disable-ares \
+    --without-librtmp \
+    --without-icu \
+    --without-libpsl \
+    --with-pic \
+    --with-ca-fallback \
+    --enable-static \
+    --enable-shared \
+    --build="$(cat /etc/os-arch)-linux-musl" \
+    --host="$(cat $KISS_ROOT/etc/os-arch)-linux-musl"
+
+make LDFLAGS="$LDFLAGS" CFLAGS="$CFLAGS" curl_LDFLAGS=-all-static
+make DESTDIR="$1" install

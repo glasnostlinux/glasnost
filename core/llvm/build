@@ -12,26 +12,40 @@ sed -i 's/set(COMPILER_RT_HAS_SANITIZER_COMMON TRUE)/set(COMPILER_RT_HAS_SANITIZ
 # Do not link to libexecinfo if it is present
 sed -i 's/set(HAVE_BACKTRACE ${Backtrace_FOUND})/set(HAVE_BACKTRACE 0)/g' llvm/cmake/config-ix.cmake
 
-export DESTDIR="$1"
-
-case $(cc -dumpmachine) in
-   aarch64-glasnost-linux-musl) export BUILDTARGETS="AArch64;ARM" ARCH="aarch64";;
-   x86_64-glasnost-linux-musl) export BUILDTARGETS="X86;AMDGPU" ARCH="x86_64";;
-   powerpc64le-glasnost-linux-musl) export BUILDTARGETS="PowerPC;AMDGPU" ARCH="powerpc64le";;
-   powerpc64-glasnost-linux-musl) export BUILDTARGETS="PowerPC;AMDGPU" ARCH="powerpc64";;
+# Determine targets for architecture
+TARGET_GLASNOST_ARCH=$(cat ${KISS_ROOT}/etc/os-arch)
+case $TARGET_GLASNOST_ARCH in
+   aarch64)     COMPILER_TARGETS="AArch64"            TARGET_ARCH="AArch64";;
+   x86_64)      COMPILER_TARGETS="X86;AMDGPU"             TARGET_ARCH="X86";;
+   powerpc64le) COMPILER_TARGETS="PowerPC;AMDGPU;AArch64;X86" TARGET_ARCH="PowerPC";;
+   powerpc64)   COMPILER_TARGETS="PowerPC;AMDGPU;AArch64;X86" TARGET_ARCH="PowerPC";;
    *) echo "Unsupported platform: $(cc -dumpmachine)"; exit 1;;
 esac
 
-echo "Building targets: $ARCH, $BUILDTARGETS"
+#Fix cross build
+if [ ! -z $KISS_ROOT ]; then
+    echo "Patching crossbuild"
+    sed -i -e "s|set(LIBUNWIND_LINK_FLAGS \"\")|set(LIBUNWIND_LINK_FLAGS \"--sysroot=$KISS_ROOT\/usr\")|" libunwind/CMakeLists.txt
+    sed -i -e "s|set(LIBUNWIND_C_FLAGS \"\")|set(LIBUNWIND_C_FLAGS \"$CFLAGS\")|" libunwind/CMakeLists.txt
+    sed -i -e "s|set(LIBUNWIND_CXX_FLAGS \"\")|set(LIBUNWIND_CXX_FLAGS \"$CXXFLAGS\")|" libunwind/CMakeLists.txt
+fi
+
+echo "Building a compiler which runs on $TARGET_ARCH that can can build: $COMPILER_TARGETS"
+
+export DESTDIR="$1"
+
+kiss-cmake-config > toolchain.cmake
 
 cmake -B build \
     -DCLANG_DEFAULT_CXX_STDLIB=libc++ \
     -DCLANG_DEFAULT_RTLIB=compiler-rt \
     -DCLANG_DEFAULT_UNWINDLIB=libunwind \
-    -DCLANG_VENDOR="glasnost" \
+    -DCLANG_VENDOR="glasnost"\
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_CXX_COMPILER=clang++ \
     -DCMAKE_C_COMPILER=clang \
+    -DCMAKE_C_FLAGS="$CFLAGS" \
+    -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
     -DCMAKE_INSTALL_PREFIX=/usr \
     -DCOMPILER_RT_BUILD_CRT=ON \
     -DCOMPILER_RT_EXCLUDE_ATOMIC_BUILTIN=OFF \
@@ -46,6 +60,9 @@ cmake -B build \
     -DLIBUNWIND_SUPPORTS_FNO_RTTI_FLAG=ON \
     -DLIBUNWIND_SUPPORTS_NODEFAULTLIBS_FLAG=ON \
     -DLIBUNWIND_USE_COMPILER_RT=ON \
+    -DLIBUNWIND_ENABLE_CROSS_UNWINDING=ON \
+    -DLIBUNWIND_SYSROOT="${KISS_ROOT:-/}" \
+    -DLIBUNWIND_TARGET_TRIPLE="$TARGET_GLASNOST_ARCH-glasnost-linux-musl" \
     -DLLVM_BUILD_DOCS=OFF \
     -DLLVM_BUILD_EXAMPLES=OFF \
     -DLLVM_BUILD_LLVM_DYLIB=ON \
@@ -59,11 +76,17 @@ cmake -B build \
     -DLLVM_ENABLE_PROJECTS="clang;compiler-rt;libunwind;libcxxabi;libcxx;lld" \
     -DLLVM_ENABLE_RTTI=ON \
     -DLLVM_ENABLE_TERMINFO=OFF \
-    -DLLVM_HOST_TRIPLE="$ARCH-glasnost-linux-musl" \
+    -DLLVM_HOST_TRIPLE="$TARGET_GLASNOST_ARCH-glasnost-linux-musl" \
+    -DLLVM_TARGET_TRIPLE="$TARGET_GLASNOST_ARCH-glasnost-linux-musl" \
     -DLLVM_INSTALL_BINUTILS_SYMLINKS=ON \
+    -DLLVM_INSTALL_CCTOOLS_SYMLINKS=ON \
     -DLLVM_INSTALL_UTILS=ON \
     -DLLVM_LINK_LLVM_DYLIB=ON \
-    -DLLVM_TARGETS_TO_BUILD="$BUILDTARGETS" \
+    -DLLVM_TARGETS_TO_BUILD="$COMPILER_TARGETS" \
+    -DLLVM_TARGET_ARCH="$TARGET_ARCH" \
+    -DLLVM_TABLEGEN="/usr/bin/llvm-tblgen" \
+    -DCLANG_TABLEGEN="/usr/bin/clang-tblgen" \
+    -DCMAKE_TOOLCHAIN_FILE="$(realpath toolchain.cmake)" \
     -Wno-dev llvm
 
 cmake --build build
@@ -87,6 +110,9 @@ ln -s clang-cpp "$1/usr/bin/cpp"
 
 # Clang: POSIX compliance
 install -m755 c99 "$1/usr/bin/c99"
+
+# Clang: clang-tblgen, required for crossbuilding.
+install -Dm755 build/bin/clang-tblgen "$1/usr/bin/clang-tblgen"
 
 # For GCC compatibility
 cd $1/usr/bin/

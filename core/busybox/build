@@ -1,11 +1,5 @@
 #!/bin/sh -e
 
-# clang/llvm seems to produce binaries which segfault if used with -Ox
-# or -lto options. Use plain build flags until resolved. 
-unset CFLAGS
-unset LDFLAGS
-unset CXXFLAGS
-
 # CFLAGS cleanup
 # See http://lists.busybox.net/pipermail/busybox/2019-October/087558.html
 sed -i -e 's:-static-libgcc:-static:' Makefile.flags
@@ -18,22 +12,13 @@ for patch in *.patch; do
     patch -p1 < "$patch"
 done
 
+export CROSS_COMPILE=" "
+export LD="clang $CFLAGS"
+
 # Build and install regular busybox.
 # This excludes utilities which require 'suid' to function.
-make
-make CONFIG_PREFIX="$1/usr" install
-
-
-# Test the built binary to check if it works.
-# Have had clang build binaries without complaining,
-# but they segfault when run!
-BUILDTEST=$(busybox echo 'test')
-if [ $BUILDTEST != "test" ]
-then
-   echo "Build output execution fails"
-   exit 1
-fi
-
+make LD="$LD"
+make CONFIG_PREFIX="$1/usr" LD="$LD" install
 
 # Rename the binary temporarily.
 mv "$1/usr/bin/busybox" "$1/usr/bin/busybox-nosuid"
@@ -41,20 +26,22 @@ mv "$1/usr/bin/busybox" "$1/usr/bin/busybox-nosuid"
 # Build and install suid busybox.
 # This _only_ includes utlities which require 'suid' to function.
 cp -f .config-suid .config
-make
-make CONFIG_PREFIX="$1/usr" install
+make LD="$LD"
+make CONFIG_PREFIX="$1/usr" LD="$LD" install
 
 # Aptly name the busybox binaries.
 mv -f "$1/usr/bin/busybox"        "$1/usr/bin/busybox-suid"
 mv -f "$1/usr/bin/busybox-nosuid" "$1/usr/bin/busybox"
 
+# If cross building, can't run the built executable
+# So assume config is the same as host
 # Install the non-suid symlinks.
-"$1/usr/bin/busybox" --list | while read -r bin; do
+busybox --list | while read -r bin; do
     ln -s busybox "$1/usr/bin/$bin"
 done
 
 # Install the suid symlinks.
-"$1/usr/bin/busybox-suid" --list | while read -r bin; do
+busybox-suid --list | while read -r bin; do
     ln -s busybox-suid "$1/usr/bin/$bin"
 done
 
