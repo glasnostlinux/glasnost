@@ -1,0 +1,26 @@
+#!/bin/sh
+
+BUILD_ARCH="$(cat /etc/os-arch)"
+TARGET_ARCH="$(cat ${KISS_ROOT}/etc/os-arch)"
+
+# Add crossbuild options if required
+if [ $BUILD_ARCH != $TARGET_ARCH  ]; then
+
+    # Create correct CPU string for cmake
+    case $TARGET_ARCH in
+        aarch64)     export CPU="aarch64";;
+        x86_64)      export CPU="x86_64";;
+        powerpc64le) export CPU="ppc64le";;
+        powerpc64)   export CPU="ppc64";;
+        *) echo "Unsupported platform: $TARGET_ARCH"; exit 1;;
+    esac
+
+    # Cross build
+    echo "$(cat /usr/share/cmake/toolchain.cmake)"
+    echo "SET(CMAKE_SYSTEM_PROCESSOR ${CPU})"
+    echo "SET(CMAKE_FIND_ROOT_PATH  \"${KISS_ROOT}/usr;${KISS_ROOT}\")"
+    echo "SET(CMAKE_CROSSCOMPILING TRUE)"
+else
+    # Normal build
+    echo "SET(CMAKE_CROSSCOMPILING FALSE)"
+fi

@@ -1,1 +1,4 @@
-../../modules/repo/core/busybox/depends
+bzip2
+gzip
+libressl make
+linux-headers make

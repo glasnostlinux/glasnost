@@ -1,0 +1,16 @@
+#!/bin/sh -e
+
+./configure \
+    --prefix=/usr \
+    --sysconfdir=/etc \
+    --disable-tests \
+    --enable-shared \
+    --enable-static \
+    --build="$(cat /etc/os-arch)-linux-musl" \
+    --host="$(cat ${KISS_ROOT}/etc/os-arch)-linux-musl"
+
+
+make
+make DESTDIR="$1" install
+
+install -Dm 755 update-certdata.sh "$1/etc/ssl"

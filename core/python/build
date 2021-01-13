@@ -6,20 +6,35 @@ cat >> Modules/Setup <<EOF
 _uuid nis ossaudiodev
 EOF
 
+
+# TODO:
+# Don't link to ncurses and readline if present
+
+
 # Reported 20-27% performance improvements.
 # See: "PythonNoSemanticInterpositionSpeedup"
 export CFLAGS="$CFLAGS -fno-semantic-interposition"
+export CXXFLAGS="$CXXFLAGS -fno-semantic-interposition"
 export LDFLAGS="$LDFLAGS -fno-semantic-interposition"
+export AR=ar
+export RANLIB=ranlib
 
-patch -p1 < python3-always-pip.patch
+for patch in *.patch; do
+    patch -p1 < "$patch"
+done
 
+ac_cv_file__dev_ptc=yes \
+ac_cv_file__dev_ptmx=yes \
 ./configure \
     --prefix=/usr \
     --enable-shared \
     --with-system-expat \
     --with-system-ffi \
     --with-ensurepip=yes \
-    --without-doc-strings
+    --without-doc-strings \
+    --build="$(cat /etc/os-arch)-linux-musl" \
+    --host="$(cat ${KISS_ROOT}/etc/os-arch)-linux-musl" \
+    --disable-ipv6
 
 make
 make DESTDIR="$1" install

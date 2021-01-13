@@ -1,0 +1,10 @@
+#!/bin/sh -e
+
+# Always use the host compiler here
+make HOSTCC="cc" headers
+
+# The headers require rsync for installation, this command
+# simply does the equivalent using find.
+find usr/include -name \*.h -type f | while read -r file; do
+    install -Dm644 "$file" "$1/$file"
+done
