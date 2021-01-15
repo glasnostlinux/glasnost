@@ -10,7 +10,6 @@ EOF
 # TODO:
 # Don't link to ncurses and readline if present
 
-
 # Reported 20-27% performance improvements.
 # See: "PythonNoSemanticInterpositionSpeedup"
 export CFLAGS="$CFLAGS -fno-semantic-interposition"
@@ -25,6 +24,7 @@ done
 
 ac_cv_file__dev_ptc=yes \
 ac_cv_file__dev_ptmx=yes \
+ax_cv_c_float_words_bigendian=no \
 ./configure \
     --prefix=/usr \
     --enable-shared \

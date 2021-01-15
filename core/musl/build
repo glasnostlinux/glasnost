@@ -5,12 +5,7 @@ for patch in *.patch; do
     patch -p1 < "$patch"
 done
 
-# Disable lto
-# Example: https://github.com/InBetweenNames/gentooLTO/issues/244
-export CFLAGS=$(echo $CFLAGS | sed -r 's/(-flto){1}(=?)(\w*)( ?)//g')
-export CXXFLAGS=$(echo $CXXFLAGS | sed -r 's/(-flto){1}(=?)(\w*)( ?)//g')
-export LDFLAGS=$(echo $LDFLAGS | sed -r 's/(-flto){1}(=?)(\w*)( ?)//g')
-export CLANGVER=$(cat /var/db/kiss/installed/llvm/version | cut -d " " -f 1)
+export CLANGVER=$(cat $KISS_ROOT/var/db/kiss/installed/llvm/version | cut -d " " -f 1)
 
 # Uncomment if using valgrind or similar.
 # :>nostrip

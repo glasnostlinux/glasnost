@@ -1,5 +1,24 @@
 #!/bin/sh -e
 
+get_target_arch()
+{
+    set -f ; old_ifs=$IFS ; IFS=" " ; set -- $1
+
+    # Get the last instance of "--target"
+    for x in $@; do
+        case $x in
+            *"--target"*) TARGET=$x;;
+        esac
+    done
+
+    # Return the CFLAGS arch, or the arch from cc otherwise
+    CFLAGS_ARCH=$(echo $TARGET | cut -d "=" -f 2 | cut -d "-" -f 1)
+    COMPILER_ARCH=$(cc -dumpmachine | cut -d "-" -f 1)
+    echo "${CFLAGS_ARCH:-$COMPILER_ARCH}"
+    IFS=$old_ifs ; set +f
+}
+
+
 # Setup base directories.
 for d in boot dev etc home mnt usr var opt run; do
     install -dm 755 "$1/$d"
@@ -47,8 +66,8 @@ done
 
 ln -s ../man "$1/usr/local/share/man"
 
-# Save the host architecture
-echo "$(cc -dumpmachine | cut -d "-" -f 1)" > os-arch
+# Get the target architecture from CFLAGS, or cc if not set.
+get_target_arch $CFLAGS > os-arch
 
 # /etc skeleton files.
 for f in fstab group host.conf hosts issue os-release \
