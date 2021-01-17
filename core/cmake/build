@@ -5,6 +5,8 @@ patch -p1 < cmake-no-execinfo.patch
 export DESTDIR="$1"
 
 kiss-cmake-config > toolchain.cmake
+echo "SET(CMake_RUN_CXX_FILESYSTEM ON)"                >> toolchain.cmake
+echo "SET(CMake_RUN_CXX_FILESYSTEM__TRYRUN_OUTPUT ON)" >> toolchain.cmake
 
 cmake -B build \
     -DCMAKE_INSTALL_PREFIX=/usr \

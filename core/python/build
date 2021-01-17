@@ -22,9 +22,14 @@ for patch in *.patch; do
     patch -p1 < "$patch"
 done
 
+# Detect big endian platforms
+if [ "$(cat $KISS_ROOT/etc/os-arch)" == "powerpc64" ]; then
+    BIG_ENDIAN=yes
+fi
+
 ac_cv_file__dev_ptc=yes \
 ac_cv_file__dev_ptmx=yes \
-ax_cv_c_float_words_bigendian=no \
+ax_cv_c_float_words_bigendian="${BIG_ENDIAN:-no}" \
 ./configure \
     --prefix=/usr \
     --enable-shared \
