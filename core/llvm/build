@@ -5,7 +5,7 @@
     patch -p1 < ../libcxx-musl.patch
 )
 
-#
+# Disable sanitizer
 sed -i 's/!defined(_GCC_MAX_ALIGN_T)/& \&\& !defined(__DEFINED_max_align_t)/' libcxx/include/stddef.h
 sed -i 's/set(COMPILER_RT_HAS_SANITIZER_COMMON TRUE)/set(COMPILER_RT_HAS_SANITIZER_COMMON FALSE)/' compiler-rt/cmake/config-ix.cmake
 
@@ -15,10 +15,9 @@ sed -i 's/set(HAVE_BACKTRACE ${Backtrace_FOUND})/set(HAVE_BACKTRACE 0)/g' llvm/c
 # Determine targets for architecture
 TARGET_GLASNOST_ARCH=$(cat ${KISS_ROOT}/etc/os-arch)
 case $TARGET_GLASNOST_ARCH in
-   aarch64)     COMPILER_TARGETS="AArch64"                    TARGET_ARCH="AArch64";;
-   x86_64)      COMPILER_TARGETS="AArch64;AMDGPU;PowerPC;X86" TARGET_ARCH="X86";;
-   powerpc64le) COMPILER_TARGETS="AArch64;AMDGPU;PowerPC;X86" TARGET_ARCH="PowerPC";;
-   powerpc64)   COMPILER_TARGETS="AArch64;AMDGPU;PowerPC;X86" TARGET_ARCH="PowerPC";;
+   aarch64)    TARGET_ARCH="AArch64";;
+   x86_64)     TARGET_ARCH="X86";;
+   powerpc64*) TARGET_ARCH="PowerPC";;
    *) echo "Unsupported platform: $TARGET_GLASNOST_ARCH"; exit 1;;
 esac
 
@@ -30,10 +29,7 @@ if [ $(cat /etc/os-arch) != $TARGET_GLASNOST_ARCH  ]; then
     sed -i -e "s|set(LIBUNWIND_CXX_FLAGS \"\")|set(LIBUNWIND_CXX_FLAGS \"$CXXFLAGS\")|" libunwind/CMakeLists.txt
 fi
 
-echo "Building a compiler which runs on $TARGET_ARCH that can can build: $COMPILER_TARGETS"
-
 export DESTDIR="$1"
-
 kiss-cmake-config > toolchain.cmake
 
 cmake -B build \
@@ -81,7 +77,7 @@ cmake -B build \
     -DLLVM_INSTALL_CCTOOLS_SYMLINKS=ON \
     -DLLVM_INSTALL_UTILS=ON \
     -DLLVM_LINK_LLVM_DYLIB=ON \
-    -DLLVM_TARGETS_TO_BUILD="$COMPILER_TARGETS" \
+    -DLLVM_TARGETS_TO_BUILD="ARM;AArch64;AMDGPU;PowerPC;X86" \
     -DLLVM_TARGET_ARCH="$TARGET_ARCH" \
     -DLLVM_TABLEGEN="/usr/bin/llvm-tblgen" \
     -DCLANG_TABLEGEN="/usr/bin/clang-tblgen" \
