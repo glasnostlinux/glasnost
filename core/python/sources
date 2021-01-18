@@ -1,3 +1,5 @@
 https://www.python.org/ftp/python/3.9.1/Python-3.9.1.tar.xz
 patches/python3-always-pip.patch
+patches/musl.patch
+patches/clang.patch
 patches/cross.patch
