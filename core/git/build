@@ -1,6 +1,6 @@
 #!/bin/sh -e
 
-export CFLAGS="$CFLAGS -static"
+export CFLAGS="$CFLAGS -static -L${KISS_ROOT}/usr/lib "
 
 cat > config.mak <<EOF
 NO_GETTEXT=YesPlease

@@ -1,4 +1,6 @@
-#!/bin/sh
+#!/bin/sh -e
+# Print a suitable cmake toolchain for this architecture.
+
 
 BUILD_ARCH="$(cat /etc/os-arch)"
 TARGET_ARCH="$(cat ${KISS_ROOT}/etc/os-arch)"
