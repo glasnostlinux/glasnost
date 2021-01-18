@@ -1,10 +1,5 @@
 #!/bin/sh -e
 
-# Fix CVE-2020-28929. This will be fixed upstream in version 1.2.2.
-for patch in *.patch; do
-    patch -p1 < "$patch"
-done
-
 export CLANGVER=$(cat $KISS_ROOT/var/db/kiss/installed/llvm/version | cut -d " " -f 1)
 
 # Uncomment if using valgrind or similar.
