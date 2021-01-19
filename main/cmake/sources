@@ -2,4 +2,4 @@ https://cmake.org/files/v3.19/cmake-3.19.3.tar.gz
 patches/cmake-no-execinfo.patch
 patches/disable-try-run.patch
 files/kiss-cmake-config
-files/crossbuild.cmake
+files/toolchain.cmake
