@@ -1,47 +1,6 @@
-Adapted from the Void Linux patch
---- setup.py.orig
-+++ setup.py
-@@ -38,7 +38,7 @@
-     return sys.platform
- 
- 
--CROSS_COMPILING = ("_PYTHON_HOST_PLATFORM" in os.environ)
-+CROSS_COMPILING = ("_PYTHON_HOST_PLATFORM" in os.environ) or ('PYTHONXCPREFIX' in os.environ)
- HOST_PLATFORM = get_platform()
- MS_WINDOWS = (HOST_PLATFORM == 'win32')
- CYGWIN = (HOST_PLATFORM == 'cygwin')
-@@ -700,6 +700,10 @@
-         if HOST_PLATFORM == 'hp-ux11':
-             self.lib_dirs += ['/usr/lib/hpux64', '/usr/lib/hpux32']
- 
-+        if 'KISS_ROOT' in os.environ:
-+            self.lib_dirs += [os.environ['KISS_ROOT'] + '/usr/lib']
-+            self.inc_dirs += [os.environ['KISS_ROOT'] + '/usr/include']
-+
-         if MACOS:
-             # This should work on any unixy platform ;-)
-             # If the user has bothered specifying additional -I and -L flags
---- Makefile.pre.in.orig	2021-01-18 21:15:12.276000000 +0000
-+++ Makefile.pre.in	2021-01-18 21:25:17.037000000 +0000
-@@ -1245,8 +1245,6 @@
- 			upgrade) ensurepip="--upgrade" ;; \
- 			install|*) ensurepip="" ;; \
- 		esac; \
--		$(RUNSHARED) $(PYTHON_FOR_BUILD) -m ensurepip \
--			$$ensurepip --root=$(DESTDIR)/ ; \
- 	fi
- 
- altinstall: commoninstall
-@@ -1255,8 +1253,6 @@
- 			upgrade) ensurepip="--altinstall --upgrade" ;; \
- 			install|*) ensurepip="--altinstall" ;; \
- 		esac; \
--		$(RUNSHARED) $(PYTHON_FOR_BUILD) -m ensurepip \
--			$$ensurepip --root=$(DESTDIR)/ ; \
- 	fi
- 
- commoninstall:  check-clean-src @FRAMEWORKALTINSTALLFIRST@ \
-@@ -1673,11 +1669,13 @@
+--- Makefile.pre.in.orig	2021-01-20 20:50:35.644000000 +0000
++++ Makefile.pre.in	2021-01-20 20:52:29.860000000 +0000
+@@ -1673,11 +1673,12 @@
  # Install the dynamically loadable modules
  # This goes into $(exec_prefix)
  sharedinstall: sharedmods
@@ -55,7 +14,6 @@ Adapted from the Void Linux patch
 +		--install-scripts=$(DESTDIR)$(BINDIR) \
 +		--install-platlib=$(DESTDIR)$(DESTSHARED) \
 +		--root=/
-+
  	-rm $(DESTDIR)$(DESTSHARED)/_sysconfigdata_$(ABIFLAGS)_$(MACHDEP)_$(MULTIARCH).py
  	-rm -r $(DESTDIR)$(DESTSHARED)/__pycache__
  

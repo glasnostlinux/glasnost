@@ -18,7 +18,7 @@ export LDFLAGS="$LDFLAGS -fno-semantic-interposition"
 export AR=ar
 export RANLIB=ranlib
 export READELF=readelf
-export PYTHONXCPREFIX=$KISS_ROOT
+#export PYTHONXCPREFIX=$KISS_ROOT
 
 for patch in *.patch; do
     patch -p1 < "$patch"
@@ -45,10 +45,8 @@ ax_cv_c_float_words_bigendian="${BIG_ENDIAN:-no}" \
     --enable-shared \
     --disable-ipv6
 
-# CROSS_COMPILE_TARGET=yes HOSTARCH=arm-linux BUILDARCH=arm-linux-gnueabihf
-
-make CROSS_COMPILE_TARGET=yes
-make CROSS_COMPILE_TARGET=yes DESTDIR="$1" install
+make 
+make DESTDIR="$1" install
 
 ln -s python3 "$1/usr/bin/python"
 ln -s pip3    "$1/usr/bin/pip"
