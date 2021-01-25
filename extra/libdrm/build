@@ -1,0 +1,13 @@
+#!/bin/sh -e
+
+export DESTDIR="$1"
+
+kiss-meson-config > config.meson
+
+meson \
+    --prefix=/usr \
+    --cross-file="config.meson" \
+    . build
+
+ninja -C build
+ninja -C build install

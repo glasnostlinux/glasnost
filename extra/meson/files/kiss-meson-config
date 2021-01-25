@@ -1,0 +1,19 @@
+#!/bin/sh
+
+# Add crossbuild options if required
+if [[ "$(cat /etc/os-arch)" != "$(cat ${KISS_ROOT}/etc/os-arch)" ]]; then
+    # Cross build
+    echo "$(cat /usr/share/meson/build.meson)"
+    echo ""
+    echo "$(cat $KISS_ROOT/usr/share/meson/host.meson)"
+    echo ""
+    echo "$(cat $KISS_ROOT/usr/share/meson/target.meson)"
+    echo ""
+fi
+
+echo "[properties]"
+echo "sys_root = '$KISS_ROOT'"
+echo ""
+echo "[binaries]"
+echo "pkgconfig = '/usr/bin/pkgconf'"
+echo "llvm-config = '/usr/bin/llvm-config'"

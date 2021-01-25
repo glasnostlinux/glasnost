@@ -1,0 +1,17 @@
+Patch by E5Ten
+
+--- a/libelf/gelf_symshndx.c
++++ a/libelf/gelf_symshndx.c
+@@ -48,6 +48,12 @@
+ 	if (gelf_getsym(d, ndx, dst) == 0)
+ 		return (NULL);
+ 
++        if (lid == NULL) {
++                if (shindex)
++                        *shindex = 0;
++                return (dst);
++        }
++
+ 	if (lid == NULL || (scn = lid->d_scn) == NULL ||
+ 	    (e = scn->s_elf) == NULL || (e != ld->d_scn->s_elf) ||
+ 	    shindex == NULL) {

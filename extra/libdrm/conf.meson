@@ -1,0 +1,20 @@
+[build_machine]
+system = 'linux'
+cpu_family = 'ppc64'
+cpu = 'ppc64le'
+endian = 'little'
+
+[host_machine]
+system = 'linux'
+cpu_family = 'aarch64'
+cpu = 'aarch64'
+endian = 'little'
+
+[target_machine]
+system = 'linux'
+cpu_family = 'aarch64'
+cpu = 'aarch64'
+endian = 'little'
+
+[properties]
+sys_root = '/home/pokey/work/glasnost-aarch64-crossroot'

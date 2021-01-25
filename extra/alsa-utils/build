@@ -1,0 +1,15 @@
+#!/bin/sh -e
+
+./configure \
+    --prefix=/usr \
+    --build="$(cat /etc/os-arch)-linux-musl" \
+    --host="$(cat ${KISS_ROOT}/etc/os-arch)-linux-musl" \
+    --sbindir=/usr/bin \
+    --with-udev-rules-dir=/usr/lib/udev/rules.d \
+    --disable-alsaconf \
+    --disable-bat \
+    --disable-xmlto \
+    --disable-nls
+
+make
+make DESTDIR="$1" install

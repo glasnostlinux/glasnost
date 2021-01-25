@@ -1,0 +1,20 @@
+--- a/configure	2021-01-13 21:41:46.966000000 +0000
++++ a/configure	2021-01-13 21:44:15.300000000 +0000
+@@ -17802,7 +17802,7 @@
+ 
+ if test -n "$JSONC_CFLAGS"; then
+     pkg_cv_JSONC_CFLAGS="$JSONC_CFLAGS"
+- elif test -n "$PKG_CONFIG"; then
++ elif test -n ""; then
+     if test -n "$PKG_CONFIG" && \
+     { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"json-c\""; } >&5
+   ($PKG_CONFIG --exists --print-errors "json-c") 2>&5
+@@ -17819,7 +17819,7 @@
+ fi
+ if test -n "$JSONC_LIBS"; then
+     pkg_cv_JSONC_LIBS="$JSONC_LIBS"
+- elif test -n "$PKG_CONFIG"; then
++ elif test -n ""; then
+     if test -n "$PKG_CONFIG" && \
+     { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"json-c\""; } >&5
+   ($PKG_CONFIG --exists --print-errors "json-c") 2>&5

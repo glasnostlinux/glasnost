@@ -1,0 +1,23 @@
+#!/bin/sh -e
+
+if [[ "$(cat ${KISS_ROOT}/etc/os-arch)" != "x86_64" ]]; then
+    echo "This package is only supported on x86_64 targets"
+    exit 1
+fi
+
+export DESTDIR="$1"
+export LDFLAGS="$LDFLAGS -Wl,-z,lazy"
+
+kiss-meson-config > config.meson
+
+meson \
+    --prefix=/usr \
+    --libexecdir=/usr/lib \
+    -Ddefault-dri=3 \
+    -Dxvmc=false \
+    -Dvalgrind=false \
+    --cross-file="config.meson" \
+    . build
+
+ninja -C build
+ninja -C build install

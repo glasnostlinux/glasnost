@@ -1,0 +1,7 @@
+#!/bin/sh
+
+cat <<EOF
+
+NOTE: You also need [1mxf86-input-libinput[m.
+
+EOF
