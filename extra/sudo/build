@@ -1,0 +1,29 @@
+#!/bin/sh -e
+
+for patch in *.patch; do
+    patch -p1 < "$patch"
+done
+
+./configure \
+    --prefix=/usr \
+    --build="$(cat /etc/os-arch)-linux-musl" \
+    --host="$(cat ${KISS_ROOT}/etc/os-arch)-linux-musl" \
+    --sbindir=/usr/bin \
+    --libexecdir=/usr/lib \
+    --disable-pam-session \
+    --disable-root-mailer \
+    --disable-nls \
+    --enable-pie \
+    --without-pam \
+    --without-sendmail \
+    --with-ignore-dot \
+    --with-insults=disabled \
+    --with-logfac=auth \
+    --with-passprompt="[sudo] password for %p: "
+
+make
+make \
+    DESTDIR="$1" \
+    install_uid="$(id -u)" \
+    install_gid="$(id -g)" \
+    install

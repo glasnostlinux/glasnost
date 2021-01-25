@@ -1,0 +1,17 @@
+#!/bin/sh -e
+
+sed -i '/chown/d' GNUmakefile
+
+./configure \
+    --prefix=/usr \
+    --build="$(cat /etc/os-arch)-linux-musl" \
+    --host="$(cat ${KISS_ROOT}/etc/os-arch)-linux-musl" \
+    --enable-static \
+    --with-shadow \
+    --with-timestamp \
+    --without-pam
+
+make
+make DESTDIR="$1" install
+
+install -Dm600 doas.conf "$1/etc/doas.conf"

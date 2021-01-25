@@ -1,0 +1,7 @@
+expat
+libdrm
+libpciaccess
+linux-headers make
+mesa
+pkgconf       make
+xorgproto

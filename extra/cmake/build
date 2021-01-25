@@ -1,0 +1,45 @@
+#!/bin/sh -e
+
+patch -p1 < cmake-no-execinfo.patch
+
+# Always use cmake if cross building
+if [ -d "/var/db/kiss/installed/cmake" ]; then
+
+    export DESTDIR="$1"
+
+    kiss-cmake-config > toolchain.cmake
+    echo "SET(CMake_RUN_CXX_FILESYSTEM ON)"                >> toolchain.cmake
+    echo "SET(CMake_RUN_CXX_FILESYSTEM__TRYRUN_OUTPUT ON)" >> toolchain.cmake
+
+    cmake -B build \
+        -DCMAKE_INSTALL_PREFIX=/usr \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_USE_SYSTEM_CURL=True \
+        -DCMAKE_USE_SYSTEM_EXPAT=True \
+        -DCMAKE_USE_SYSTEM_ZLIB=True \
+        -DCMAKE_USE_SYSTEM_BZIP2=True \
+        -DBUILD_CursesDialog=0 \
+        -DBUILD_TESTING=OFF \
+        -DCMAKE_TOOLCHAIN_FILE="$(realpath toolchain.cmake)"
+
+    cmake --build   build
+    cmake --install build
+
+else
+
+    ./configure \
+        --prefix=/usr \
+        --system-curl \
+        --system-expat \
+        --system-zlib \
+        --system-bzip2
+
+    make
+    make DESTDIR="$1" install
+fi
+
+rm -rf "$1/usr/doc"
+rm -rf "$1/usr/share/cmake"*/Help
+
+install -Dm644 toolchain.cmake   "$1/usr/share/cmake/toolchain.cmake"
+install -Dm755 kiss-cmake-config "$1/usr/bin/kiss-cmake-config"

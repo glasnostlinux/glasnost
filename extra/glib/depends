@@ -1,0 +1,4 @@
+libffi
+meson   make
+pkgconf make
+zlib

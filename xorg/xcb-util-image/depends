@@ -1,0 +1,4 @@
+libXau
+libxcb
+pkgconf make
+xcb-util

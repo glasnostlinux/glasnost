@@ -1,0 +1,3 @@
+[binaries]
+pkgconfig = 'pkgconf'
+llvm-config = '/usr/bin/llvm-config'

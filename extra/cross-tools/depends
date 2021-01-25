@@ -1,0 +1,10 @@
+byacc
+cmake
+flex
+glib
+gperf
+m4
+meson
+ncurses
+pkgconf
+python
