@@ -1,0 +1,15 @@
+#!/bin/sh -e
+
+export DESTDIR="$1"
+
+kiss-cmake-config > cmake.config
+
+# TODO: work out how to enable asm where appropriate
+cmake source \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DCMAKE_TOOLCHAIN_FILE="$(realpath cmake.config)" \
+    -DENABLE_ASSEMBLY=OFF \
+    -DCMAKE_BUILD_TYPE=Release
+
+cmake --build .
+cmake --install .

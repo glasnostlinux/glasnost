@@ -1,0 +1,43 @@
+#!/bin/sh -e
+
+patch -p1 < fix-busybox-diff.patch
+
+export CC=${CC:-clang}
+export CXX=${CXX:-clang++}
+#export AR=llvm-ar
+#export LD=ld.lld
+#export AS=clang
+#export STRIP=llvm-strip
+#export NM=llvm-nm
+
+# Determine arch
+case $(cat $KISS_ROOT/etc/os-arch) in
+   aarch64) target=arm64-linux-gcc;;
+   x86_64) target=x86_64-linux-gcc;;
+   powerpc64le) target=ppc64le-linux-gcc;;
+   powerpc64) target=generic-gnu;;
+   *) echo "Unsupported platform: $(cc -dumpmachine)"; exit;;
+esac
+
+./configure \
+    --prefix=/usr \
+    --enable-vp8 \
+    --enable-vp9 \
+    --enable-experimental \
+    --enable-runtime-cpu-detect \
+    --enable-shared \
+    --disable-static \
+    --enable-postproc \
+    --enable-pic \
+    --disable-tools \
+    --disable-examples \
+    --disable-docs \
+    --disable-unit-tests \
+    --disable-install-docs \
+    --disable-install-srcs \
+    --disable-install-bins \
+    --as=nasm \
+    --target=$target
+
+make
+make DESTDIR="$1" install

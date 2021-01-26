@@ -1,0 +1,16 @@
+#!/bin/sh -e
+
+export DESTDIR="$1"
+
+kiss-cmake-config > cmake.config
+
+cmake -B build \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DCMAKE_TOOLCHAIN_FILE="$(realpath cmake.config)" \
+    -DCMAKE_INSTALL_LIBDIR=/usr/lib \
+    -DCMAKE_SHARED_LIBS=True \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DWITH_JPEG8=1
+
+cmake --build   build
+cmake --install build

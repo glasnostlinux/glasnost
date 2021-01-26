@@ -1,0 +1,20 @@
+#!/bin/sh -e
+
+# Swap to awk script instead of perl script
+# for building rsync. See files/mkproto.awk.
+sed -i 's/perl/awk -f/;s/mkproto.pl/mkproto.awk/' Makefile.in
+
+export CFLAGS="-static $CFLAGS"
+
+./configure \
+    --prefix=/usr \
+    --build="$(cat /etc/os-arch)-linux-musl" \
+    --host="$(cat ${KISS_ROOT}/etc/os-arch)-linux-musl" \
+    --with-included-popt \
+    --disable-xxhash \
+    --disable-zstd \
+    --disable-lz4 \
+    --without-included-zlib
+
+make
+make DESTDIR="$1" install

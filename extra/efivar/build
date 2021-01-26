@@ -1,0 +1,28 @@
+#!/bin/sh -e
+
+# LTO is used when CFLAGS are unset causing a compilation
+# error with GCC 10. LTO can be set by the user though
+# '-flto-partition=none' is also needed.
+sed -i 's/ -flto//' Make.defaults
+
+for patch in *.patch; do
+    patch -p1 < "$patch"
+done
+
+#CFLAGS_FOR_BUILD=""
+#CCLD_FOR_BUILD=""
+#CCLDFLAGS=""
+CCLD="clang"
+
+# Avoid repeating ourselves.
+mk() {
+    make \
+        libdir=/usr/lib/ \
+        bindir=/usr/bin/ \
+        mandir=/usr/share/man/ \
+        includedir=/usr/include/ \
+        "$@"
+}
+
+mk CC="${CC:-cc}"
+mk DESTDIR="$1" install

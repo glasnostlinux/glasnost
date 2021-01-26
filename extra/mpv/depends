@@ -1,0 +1,10 @@
+alsa-lib
+ffmpeg
+freetype-harfbuzz
+libass
+libXScrnSaver
+libXinerama
+libXrandr
+mesa
+pkgconf make
+python  make

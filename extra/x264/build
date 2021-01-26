@@ -1,0 +1,14 @@
+#!/bin/sh -e
+
+patch -p1 < x264-no-bash.patch
+
+./configure \
+    --prefix=/usr \
+    --host="$(cat ${KISS_ROOT}/etc/os-arch)-linux-musl" \
+    --disable-swscale \
+    --enable-static \
+    --enable-pic \
+    --enable-shared
+
+make
+make DESTDIR="$1" install
