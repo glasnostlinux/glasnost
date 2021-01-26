@@ -2,6 +2,10 @@
 
 sed -i '/chown/d' GNUmakefile
 
+# Needed when cross building
+sed -i 's/UID_MAX/65535/g' doas.c
+sed -i 's/GID_MAX/65535/g' doas.c
+
 ./configure \
     --prefix=/usr \
     --build="$(cat /etc/os-arch)-linux-musl" \

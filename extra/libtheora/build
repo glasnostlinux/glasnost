@@ -1,0 +1,11 @@
+#!/bin/sh -e
+
+patch -p0 < libtheora-1.1.1-libpng16.patch
+
+./configure \
+    --prefix=/usr \
+    --build="$(cat /etc/os-arch)-linux-musl" \
+    --host="$(cat ${KISS_ROOT}/etc/os-arch)-linux-musl"
+
+make
+make DESTDIR="$1" install

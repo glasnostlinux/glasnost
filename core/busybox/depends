@@ -1,4 +1,4 @@
 bzip2
-gzip
+pigz
 libressl make
 linux-headers make

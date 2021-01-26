@@ -1,0 +1,16 @@
+#!/bin/sh -e
+
+# Fix build fail with GCC 10.
+export CFLAGS="$CFLAGS -fcommon"
+
+./configure \
+    --prefix=/usr \
+    --build="$(cat /etc/os-arch)-linux-musl" \
+    --host="$(cat ${KISS_ROOT}/etc/os-arch)-linux-musl" \
+    --sysconfdir=/etc \
+    --libexecdir=/usr/lib \
+    --enable-noexecstack \
+    --disable-nls
+
+make
+make DESTDIR="$1" install

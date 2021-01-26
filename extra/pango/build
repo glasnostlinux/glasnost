@@ -1,0 +1,20 @@
+#!/bin/sh -e
+
+export DESTDIR="$1"
+
+sed -i "/subdir('tests')/d"    meson.build
+sed -i "/subdir('examples')/d" meson.build
+
+kiss-meson-config > meson.config
+
+meson \
+    --prefix=/usr \
+    --cross-file="meson.config" \
+    -Dgir=false \
+    -Dgtk_doc=false \
+    -Dintrospection=disabled \
+    -Dinstalled_tests=false \
+    . build
+
+ninja -C build
+ninja -C build install

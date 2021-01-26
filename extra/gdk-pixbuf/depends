@@ -1,0 +1,5 @@
+glib
+libX11
+libpng
+meson   make
+pkgconf make

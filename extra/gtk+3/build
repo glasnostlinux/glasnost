@@ -1,0 +1,46 @@
+#!/bin/sh -e
+
+# Remove 'atk-bridge' dependency which removes the 'dbus' dependency.
+sed -i 's/ATK_PACKAGES="atk atk-bridge-2.0"/ATK_PACKAGES="atk"/' \
+    configure
+
+sed -i '/<atk-bridge.h>/d;/atk_bridge_adaptor_init/d' \
+    gtk/a11y/gtkaccessibility.c
+
+# Don't build GTK examples/demos/testsuite.
+sed -i 's/demos tests testsuite examples//' Makefile.am Makefile.in
+sed -i 's/docs m4macros/m4macros/'          Makefile.am Makefile.in
+
+export GLIB_COMPILE_RESOURCES=/usr/bin/glib-compile-resources
+
+./configure \
+    --prefix=/usr \
+    --build="$(cat /etc/os-arch)-linux-musl" \
+    --host="$(cat ${KISS_ROOT}/etc/os-arch)-linux-musl" \
+    --sysconfdir=/etc \
+    --localstatedir=/var \
+    --enable-xkb \
+    --enable-xinerama \
+    --enable-xrandr \
+    --enable-xfixes \
+    --enable-xcomposite \
+    --enable-xdamage \
+    --enable-x11-backend \
+    --disable-schemas-compile \
+    --disable-cups \
+    --disable-papi \
+    --disable-cloudprint \
+    --disable-glibtest \
+    --disable-nls \
+    --disable-installed-tests \
+    --enable-introspection=no \
+    --enable-colord=no \
+    --enable-gtk-doc-html=no
+
+make
+make DESTDIR="$1" install
+
+# We don't compile with librsvg which leads to this
+# utility solely causing compiler errors for some
+# packages. It has no use at all.
+rm -f "$1/usr/bin/gtk-encode-symbolic-svg"

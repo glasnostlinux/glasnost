@@ -1,0 +1,12 @@
+#!/bin/sh -e
+
+ln -s waf-2.0.18 waf
+
+python waf configure \
+    --prefix=/usr \
+    --mandir=/usr/share/man \
+    --confdir=/etc/mpv \
+    --enable-alsa
+
+python waf build
+python waf install --destdir="$1"

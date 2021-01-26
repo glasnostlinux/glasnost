@@ -1,0 +1,18 @@
+#!/bin/sh -e
+
+# Remove incorrect bash dependency.
+sed -i 's/bash/sh/' install-sh
+
+./configure \
+    --prefix=/usr \
+    --build="$(cat /etc/os-arch)-linux-musl" \
+    --host="$(cat ${KISS_ROOT}/etc/os-arch)-linux-musl" \
+    --sbindir=/usr/bin \
+    --disable-gettext
+
+make
+make \
+    DIST_ROOT="$1" \
+    PKG_ROOT_SBIN_DIR=/usr/bin \
+    PKG_ROOT_LIB_DIR=/usr/lib \
+    install
