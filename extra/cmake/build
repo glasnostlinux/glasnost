@@ -7,7 +7,7 @@ if [ -d "/var/db/kiss/installed/cmake" ]; then
 
     export DESTDIR="$1"
 
-    kiss-cmake-config > toolchain.cmake
+    kiss-cmake-config > cmake.build
     echo "SET(CMake_RUN_CXX_FILESYSTEM ON)"                >> toolchain.cmake
     echo "SET(CMake_RUN_CXX_FILESYSTEM__TRYRUN_OUTPUT ON)" >> toolchain.cmake
 
@@ -20,7 +20,7 @@ if [ -d "/var/db/kiss/installed/cmake" ]; then
         -DCMAKE_USE_SYSTEM_BZIP2=True \
         -DBUILD_CursesDialog=0 \
         -DBUILD_TESTING=OFF \
-        -DCMAKE_TOOLCHAIN_FILE="$(realpath toolchain.cmake)"
+        -DCMAKE_TOOLCHAIN_FILE="$(realpath cmake.build)"
 
     cmake --build   build
     cmake --install build

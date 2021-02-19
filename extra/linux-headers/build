@@ -1,7 +1,17 @@
 #!/bin/sh -e
 
+# Determine arch
+case $(cat $KISS_ROOT/etc/os-arch) in
+   aarch64) arch=arm64;;
+   x86_64) arch=x86_64;;
+   powerpc64le) arch=powerpc;;
+   powerpc64) arch=powerpc;;
+   *) echo "Unsupported platform: $(cc -dumpmachine)"; exit;;
+esac
+
+
 # Always use the host compiler here
-make HOSTCC="cc" headers
+make LLVM=1 LLVM_IAS=1 ARCH=$arch HOSTCC="clang" headers
 
 # The headers require rsync for installation, this command
 # simply does the equivalent using find.

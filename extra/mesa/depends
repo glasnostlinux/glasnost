@@ -1,4 +1,4 @@
-byacc        make
+bison        make
 expat
 flex         make
 libX11

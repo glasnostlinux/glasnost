@@ -2,7 +2,7 @@
 
 if [[ "$(cat ${KISS_ROOT}/etc/os-arch)" != "x86_64" ]]; then
     echo "This package is only supported on x86_64 targets"
-    exit 1
+    exit 0
 fi
 
 export DESTDIR="$1"

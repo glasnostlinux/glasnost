@@ -1,5 +1,5 @@
---- configure.ac.orig
-+++ configure.ac
+--- a/configure.ac.orig
++++ a/configure.ac
 @@ -59,14 +59,14 @@
  # Set-up variables to use build machine compiler when cross-compiling
  if test x"$CC_FOR_BUILD" = x; then

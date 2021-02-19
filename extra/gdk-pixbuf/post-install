@@ -1,3 +1,4 @@
 #!/bin/sh
 
-gdk-pixbuf-query-loaders --update-cache
+# TODO: deal with cross arch install?
+# gdk-pixbuf-query-loaders --update-cache

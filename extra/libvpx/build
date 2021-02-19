@@ -2,13 +2,13 @@
 
 patch -p1 < fix-busybox-diff.patch
 
-export CC=${CC:-clang}
-export CXX=${CXX:-clang++}
-#export AR=llvm-ar
-#export LD=ld.lld
-#export AS=clang
-#export STRIP=llvm-strip
-#export NM=llvm-nm
+#export CC=${CC:-clang}
+#export CXX=${CXX:-clang++}
+
+# Remove the perl requirement from configure
+# as we have removed the perl requirement
+# ourselves :-).
+sed -i 's/perl/:/g' configure
 
 # Determine arch
 case $(cat $KISS_ROOT/etc/os-arch) in
@@ -19,6 +19,8 @@ case $(cat $KISS_ROOT/etc/os-arch) in
    *) echo "Unsupported platform: $(cc -dumpmachine)"; exit;;
 esac
 
+# --disable-static
+
 ./configure \
     --prefix=/usr \
     --enable-vp8 \
@@ -26,7 +28,6 @@ esac
     --enable-experimental \
     --enable-runtime-cpu-detect \
     --enable-shared \
-    --disable-static \
     --enable-postproc \
     --enable-pic \
     --disable-tools \

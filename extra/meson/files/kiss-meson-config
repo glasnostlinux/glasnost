@@ -12,7 +12,8 @@ if [[ "$(cat /etc/os-arch)" != "$(cat ${KISS_ROOT}/etc/os-arch)" ]]; then
 fi
 
 echo "[properties]"
-echo "sys_root = '$KISS_ROOT'"
+echo "sys_root = '${KISS_ROOT:-/}'"
+echo "libdir = '$KISS_ROOT/usr/lib'"
 echo ""
 echo "[binaries]"
 echo "pkgconfig = '/usr/bin/pkgconf'"
