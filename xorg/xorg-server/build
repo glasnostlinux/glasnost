@@ -4,6 +4,10 @@ patch -p1 < rootless_modesetting.patch
 
 ./configure \
     --prefix=/usr \
+    --libdir=/usr/lib \
+    --with-xkb-path=/usr/share/X11/xkb \
+    --with-xkb-output=/usr/share/X11/xkb/compiled \
+    --with-xkb-bin-directory=/usr/bin \
     --localstatedir=/var \
     --disable-systemd-logind \
     --disable-xwayland \

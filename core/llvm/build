@@ -5,6 +5,11 @@
     patch -p1 < ../libcxx-musl.patch
 )
 
+(
+    cd llvm
+    patch -p1 < ../llvm-006-aarch64-mf_exec.patch
+)
+
 # Disable sanitizer
 sed -i 's/!defined(_GCC_MAX_ALIGN_T)/& \&\& !defined(__DEFINED_max_align_t)/' libcxx/include/stddef.h
 sed -i 's/set(COMPILER_RT_HAS_SANITIZER_COMMON TRUE)/set(COMPILER_RT_HAS_SANITIZER_COMMON FALSE)/' compiler-rt/cmake/config-ix.cmake
@@ -22,12 +27,12 @@ case $TARGET_GLASNOST_ARCH in
 esac
 
 #Fix cross build
-if [ $(cat /etc/os-arch) != $TARGET_GLASNOST_ARCH  ]; then
-    echo "Patching crossbuild"
-    sed -i -e "s|set(LIBUNWIND_LINK_FLAGS \"\")|set(LIBUNWIND_LINK_FLAGS \"--sysroot=$KISS_ROOT\/usr\")|" libunwind/CMakeLists.txt
-    sed -i -e "s|set(LIBUNWIND_C_FLAGS \"\")|set(LIBUNWIND_C_FLAGS \"$CFLAGS\")|" libunwind/CMakeLists.txt
-    sed -i -e "s|set(LIBUNWIND_CXX_FLAGS \"\")|set(LIBUNWIND_CXX_FLAGS \"$CXXFLAGS\")|" libunwind/CMakeLists.txt
-fi
+#if [ $(cat /etc/os-arch) != $TARGET_GLASNOST_ARCH  ]; then
+#    echo "Patching crossbuild"
+#    sed -i -e "s|set(LIBUNWIND_LINK_FLAGS \"\")|set(LIBUNWIND_LINK_FLAGS \"--sysroot=$KISS_ROOT\/usr\")|" libunwind/CMakeLists.txt
+#    sed -i -e "s|set(LIBUNWIND_C_FLAGS \"\")|set(LIBUNWIND_C_FLAGS \"$CFLAGS\")|" libunwind/CMakeLists.txt
+#    sed -i -e "s|set(LIBUNWIND_CXX_FLAGS \"\")|set(LIBUNWIND_CXX_FLAGS \"$CXXFLAGS\")|" libunwind/CMakeLists.txt
+#fi
 
 export DESTDIR="$1"
 kiss-cmake-config > toolchain.cmake
@@ -56,9 +61,10 @@ cmake -B build \
     -DLIBUNWIND_SUPPORTS_FNO_RTTI_FLAG=ON \
     -DLIBUNWIND_SUPPORTS_NODEFAULTLIBS_FLAG=ON \
     -DLIBUNWIND_USE_COMPILER_RT=ON \
-    -DLIBUNWIND_ENABLE_CROSS_UNWINDING=ON \
+    -DLIBUNWIND_ENABLE_CROSS_UNWINDING=OFF \
     -DLIBUNWIND_SYSROOT="${KISS_ROOT:-/}" \
     -DLIBUNWIND_TARGET_TRIPLE="$TARGET_GLASNOST_ARCH-glasnost-linux-musl" \
+    -DLLDB_EXPORT_ALL_SYMBOLS=1 \
     -DLLVM_BUILD_DOCS=OFF \
     -DLLVM_BUILD_EXAMPLES=OFF \
     -DLLVM_BUILD_LLVM_DYLIB=ON \

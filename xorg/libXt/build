@@ -1,6 +1,6 @@
 #!/bin/sh -e
 
-patch -p1 < cross.patch
+#patch -p1 < cross.patch
 
 export CC_FOR_BUILD=clang
 export CFLAGS_FOR_BUILD=-fPIC
@@ -10,11 +10,7 @@ export LDFLAGS_FOR_BUILD=""
     --prefix=/usr \
     --build="$(cat /etc/os-arch)-linux-musl" \
     --host="$(cat ${KISS_ROOT}/etc/os-arch)-linux-musl" \
-    --enable-malloc0returnsnull \
-    --disable-install-makestrs \
-    --with-fop=no \
-    --with-perl=no \
-    --with-glib=no
+    --enable-malloc0returnsnull
 
 make
 make DESTDIR="$1" install

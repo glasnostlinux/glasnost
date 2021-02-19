@@ -1,3 +1,4 @@
 #!/bin/sh
 
-fc-cache -vf
+fc-cache --sysroot=${KISS_ROOT:-/} -vf &
+
