@@ -8,6 +8,6 @@ m4
 meson
 nasm
 ncurses
-#perl
+perl
 pkgconf
 python
