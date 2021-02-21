@@ -18,7 +18,6 @@ export LDFLAGS="$LDFLAGS -fno-semantic-interposition"
 export AR=ar
 export RANLIB=ranlib
 export READELF=readelf
-#export PYTHONXCPREFIX=$KISS_ROOT
 
 for patch in *.patch; do
     patch -p1 < "$patch"
@@ -28,6 +27,8 @@ done
 if [ "$(cat $KISS_ROOT/etc/os-arch)" == "powerpc64" ]; then
     BIG_ENDIAN=yes
 fi
+
+_arch=$(cat ${KISS_ROOT}/etc/os-arch)
 
 ac_cv_file__dev_ptc=yes \
 ac_cv_file__dev_ptmx=yes \
@@ -45,8 +46,13 @@ ax_cv_c_float_words_bigendian="${BIG_ENDIAN:-no}" \
     --enable-shared \
     --disable-ipv6
 
-make 
+
+# Build zlib module explicitly, this is missed when cross building
+make
+make Modules/zlib.cpython-39-$_arch-linux-gnu.so
 make DESTDIR="$1" install
+
+install -Dm644 Modules/zlib.cpython-39-$_arch-linux-gnu.so "$1/usr/lib/python3.9/lib-dynload/zlib.cpython-39-$_arch-linux-gnu.so"
 
 ln -s python3 "$1/usr/bin/python"
 ln -s pip3    "$1/usr/bin/pip"
