@@ -5,25 +5,45 @@ export BUILD_BZIP2=0
 export LDFLAGS="$LDFLAGS -pthread"
 export CFLAGS="$CFLAGS -DNO_POSIX_2008_LOCALE -D_GNU_SOURCE"
 
-./Configure \
-    -des \
-    -Dprefix=/usr \
+export CC=clang
+export CXX=clang++
+
+target="$(cat $KISS_ROOT/etc/os-arch)"
+build="$(cat /etc/os-arch)"
+
+if [ $build != $target ]; then
+    crossopt=-Dusecrosscompile
+fi
+
+./configure \
+    --prefix=/usr \
+    --target="$target-linux-musl" \
+    --build="$build-linux-musl" \
+    --sysroot=${KISS_ROOT:-/} \
+    -Des \
     -Dvendorprefix=/usr \
     -Dusevendorprefix \
     -Duseshrplib \
     -Dusesoname \
     -Dusethreads \
-    -Dinc_version_list=none \
-    -Dd_sockaddr_in6=define \
-    -Dcccdlflags=-fPIC \
     -Dccflags="$CFLAGS" \
-    -Dlddlflags="-shared $LDFLAGS" \
-    -Dldflags="$LDFLAGS" \
-    -Doptimize="-Wall $CFLAGS" \
-    -Dcc="${CC:-cc}" \
+    -Dccdlflags="$CFLAGS" \
+    -Dcccdlflags="$CFLAGS" \
+    -Dlddlflags="$CFLAGS -shared" \
+    -Dshrpldflags="$CFLAGS" \
+    -Dldflags="$CFLAGS $LDFLAGS" \
+    -Dlkflags="$CFLAGS" \
+    -Doptimize="-Wall" \
+    $crossopt \
     -Dar="${AR:-ar}" \
     -Dnm="${NM:-nm}" \
     -Dranlib="${RANLIB:-ranlib}" \
+    -Dreadelf="${READELF:-readelf}" \
+    -Dobjdump="${OBJDUMP:-objdump}" \
+    -Dinc_version_list=none \
+    -Dd_sockaddr_in6=define \
+    -Dcccdlflags=-fPIC \
+    -Dlddlflags="-shared $CFLAGS $LDFLAGS" \
     -Dperl_static_inline="static __inline__" \
     -Dd_static_inline
 
@@ -37,7 +57,6 @@ find "$1" -name README\*     -exec rm -f {} +
 find "$1" -name TODO\*       -exec rm -f {} +
 find "$1" -name Change\*     -exec rm -f {} +
 find "$1" -name \*.bs        -exec rm -f {} +
-find "$1" -name \*.0 -type f -exec rm -f {} +
 
 # Fix permissions.
 find "$1/usr/lib" -type f -exec chmod 644 {} \;
