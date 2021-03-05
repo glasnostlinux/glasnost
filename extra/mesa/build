@@ -1,9 +1,8 @@
 #!/bin/sh -e
 
-#for patch in *.patch; do
-#    patch -p1 < "$patch"
-#done
-
+for patch in *.patch; do
+    patch -p1 < "$patch"
+done
 
 # Install python-mako which is solely needed for mesa
 # and thus contained in this build.
@@ -30,7 +29,8 @@
 
 export PYTHONPATH
 export DESTDIR="$1"
-export CFLAGS="$CFLAGS -DGLX_X86_READONLY_TEXT"
+export CFLAGS="$CFLAGS -DGLX_X86_READONLY_TEXT -Wno-implicit-fallthrough "
+#export CXXFLAGS="$CXXFLAGS -I$KISS_ROOT/usr/include -I$KISS_ROOT/usr/include/c++/v1"
 
 # Fix issues with musl and firefox.
 # https://bugs.freedesktop.org/show_bug.cgi?id=35268
@@ -41,10 +41,10 @@ sed -i "/pre_args += '-DUSE_ELF_TLS'/d" meson.build
 sed -i 's/STN_UNDEF/SHN_UNDEF/g' src/amd/common/ac_rtld.c
 
 case $(cat $KISS_ROOT/etc/os-arch) in
-   aarch64) DRI=-Ddri-drivers= GALL=-Dgallium-drivers=panfrost,kmsro,swrast;;
+   aarch64)     DRI=-Ddri-drivers= GALL=-Dgallium-drivers=panfrost,kmsro,lima,v3d,vc4   VULK=-Dvulkan-drivers=;;
    x86_64) ;;
-   powerpc64le) DRI=-Ddri-drivers= GALL=-Dgallium-drivers=radeonsi,r300,r600,swrast VULK=-Dvulkan-drivers=;;
-   powerpc64) DRI=-Ddri-drivers= GALL=-Dgallium-drivers=radeonsi,r300,r600,swrast VULK=-Dvulkan-drivers=;;
+   powerpc64le) DRI=-Ddri-drivers= GALL=-Dgallium-drivers=radeonsi,r300,r600  VULK=-Dvulkan-drivers=;;
+   powerpc64)   DRI=-Ddri-drivers= GALL=-Dgallium-drivers=radeonsi,r300,r600  VULK=-Dvulkan-drivers=;;
    *) echo "Unsupported platform: $(cc -dumpmachine)"; exit;;
 esac
 
@@ -60,9 +60,17 @@ meson \
     --buildtype=release \
     -Ddri-drivers-path=/usr/lib/dri \
     -Dplatforms=x11 \
+    -Dglx=dri \
+    -Ddri3=enabled \
+    -Dopengl=true \
+    -Dgles1=disabled \
+    -Dgles2=enabled \
+    -Dshared-glapi=enabled \
+    -Degl=enabled \
     $DRI \
     $GALL \
     $VULK \
+    -Dllvm=disabled \
     . output
 
 # Why does meson ignore sysroot etc?

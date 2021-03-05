@@ -1,4 +1,5 @@
 #!/bin/sh
+# Print a suitable meson toolchain file based on $KISS_ROOT
 
 # Add crossbuild options if required
 if [[ "$(cat /etc/os-arch)" != "$(cat ${KISS_ROOT}/etc/os-arch)" ]]; then

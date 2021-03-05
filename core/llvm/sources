@@ -5,7 +5,6 @@ https://github.com/llvm/llvm-project/releases/download/llvmorg-11.1.0/libunwind-
 https://github.com/llvm/llvm-project/releases/download/llvmorg-11.1.0/libcxx-11.1.0.src.tar.xz libcxx/
 https://github.com/llvm/llvm-project/releases/download/llvmorg-11.1.0/libcxxabi-11.1.0.src.tar.xz libcxxabi/
 https://github.com/llvm/llvm-project/releases/download/llvmorg-11.1.0/lld-11.1.0.src.tar.xz lld/
-https://github.com/llvm/llvm-project/releases/download/llvmorg-11.1.0/lldb-11.1.0.src.tar.xz lldb/
 patches/libcxx-musl.patch
 patches/llvm-006-aarch64-mf_exec.patch
 files/c99

@@ -26,14 +26,6 @@ case $TARGET_GLASNOST_ARCH in
    *) echo "Unsupported platform: $TARGET_GLASNOST_ARCH"; exit 1;;
 esac
 
-#Fix cross build
-#if [ $(cat /etc/os-arch) != $TARGET_GLASNOST_ARCH  ]; then
-#    echo "Patching crossbuild"
-#    sed -i -e "s|set(LIBUNWIND_LINK_FLAGS \"\")|set(LIBUNWIND_LINK_FLAGS \"--sysroot=$KISS_ROOT\/usr\")|" libunwind/CMakeLists.txt
-#    sed -i -e "s|set(LIBUNWIND_C_FLAGS \"\")|set(LIBUNWIND_C_FLAGS \"$CFLAGS\")|" libunwind/CMakeLists.txt
-#    sed -i -e "s|set(LIBUNWIND_CXX_FLAGS \"\")|set(LIBUNWIND_CXX_FLAGS \"$CXXFLAGS\")|" libunwind/CMakeLists.txt
-#fi
-
 export DESTDIR="$1"
 kiss-cmake-config > toolchain.cmake
 
@@ -61,10 +53,9 @@ cmake -B build \
     -DLIBUNWIND_SUPPORTS_FNO_RTTI_FLAG=ON \
     -DLIBUNWIND_SUPPORTS_NODEFAULTLIBS_FLAG=ON \
     -DLIBUNWIND_USE_COMPILER_RT=ON \
-    -DLIBUNWIND_ENABLE_CROSS_UNWINDING=OFF \
+    -DLIBUNWIND_ENABLE_CROSS_UNWINDING=ON \
     -DLIBUNWIND_SYSROOT="${KISS_ROOT:-/}" \
     -DLIBUNWIND_TARGET_TRIPLE="$TARGET_GLASNOST_ARCH-glasnost-linux-musl" \
-    -DLLDB_EXPORT_ALL_SYMBOLS=1 \
     -DLLVM_BUILD_DOCS=OFF \
     -DLLVM_BUILD_EXAMPLES=OFF \
     -DLLVM_BUILD_LLVM_DYLIB=ON \

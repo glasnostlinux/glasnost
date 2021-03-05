@@ -1,3 +1,2 @@
-https://downloads.sourceforge.net/sourceforge/elftoolchain/elftoolchain-0.7.1.tgz
-patches/elfdef.patch
-patches/gelf.patch
+https://sourceware.org/elfutils/ftp/0.183/elfutils-0.183.tar.bz2
+files/error.h lib
