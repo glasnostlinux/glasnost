@@ -1,6 +1,6 @@
 #!/bin/sh -e
 
-export CFLAGS="$CFLAGS -Dsigcontext_struct=sigcontext"
+export CFLAGS="$CFLAGS -Dsigcontext_struct=sigcontext -Werror,-Wno-unused-function"
 
 ./configure \
     --prefix=/usr \
