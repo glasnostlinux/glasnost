@@ -1,6 +1,8 @@
 #!/bin/sh -e
 
-patch -p1 < rootless_modesetting.patch
+for patch in *.patch; do
+    patch -p1 < "$patch"
+done
 
 ./configure \
     --prefix=/usr \
@@ -21,7 +23,9 @@ patch -p1 < rootless_modesetting.patch
     --with-sha1=libcrypto \
     --with-systemd-daemon=off \
     --build="$(cat /etc/os-arch)-linux-musl" \
-    --host="$(cat ${KISS_ROOT}/etc/os-arch)-linux-musl"
+    --host="$(cat ${KISS_ROOT}/etc/os-arch)-linux-musl" \
+    --with-sysroot=${KISS_ROOT:-/} \
+    --exec-prefix=/usr
 
 make
 make DESTDIR="$1" install

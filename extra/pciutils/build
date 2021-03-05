@@ -1,0 +1,20 @@
+#!/bin/sh -e
+
+mk() {
+    make \
+        CC="${CC:-cc}" \
+        OPT="$CFLAGS -fPIC" \
+        ZLIB=yes \
+        PREFIX=/usr \
+        SBINDIR=/usr/bin \
+        SHAREDIR=/usr/share/hwdata \
+        "$@"
+}
+
+
+for shared in yes no; do (
+    cd "$shared"
+
+    mk SHARED="$shared"
+    mk SHARED="$shared" DESTDIR="$1" install install-lib
+) done
