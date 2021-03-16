@@ -1,0 +1,31 @@
+#!/bin/sh -e
+
+# ccache is causing the issue to expect clang instead of gcc.
+# Just disable it.
+export CC="${CC:-/usr/bin/cc}"
+export CXX="${CXX:-/usr/bin/c++}"
+
+# If this is a cross build, need to build on the native platform first
+if [ "$(cat /etc/os-arch)" != "$(cat $KISS_ROOT/etc/os-arch)" ]; then
+    echo "Building native icu first"
+    mkdir -p buildhost/out
+    cd buildhost
+
+    CC=clang CXX=clang++ CFLAGS="" CXXFLAGS="" LDFLAGS="" ../source/configure
+    CC=clang CXX=clang++ CFLAGS="" CXXFLAGS="" LDFLAGS="" make
+    make DESTDIR="$(realpath out/)" install
+
+    export cross_args="--with-cross-build=$(realpath .)"
+
+    cd ..
+fi
+
+source/configure \
+    --prefix=/usr \
+    --sbindir=/usr/bin \
+    $cross_args \
+    --build="$(cat /etc/os-arch)-linux-musl" \
+    --host="$(cat $KISS_ROOT/etc/os-arch)-linux-musl"
+
+make
+make DESTDIR="$1" install

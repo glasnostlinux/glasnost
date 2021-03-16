@@ -1,0 +1,20 @@
+#!/bin/sh -e
+
+#ac_cv_prog_ac_ct_CC="${CC:-cc}" \
+
+export CFLAGS="$CFLAGS -fno-lto "
+export CXXFLAGS="$CXXFLAGS -fno-lto "
+export LDFLAGS="$LDFLAGS -fno-lto "
+
+export CC_FOR_BUILD=clang
+
+./configure \
+    --prefix=/usr \
+    --build="$(cat /etc/os-arch)-linux-musl" \
+    --host="$(cat $KISS_ROOT/etc/os-arch)-linux-musl" \
+    --sysconfdir=/etc \
+    --mandir=/usr/share/man \
+    --localstatedir=/var
+
+make
+make DESTDIR="$1" install

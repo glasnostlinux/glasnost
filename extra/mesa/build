@@ -30,7 +30,6 @@ done
 export PYTHONPATH
 export DESTDIR="$1"
 export CFLAGS="$CFLAGS -DGLX_X86_READONLY_TEXT -Wno-implicit-fallthrough "
-#export CXXFLAGS="$CXXFLAGS -I$KISS_ROOT/usr/include -I$KISS_ROOT/usr/include/c++/v1"
 
 # Fix issues with musl and firefox.
 # https://bugs.freedesktop.org/show_bug.cgi?id=35268
@@ -43,8 +42,7 @@ sed -i 's/STN_UNDEF/SHN_UNDEF/g' src/amd/common/ac_rtld.c
 case $(cat $KISS_ROOT/etc/os-arch) in
    aarch64)     DRI=-Ddri-drivers= GALL=-Dgallium-drivers=panfrost,kmsro,lima,v3d,vc4   VULK=-Dvulkan-drivers=;;
    x86_64) ;;
-   powerpc64le) DRI=-Ddri-drivers= GALL=-Dgallium-drivers=radeonsi,r300,r600  VULK=-Dvulkan-drivers=;;
-   powerpc64)   DRI=-Ddri-drivers= GALL=-Dgallium-drivers=radeonsi,r300,r600  VULK=-Dvulkan-drivers=;;
+   powerpc64*) DRI=-Ddri-drivers= GALL=-Dgallium-drivers=radeonsi,r300,r600  VULK=-Dvulkan-drivers=;;
    *) echo "Unsupported platform: $(cc -dumpmachine)"; exit;;
 esac
 
@@ -70,7 +68,7 @@ meson \
     $DRI \
     $GALL \
     $VULK \
-    -Dllvm=disabled \
+    -Dllvm=enabled \
     . output
 
 # Why does meson ignore sysroot etc?
