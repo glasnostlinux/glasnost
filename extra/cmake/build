@@ -2,14 +2,13 @@
 
 patch -p1 < cmake-no-execinfo.patch
 
-# Always use cmake if cross building
 if [ -d "/var/db/kiss/installed/cmake" ]; then
 
     export DESTDIR="$1"
 
-    kiss-cmake-config > cmake.build
-    echo "SET(CMake_RUN_CXX_FILESYSTEM ON)"                >> toolchain.cmake
-    echo "SET(CMake_RUN_CXX_FILESYSTEM__TRYRUN_OUTPUT ON)" >> toolchain.cmake
+    kiss-cmake-config > cmake.config
+    echo "SET(CMake_RUN_CXX_FILESYSTEM ON)"                >> cmake.config
+    echo "SET(CMake_RUN_CXX_FILESYSTEM__TRYRUN_OUTPUT ON)" >> cmake.config
 
     cmake -B build \
         -DCMAKE_INSTALL_PREFIX=/usr \
@@ -20,7 +19,7 @@ if [ -d "/var/db/kiss/installed/cmake" ]; then
         -DCMAKE_USE_SYSTEM_BZIP2=True \
         -DBUILD_CursesDialog=0 \
         -DBUILD_TESTING=OFF \
-        -DCMAKE_TOOLCHAIN_FILE="$(realpath cmake.build)"
+        -DCMAKE_TOOLCHAIN_FILE="$(realpath cmake.config)"
 
     cmake --build   build
     cmake --install build

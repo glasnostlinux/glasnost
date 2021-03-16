@@ -1,0 +1,19 @@
+#!/bin/sh -e
+
+#    --disable-assembler \
+#    --disable-pic \
+# --disable-openssl
+
+./configure \
+    --prefix=/usr \
+    --build="$(cat /etc/os-arch)-linux-musl" \
+    --host="$(cat $KISS_ROOT/etc/os-arch)-linux-musl" \
+    --disable-assembler \
+    --enable-shared \
+    --enable-static \
+    --enable-mini-gmp \
+    --disable-documentation
+
+make
+sed -i -e 's/ \#.*//' ./*.pc
+make DESTDIR="$1" install

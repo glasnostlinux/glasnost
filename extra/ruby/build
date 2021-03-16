@@ -1,5 +1,9 @@
 #!/bin/sh -e
 
+export CFLAGS="$CFLAGS -fno-lto"
+export CXXFLAGS="$CXXFLAGS -fno-lto"
+export LDFLAGS="$LDFLAGS -fno-lto"
+
 ./configure \
     --prefix=/usr \
     --build="$(cat /etc/os-arch)-linux-musl" \

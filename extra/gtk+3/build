@@ -13,6 +13,8 @@ sed -i 's/docs m4macros/m4macros/'          Makefile.am Makefile.in
 
 export GLIB_COMPILE_RESOURCES=/usr/bin/glib-compile-resources
 
+export CFLAGS=" -lepoxy $CFLAGS"
+
 ./configure \
     --prefix=/usr \
     --build="$(cat /etc/os-arch)-linux-musl" \

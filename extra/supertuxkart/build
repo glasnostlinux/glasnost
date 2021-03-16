@@ -1,0 +1,22 @@
+#!/bin/sh -e
+
+patch -p1 < ns_name_ntop.patch
+
+export DESTDIR="$1"
+
+kiss-cmake-config > cmake.config
+
+cmake -B build \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DCMAKE_INSTALL_LIBDIR=lib \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DUSE_WIIUSE=OFF \
+    -DBUILD_RECORDER=0 \
+    -DCMAKE_TOOLCHAIN_FILE="$(realpath cmake.config)"
+
+cmake --build   build
+cmake --install build
+
+rm -rf "$1/usr/share/applications"
+rm -rf "$1/usr/share/icons"
+rm -rf "$1/usr/share/metainfo"
