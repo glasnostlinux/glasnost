@@ -10,6 +10,9 @@
     patch -p1 < ../llvm-006-aarch64-mf_exec.patch
 )
 
+# wip: add --gap-fill support needed for u-boot
+# patch -p1 < D67689.diff
+
 # Disable sanitizer
 sed -i 's/!defined(_GCC_MAX_ALIGN_T)/& \&\& !defined(__DEFINED_max_align_t)/' libcxx/include/stddef.h
 sed -i 's/set(COMPILER_RT_HAS_SANITIZER_COMMON TRUE)/set(COMPILER_RT_HAS_SANITIZER_COMMON FALSE)/' compiler-rt/cmake/config-ix.cmake

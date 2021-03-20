@@ -5,6 +5,8 @@ if [ -d $KISS_ROOT/var/db/kiss/installed/gst-plugins-base ]; then streaming=ON; 
 if [ -d $KISS_ROOT/var/db/kiss/installed/openjpeg2 ];        then jpeg=ON; fi
 if [ -d $KISS_ROOT/var/db/kiss/installed/libtasn ];          then tasn=ON; fi
 
+streaming=OFF
+
 patch -p1 < fix-musl.patch
 
 # Determine platform properties
@@ -37,8 +39,6 @@ cd build
 
 kiss-cmake-config > cmake.config
 
-#  -DWTF_CPU_ARM64_CORTEXA53=OFF \
-
 cmake -GNinja \
     -DCMAKE_INSTALL_PREFIX=/usr \
     -DCMAKE_TOOLCHAIN_FILE="$(realpath cmake.config)" \
@@ -47,6 +47,7 @@ cmake -GNinja \
     -DCMAKE_CXX_FLAGS="$CXXFLAGS -lc++abi -lc++ " \
     -DCMAKE_SKIP_RPATH=ON \
     -DENABLE_BUBBLEWRAP_SANDBOX=OFF \
+    -DENABLE_GAMEPAD=OFF \
     -DENABLE_GEOLOCATION=OFF \
     -DENABLE_GLES2=ON \
     -DENABLE_GTKDOC=OFF \
@@ -55,7 +56,7 @@ cmake -GNinja \
     -DENABLE_JIT=${jit:-OFF} \
     -DENABLE_MEDIASOURCE=${streaming:-OFF} \
     -DENABLE_MINIBROWSER=OFF \
-    -DENABLE_OPENGL=ON \
+    -DENABLE_OPENGL=OFF \
     -DENABLE_SAMPLING_PROFILER=OFF \
     -DENABLE_SPELLCHECK=OFF \
     -DENABLE_VIDEO=${streaming:-OFF} \
@@ -70,12 +71,14 @@ cmake -GNinja \
     -DUSE_LIBSECRET=OFF \
     -DUSE_OPENJPEG=${jpeg:-OFF} \
     -DUSE_SYSTEMD=OFF \
-    -DUSE_SYSTEMD=OFF \
     -DUSE_WOFF2=OFF \
     -DUSE_WPE_RENDERER=OFF \
     -Wno-dev \
     $armoption \
     ..
+
+#cmake --build .
+#cmake --install .
 
 ninja JavaScriptCore
 ninja

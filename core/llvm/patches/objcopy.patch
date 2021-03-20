@@ -1,0 +1,170 @@
+--- llvm/tools/llvm-objcopy/ELF/ELFObjcopy.cpp.orig
++++ llvm/tools/llvm-objcopy/ELF/ELFObjcopy.cpp
+@@ -595,6 +595,155 @@
+   return Obj.removeSections(Config.AllowBrokenLinks, RemovePred);
+ }
+ 
++static Error padSections(const CopyConfig &Config, Object &Obj) {
++  SmallVector<SectionBase *, 30> LoadableSections;
++  for (SectionBase &Sec : Obj.sections()) {
++    if ((Sec.Flags & SectionFlag::SecLoad) && (Sec.Type != SHT_NOBITS))
++      LoadableSections.push_back(&Sec);
++  }
++
++  if (LoadableSections.empty())
++    return Error::success();
++
++  llvm::stable_sort(LoadableSections,
++                    [](const SectionBase *LHS, const SectionBase *RHS) {
++                      if (LHS->Addr < RHS->Addr)
++                        return true;
++                      if (LHS->Addr > RHS->Addr)
++                        return false;
++                      return (LHS->Size < RHS->Size);
++                    });
++
++  DenseMap<SectionBase *, uint64_t> SectionGapMap;
++  // Default filled value for '--pad-to' option.
++  uint8_t Value = 0;
++
++  // Fill the gaps if the section's not in any segement. Otherwise just record
++  // the gaps.
++  auto setSectionGaps = [&SectionGapMap](SectionBase *Sec, uint32_t Value,
++                                         uint64_t GapsSize) {
++    if (Sec->ParentSegment)
++      SectionGapMap[Sec] = GapsSize;
++    else {
++      Sec->Size += GapsSize;
++      uint8_t *N = new uint8_t[Sec->Size];
++      llvm::copy(Sec->OriginalData, &N[0]);
++      memset(N + Sec->OriginalData.size(), Value, GapsSize);
++      Sec->OriginalData = makeArrayRef<uint8_t>(N, Sec->Size);
++    }
++  };
++
++  if (Config.GapFill) {
++    Value = Config.GapFill.getValue();
++    for (SmallVectorImpl<SectionBase *>::const_iterator
++             I = LoadableSections.begin(),
++             E = LoadableSections.end() - 1;
++         I != E; ++I) {
++      if ((*I)->Size == 0)
++        continue;
++      uint64_t GapBegin = (*I)->Addr + (*I)->Size;
++      uint64_t GapEnd = (*(I + 1))->Addr;
++      if (GapEnd <= GapBegin)
++        continue;
++      setSectionGaps(*I, Value, GapEnd - GapBegin);
++    }
++  }
++
++  if (Config.PadTo) {
++    SectionBase *LastSec = *(LoadableSections.end() - 1);
++    uint64_t SecEndAddr = LastSec->Addr + LastSec->Size;
++    if (LastSec->Size && SecEndAddr < Config.PadTo.getValue())
++      setSectionGaps(LastSec, Value, Config.PadTo.getValue() - SecEndAddr);
++  }
++
++  // Populate section and segment content.
++  // First, resize the section and its containing segment if needed.
++  DenseMap<Segment *, uint8_t *> NewSegments;
++  for (auto &It : SectionGapMap) {
++    SectionBase *Sec = It.first;
++    uint64_t GapsSize = It.second;
++    // Two adjacent sections might overlap in the same segment. Adjust its
++    // layout in next step.
++    Sec->Size += GapsSize;
++
++    auto SecParent = Sec->ParentSegment;
++    assert(SecParent != nullptr);
++    for (auto &Seg : Obj.segments()) {
++      auto SegmentEndAddr = Seg.VAddr + Seg.Contents.size();
++      if (Sec->Addr >= Seg.VAddr && Sec->Addr < SegmentEndAddr &&
++          (Sec->Addr + Sec->Size) > SegmentEndAddr) {
++        Seg.FileSize += GapsSize;
++        Seg.MemSize += GapsSize;
++
++        if (!SecParent->ParentSegment && SecParent == &Seg) {
++          if (NewSegments.find(SecParent) == NewSegments.end()) {
++            NewSegments[SecParent] = new uint8_t[SecParent->FileSize];
++            llvm::copy(SecParent->getContents(), NewSegments[SecParent]);
++          }
++        }
++      }
++    }
++  }
++
++  if (NewSegments.empty())
++    return Error::success();
++
++  // Second, adjust segments and sections layouts after the resizing.
++  auto PreSec = *(LoadableSections.end() - 1);
++  auto Index = PreSec->Index;
++  auto PreSecEnd = PreSec->OriginalOffset + PreSec->Size;
++  Index++;
++  Twine Msg;
++  for (auto Size = Obj.sections().size(); Index < Size; ++Index) {
++    if (auto ExpectedSec = Obj.sections().getSection(Index, Msg)) {
++      SectionBase *CurSec = ExpectedSec.get();
++      if (CurSec->OriginalOffset < PreSecEnd) {
++        CurSec->OriginalOffset = PreSecEnd;
++        PreSecEnd = CurSec->OriginalOffset + CurSec->Size;
++      }
++    }
++  }
++
++  // Third, set the new segment's content.
++  for (auto &It : SectionGapMap) {
++    SectionBase *Sec = It.first;
++    uint64_t GapsSize = It.second;
++    auto SecParent = It.first->ParentSegment;
++    const auto Iter = NewSegments.find(SecParent);
++    if (Iter != NewSegments.end()) {
++      uint64_t Offset = Sec->OriginalOffset - SecParent->OriginalOffset;
++      std::memset(Iter->second + Offset + Sec->OriginalData.size(), Value,
++                  GapsSize);
++    }
++  }
++
++  for (auto &It : NewSegments)
++    It.first->Contents = makeArrayRef<uint8_t>(It.second, It.first->FileSize);
++
++  // Fourth, set the new segment's child content.
++  for (auto &Seg : Obj.segments()) {
++    auto SegParent = Seg.ParentSegment;
++    const auto Iter = NewSegments.find(SegParent);
++    if (Iter != NewSegments.end()) {
++      uint64_t Offset = Seg.OriginalOffset - SegParent->OriginalOffset;
++      Seg.Contents = makeArrayRef<uint8_t>(Iter->second + Offset, Seg.FileSize);
++    }
++  }
++
++  // Last step, set the section content.
++  for (auto &Sec : Obj.sections()) {
++    auto SecParent = Sec.ParentSegment;
++    const auto Iter = NewSegments.find(SecParent);
++    if (Iter != NewSegments.end() && Sec.Type != SHT_NOBITS) {
++      uint64_t Offset =
++          Sec.OriginalOffset - SecParent->OriginalOffset + SecParent->Offset;
++      Sec.OriginalData = makeArrayRef<uint8_t>(Iter->second + Offset, Sec.Size);
++    }
++  }
++
++  return Error::success();
++}
++
+ // This function handles the high level operations of GNU objcopy including
+ // handling command line options. It's important to outline certain properties
+ // we expect to hold of the command line operations. Any operation that "keeps"
+@@ -750,6 +899,11 @@
+     Obj.SymbolTable->addSymbol(
+         SI.SymbolName, SI.Bind, SI.Type, Sec, Value, SI.Visibility,
+         Sec ? (uint16_t)SYMBOL_SIMPLE_INDEX : (uint16_t)SHN_ABS, 0);
++  }
++
++  if ((Config.GapFill || Config.PadTo) && Obj.sections().size()) {
++    if (Error E = padSections(Config, Obj))
++      return E;
+   }
+ 
+   if (Config.EntryExpr)
