@@ -1,10 +1,8 @@
 #!/bin/sh -e
 
-exit
-
 patch -p1 < mandoc-no-warn.patch
 
-sed -i '/int dummy/d'         compat_err.c
+sed -i '/int dummy/d' compat_err.c
 sed -i 's,"more -s","less",g' main.c
 sed -i "s/CC=.*/CC='$CC'/"    configure
 
@@ -21,4 +19,4 @@ EOF
 ./configure
 
 make
-make -j1 DESTDIR="$1" base-install
+make -B -j1 DESTDIR="$1" base-install

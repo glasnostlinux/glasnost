@@ -1,8 +1,6 @@
 #!/bin/sh -e
 
 ./configure \
-    --prefix=/usr \
-    --build="$(cat /etc/os-arch)-linux-musl" \
-    --host="$(cat ${KISS_ROOT}/etc/os-arch)-linux-musl"
+    --prefix=/usr
 
 make DESTDIR="$1" install

@@ -8,13 +8,15 @@ case $(cat $KISS_ROOT/etc/os-arch) in
    *) echo "Unsupported platform: $(cc -dumpmachine)"; exit;;
 esac
 
+patch -p1 < ppc64.patch
+
 ./configure \
     --cc="${CC:-cc}" \
     --cxx="${CXX:-c++}" \
     --dep-cc="${CC:-cc}" \
     --prefix=/usr \
-    --enable-cross-compile \
-    --sysroot=$KISS_ROOT \
+    --disable-cross-compile \
+    --sysroot=${KISS_ROOT:-/} \
     --target-os=linux \
     --arch=$target \
     --enable-shared \
@@ -34,6 +36,7 @@ esac
     --enable-libdrm \
     --x86asmexe=nasm \
     --disable-debug \
+    --enable-cross-compile \
     --disable-libxml2
 
 sed -i 's/gcc/clang/g' ffbuild/config.mak

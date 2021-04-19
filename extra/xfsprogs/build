@@ -28,6 +28,7 @@ export LDFLAGS="$LDFLAGS -L$PWD/libinih/lib"
 
 # Remove incorrect bash dependency.
 sed -i 's/bash/sh/' install-sh
+sed -i 's/SIGKILL/9/g' include/linux.h
 
 ./configure \
     --prefix=/usr \
