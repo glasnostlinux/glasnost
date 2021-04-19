@@ -32,3 +32,9 @@ install -Dm 755 tree.h  "$1/usr/include/sys/tree.h"
 # Install getconf.
 ${CC:-cc} getconf.c -o "$1/usr/bin/getconf"
 ${CC:-cc} getent.c  -o "$1/usr/bin/getent"
+
+# clang still looks for these files when linking. How to stop this?
+touch $1/usr/lib/crtbeginS.o
+touch $1/usr/lib/crtbeginT.o
+touch $1/usr/lib/crtendS.o
+touch $1/usr/lib/crtend.o

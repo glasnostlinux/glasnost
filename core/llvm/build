@@ -20,6 +20,9 @@ sed -i 's/set(COMPILER_RT_HAS_SANITIZER_COMMON TRUE)/set(COMPILER_RT_HAS_SANITIZ
 # Do not link to libexecinfo if it is present
 sed -i 's/set(HAVE_BACKTRACE ${Backtrace_FOUND})/set(HAVE_BACKTRACE 0)/g' llvm/cmake/config-ix.cmake
 
+# Prevent linking to ncurses if it is present
+sed -i "s/LLVM_ENABLE_TERMINFO 1/LLVM_ENABLE_TERMINFO 0/g" llvm/cmake/config-ix.cmake
+
 # Determine targets for architecture
 TARGET_GLASNOST_ARCH=$(cat ${KISS_ROOT}/etc/os-arch)
 case $TARGET_GLASNOST_ARCH in
@@ -71,7 +74,7 @@ cmake -B build \
     -DLLVM_ENABLE_LTO=OFF \
     -DLLVM_ENABLE_PROJECTS="clang;compiler-rt;libunwind;libcxxabi;libcxx;lld" \
     -DLLVM_ENABLE_RTTI=ON \
-    -DLLVM_ENABLE_TERMINFO=OFF \
+    -DLLVM_ENABLE_TERMINFO=0 \
     -DLLVM_HOST_TRIPLE="$TARGET_GLASNOST_ARCH-glasnost-linux-musl" \
     -DLLVM_INSTALL_BINUTILS_SYMLINKS=ON \
     -DLLVM_INSTALL_CCTOOLS_SYMLINKS=ON \
@@ -118,9 +121,3 @@ ln -s -f llvm-nm      nm
 ln -s -f llvm-objcopy objcopy
 ln -s -f llvm-objdump objdump
 ln -s -f llvm-strings strings
-
-# link to clang_rt.crtbegin* etc?
-touch $1/usr/lib/crtbeginS.o
-touch $1/usr/lib/crtbeginT.o
-touch $1/usr/lib/crtendS.o
-touch $1/usr/lib/crtend.o

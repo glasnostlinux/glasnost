@@ -12,6 +12,9 @@ for patch in *.patch; do
     patch -p1 < "$patch"
 done
 
+# Remove cflags which cause issues
+export CFLAGS=$(echo  $CFLAGS | sed 's/\(-Os\|-O1\|-O2\|-O3\|-flto\)//g')
+
 export CROSS_COMPILE=" "
 export LD="clang $CFLAGS"
 
