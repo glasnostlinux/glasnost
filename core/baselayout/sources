@@ -5,6 +5,7 @@ files/host.conf
 files/hosts
 files/issue
 files/mime.types
+files/os-buildflags
 files/os-release
 files/passwd
 files/profile

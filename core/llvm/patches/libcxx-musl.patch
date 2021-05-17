@@ -1,5 +1,5 @@
---- a/include/locale
-+++ b/include/locale
+--- a/libcxx/include/locale
++++ b/libcxx/include/locale
 @@ -10,7 +10,6 @@
  
  #ifndef _LIBCPP_LOCALE

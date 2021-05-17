@@ -1,4 +1,0 @@
-#!/bin/sh
-
-echo "Remember to update your CFLAGS if \$KISS_ROOT/usr/lib/clang/<llvm-version> has changed."
-echo "(If you are cross building then you will need to do this.)"

@@ -6,7 +6,7 @@ export CFLAGS="-fPIC $CFLAGS"
     --prefix=/usr \
     --libdir=/usr/lib \
     --shared \
-    --archs="-arch $(cat ${KISS_ROOT}/etc/os-arch)"
+    --archs="-arch $KISS_XHOST_ARCH"
 
 make
 make DESTDIR="$1" install

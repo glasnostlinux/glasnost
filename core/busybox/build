@@ -12,8 +12,8 @@ for patch in *.patch; do
     patch -p1 < "$patch"
 done
 
-# Remove cflags which cause issues
-export CFLAGS=$(echo  $CFLAGS | sed 's/\(-Os\|-O1\|-O2\|-O3\|-flto\)//g')
+# Disable cflags which cause issues
+export CFLAGS="$CFLAGS -O0 -fno-lto"
 
 export CROSS_COMPILE=" "
 export LD="clang $CFLAGS"
@@ -36,8 +36,6 @@ make CONFIG_PREFIX="$1/usr" LD="$LD" install
 mv -f "$1/usr/bin/busybox"        "$1/usr/bin/busybox-suid"
 mv -f "$1/usr/bin/busybox-nosuid" "$1/usr/bin/busybox"
 
-# If cross building, can't run the built executable
-# So assume config is the same as host
 # Install the non-suid symlinks.
 busybox --list | while read -r bin; do
     ln -s busybox "$1/usr/bin/$bin"

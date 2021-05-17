@@ -1,28 +1,35 @@
 #!/bin/sh -e
 
+# Determine what version of compiler-rt is installed
 export CLANGVER=$(cat $KISS_ROOT/var/db/kiss/installed/llvm/version | cut -d " " -f 1)
+
+# Determine the name of the compiler-rt library
+case $KISS_XHOST_ARCH in
+   armv7) ABI="armhf";;
+   *)     ABI=$KISS_XHOST_ARCH;;
+esac
+
+# Name of final library
+libname="ld-$KISS_XHOST_ABI-$ABI.so.1"
 
 # Uncomment if using valgrind or similar.
 # :>nostrip
 
-TARGET="$(cat ${KISS_ROOT}/etc/os-arch)"
-
+# Building with LTO causes segfaults
 export CFLAGS="$CFLAGS -fno-lto"
 
 ./configure \
     --prefix=/usr \
     --syslibdir=/usr/lib \
-    --build="$(cat /etc/os-arch)-linux-musl" \
-    --host="${TARGET}-linux-musl"
+    --build=$KISS_XBUILD_TRIPLE \
+    --host=$KISS_XHOST_TRIPLE
 
-make CROSS_COMPILE="" LIBCC="${KISS_ROOT}/usr/lib/clang/$CLANGVER/lib/linux/libclang_rt.builtins-$TARGET.a"
+make CROSS_COMPILE="" LIBCC="${KISS_ROOT}/usr/lib/clang/$CLANGVER/lib/linux/libclang_rt.builtins-$ABI.a"
 make DESTDIR="$1" install
 
-mkdir -p "$1/usr/bin"
-ln -s  /usr/lib/ld-musl-${TARGET}.so.1 "$1/usr/bin/ldd"
-
-# Fix incorrect symlink to libc.so.
-ln -sf libc.so "$1/usr/lib/ld-musl-$TARGET.so.1"
+# Create ldd link
+mkdir -p $1/usr/bin
+ln -s  /usr/lib/ld-musl-$ABI.so.1 "$1/usr/bin/ldd"
 
 # Install BSD compatibility headers.
 install -Dm 755 cdefs.h "$1/usr/include/sys/cdefs.h"
@@ -32,9 +39,3 @@ install -Dm 755 tree.h  "$1/usr/include/sys/tree.h"
 # Install getconf.
 ${CC:-cc} getconf.c -o "$1/usr/bin/getconf"
 ${CC:-cc} getent.c  -o "$1/usr/bin/getent"
-
-# clang still looks for these files when linking. How to stop this?
-touch $1/usr/lib/crtbeginS.o
-touch $1/usr/lib/crtbeginT.o
-touch $1/usr/lib/crtendS.o
-touch $1/usr/lib/crtend.o

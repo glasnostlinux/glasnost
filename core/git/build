@@ -18,13 +18,13 @@ NO_ICONV=YesPlease
 EOF
 
 # TODO: why is this required?
-cp $KISS_ROOT/usr/lib/crt* .
+#cp $KISS_ROOT/usr/lib/crt* .
 
 ./configure \
     --prefix=/usr \
     --libexecdir=/usr/lib \
-    --build="$(cat /etc/os-arch)-linux-musl" \
-    --host="$(cat ${KISS_ROOT}/etc/os-arch)-linux-musl" \
+    --build=$KISS_XBUILD_TRIPLE \
+    --host=$KISS_XHOST_TRIPLE \
     ac_cv_lib_curl_curl_global_init=yes \
     ac_cv_snprintf_returns_bogus=no \
     ac_cv_fread_reads_directories=yes \

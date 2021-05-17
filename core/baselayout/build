@@ -1,23 +1,22 @@
 #!/bin/sh -e
 
-get_target_arch()
+# Produce some generic build flags
+get_default_cflags()
 {
-    set -f ; old_ifs=$IFS ; IFS=" " ; set -- $1
+    case $1 in
+        aarch64*)     flags="-march=armv8-a -mcpu=generic -fPIC";;
+        armv7*)       flags="-march=armv7a  -mcpu=generic -fPIC -m32";;
+        x86_64*)      flags="-march=x86-64  -mcpu=x86-64  -fPIC";;
+        powerpc64le*) flags="-march=ppc64le -mcpu=ppc64le -fPIC";;
+        powerpc64*)   flags="-march=ppc64   -mcpu=ppc64   -fPIC";;
+        riscv64*)     flags="-march=generic-rv64 -mcpu=generic-rv6 -fPIC -mno-relax";;
+    esac
 
-    # Get the last instance of "--target"
-    for x in $@; do
-        case $x in
-            *"--target"*) TARGET=$x;;
-        esac
-    done
+    echo "CFLAGS=\"$flags\""
+    echo "CXXFLAGS=\"$flags\""
+    echo ""
 
-    # Return the CFLAGS arch, or the arch from cc otherwise
-    CFLAGS_ARCH=$(echo $TARGET | cut -d "=" -f 2 | cut -d "-" -f 1)
-    COMPILER_ARCH=$(cc -dumpmachine | cut -d "-" -f 1)
-    echo "${CFLAGS_ARCH:-$COMPILER_ARCH}"
-    IFS=$old_ifs ; set +f
 }
-
 
 # Setup base directories.
 for d in boot dev etc home mnt usr var opt run; do
@@ -66,12 +65,15 @@ done
 
 ln -s ../man "$1/usr/local/share/man"
 
-# Get the target architecture from CFLAGS, or cc if not set.
-get_target_arch $CFLAGS > os-arch
+# Get target triple from the 
+triple="$(cat $KISS_ROOT/etc/os-arch)"
+echo $triple > os-arch
+get_default_cflags $triple >> os-buildflags
 
 # /etc skeleton files.
 for f in fstab group host.conf hosts issue os-release \
-         passwd profile securetty shells mime.types os-arch; do
+         passwd profile securetty shells mime.types \
+         os-arch os-buildflags; do
     install -m 644 "$f" "$1/etc"
 done
 

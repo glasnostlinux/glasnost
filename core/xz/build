@@ -1,10 +1,19 @@
 #!/bin/sh -e
 
+# Remove cflags which cause issues
+export CFLAGS="$CFLAGS -O0 -fno-lto "
+
 ./configure \
     --prefix=/usr \
     --disable-nls \
-    --build="$(cat /etc/os-arch)-linux-musl" \
-    --host="$(cat ${KISS_ROOT}/etc/os-arch)-linux-musl"
+    --disable-rpath \
+    --build=$KISS_XBUILD_TRIPLE \
+    --host=$KISS_XHOST_TRIPLE
+
+#sed -i \
+#    -e 's|^hardcode_libdir_flag_spec=.*|hardcode_libdir_flag_spec=""|g' \
+#    -e 's|^runpath_var=LD_RUN_PATH|runpath_var=DIE_RPATH_DIE|g' \
+#    libtool
 
 make
 make DESTDIR="$1" install
