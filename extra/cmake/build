@@ -1,7 +1,9 @@
 #!/bin/sh -e
 
+# Don't link to libexecinfo if it is present
 patch -p1 < cmake-no-execinfo.patch
 
+# Check for cmake on the build machine
 if [ -d "/var/db/kiss/installed/cmake" ]; then
 
     export DESTDIR="$1"
@@ -26,6 +28,10 @@ if [ -d "/var/db/kiss/installed/cmake" ]; then
 
 else
 
+   # If cmake doesn't exist on the host machine, use classic config
+   # Since this will always be for the build machine, we don't need
+   # cross build options here
+
     ./configure \
         --prefix=/usr \
         --system-curl \
@@ -40,5 +46,4 @@ fi
 rm -rf "$1/usr/doc"
 rm -rf "$1/usr/share/cmake"*/Help
 
-install -Dm644 toolchain.cmake   "$1/usr/share/cmake/toolchain.cmake"
 install -Dm755 kiss-cmake-config "$1/usr/bin/kiss-cmake-config"

@@ -1,28 +1,31 @@
 #!/bin/sh
 # Print a suitable CMake toolchain file based on $KISS_ROOT
 
-build_arch="$(cat /etc/os-arch)"
-target_arch="$(cat ${KISS_ROOT}/etc/os-arch)"
-
-echo "$(cat /usr/share/cmake/toolchain.cmake)"
-echo "SET(CMAKE_FIND_ROOT_PATH  \"${KISS_ROOT}/usr;${KISS_ROOT:-/}\")"
-
-    # Create correct CPU string for cmake
-case $target_arch in
-    aarch64)     export cpu="aarch64";;
-    x86_64)      export cpu="x86_64";;
-    powerpc64le) export cpu="ppc64le";;
-    powerpc64)   export cpu="ppc64";;
-    *) echo "Unsupported platform: $target_arch"; exit 1;;
+# Create correct CPU string for cmake
+case $KISS_XHOST_ARCH in
+    armv7)       cpu="arm7l";;
+    aarch64)     cpu="aarch64";;
+    x86_64)      cpu="x86_64";;
+    powerpc64le) cpu="ppc64le";;
+    powerpc64)   cpu="ppc64";;
+    *) echo "Unsupported platform: $KISS_XHOST_ARCH"; exit 1;;
 esac
 
+echo "SET(CMAKE_SYSTEM_NAME Linux)"
+echo "SET(CMAKE_SYSTEM_VERSION 1)"
+echo "SET(CMAKE_C_COMPILER   clang)"
+echo "SET(CMAKE_CXX_COMPILER clang++)"
+echo "SET(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)"
+echo "SET(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)"
+echo "SET(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)"
+echo "SET(CMAKE_FIND_ROOT_PATH  \"${KISS_ROOT}/usr;${KISS_ROOT:-/}\")"
 echo "SET(CMAKE_SYSTEM_PROCESSOR ${cpu})"
 
 # Add crossbuild option if required
-if [ $build_arch != $target_arch  ]; then
-    # Cross build
-    echo "SET(CMAKE_CROSSCOMPILING TRUE)"
-else
+if [ -z "$KISS_ROOT" ]; then
     # Normal build
     echo "SET(CMAKE_CROSSCOMPILING FALSE)"
+else
+    # Cross build
+    echo "SET(CMAKE_CROSSCOMPILING TRUE)"
 fi

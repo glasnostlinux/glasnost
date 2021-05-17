@@ -1,5 +1,5 @@
---- Makefile.pre.in.orig	2021-01-20 20:50:35.644000000 +0000
-+++ Makefile.pre.in	2021-01-20 20:52:29.860000000 +0000
+--- a/Makefile.pre.in.orig	2021-01-20 20:50:35.644000000 +0000
++++ a/Makefile.pre.in	2021-01-20 20:52:29.860000000 +0000
 @@ -1673,11 +1673,12 @@
  # Install the dynamically loadable modules
  # This goes into $(exec_prefix)
@@ -16,4 +16,17 @@
 +		--root=/
  	-rm $(DESTDIR)$(DESTSHARED)/_sysconfigdata_$(ABIFLAGS)_$(MACHDEP)_$(MULTIARCH).py
  	-rm -r $(DESTDIR)$(DESTSHARED)/__pycache__
+
+--- a/setup.py.orig
++++ a/setup.py
+@@ -750,8 +750,8 @@
+             add_dir_to_list(self.compiler.include_dirs,
+                             sysconfig.get_config_var("INCLUDEDIR"))
  
+-        system_lib_dirs = ['/lib64', '/usr/lib64', '/lib', '/usr/lib']
+-        system_include_dirs = ['/usr/include']
++        system_lib_dirs = ['/home/pokey/glasnost-armv7-clean/usr/lib64', '/home/pokey/glasnost-armv7-clean/usr/usr/lib64', '/home/pokey/glasnost-armv7-clean/usr/lib', '/home/pokey/glasnost-armv7-clean/usr/usr/lib']
++        system_include_dirs = ['/home/pokey/glasnost-armv7-clean/usr/include']
+         # lib_dirs and inc_dirs are used to search for files;
+         # if a file is found in one of those directories, it can
+         # be assumed that no additional -I,-L directives are needed.

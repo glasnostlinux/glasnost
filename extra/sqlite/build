@@ -10,8 +10,8 @@ sed -i 's/ -ltinfo//g' configure
     --enable-dynamic-extensions \
     --enable-fts5 \
     --enable-shared \
-    --build="$(cat /etc/os-arch)-linux-musl" \
-    --host="$(cat ${KISS_ROOT}/etc/os-arch)-linux-musl"
+    --build=$KISS_XBUILD_TRIPLE \
+    --host=$KISS_XHOST_TRIPLE
 
 make -j1
 make DESTDIR="$1" install

@@ -1,14 +1,15 @@
 #!/bin/sh -e
 
 # Determine arch
-case $(cat $KISS_ROOT/etc/os-arch) in
-   aarch64) arch=arm64;;
-   x86_64) arch=x86_64;;
-   powerpc64le) arch=powerpc;;
-   powerpc64) arch=powerpc;;
-   *) echo "Unsupported platform: $(cc -dumpmachine)"; exit;;
+case $KISS_XHOST_ARCH in
+    aarch64)     arch=arm64;;
+    armv7)       arch=arm;;
+    x86_64)      arch=x86_64;;
+    powerpc64le) arch=powerpc;;
+    powerpc64)   arch=powerpc;;
+    riscv64)     arch=riscv;;
+   *) echo "Unsupported platform: $KISS_XHOST_ARCH"; exit;;
 esac
-
 
 # Always use the host compiler here
 make LLVM=1 LLVM_IAS=1 ARCH=$arch HOSTCC="clang" headers
