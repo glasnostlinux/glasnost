@@ -3,8 +3,8 @@
 CFLAGS_FOR_BUILD=-fPIC \
 ./configure \
     --prefix=/usr \
-    --build="$(cat /etc/os-arch)-linux-musl" \
-    --host="$(cat ${KISS_ROOT}/etc/os-arch)-linux-musl" \
+    --build=$KISS_XBUILD_TRIPLE \
+    --host=$KISS_XHOST_TRIPLE \
     --without-xmlto \
     --disable-specs \
     --enable-static \

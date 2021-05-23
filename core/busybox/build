@@ -1,5 +1,9 @@
 #!/bin/sh -e
 
+for patch in *.patch; do
+    patch -p1 < "$patch"
+done
+
 # CFLAGS cleanup
 # See http://lists.busybox.net/pipermail/busybox/2019-October/087558.html
 sed -i -e 's:-static-libgcc:-static:' Makefile.flags
@@ -8,20 +12,28 @@ sed -i '/^#error Aborting compilation./d' applets/applets.c
 sed -i 's:-Wl,--gc-sections::' Makefile
 sed -i 's:gcc:cc:' Makefile
 
-for patch in *.patch; do
-    patch -p1 < "$patch"
-done
+
+# Remove forced gcc/g++ usage so builds work on gcc-less systems.
+sed -i "s#= g[c+][c+]#= ${CC:=cc}#g" Makefile
+sed -i "s#\(\$(CROSS_COMPILE)\)gcc#\1${CC}#g" Makefile
+sed -i 's|CONFIG_SYSROOT=\"\"|CONFIG_SYSROOT=\"'$KISS_ROOT'\"|' .config
+
+# Ensure that busybox's build system is aware that 'cc' may point
+# to clang rather than GCC. This is the case in non-GCC systems.
+#case $("$CC" --version) in (*clang*)
+#    sed -i "s&\(\$(CC),\)clang&\1${CC}&g" Makefile.flags
+#esac
 
 # Disable cflags which cause issues
-export CFLAGS="$CFLAGS -O0 -fno-lto"
+export CFLAGS="$CFLAGS -O0 -fno-lto -Wno-ignored-attributes"
 
 export CROSS_COMPILE=" "
 export LD="clang $CFLAGS"
 
 # Build and install regular busybox.
 # This excludes utilities which require 'suid' to function.
-make LD="$LD"
-make CONFIG_PREFIX="$1/usr" LD="$LD" install
+make CC="$CC" HOSTCC="clang" LD="$LD"
+make CONFIG_PREFIX="$1/usr" LD="$LD" CC="$CC" HOSTCC="clang" install
 
 # Rename the binary temporarily.
 mv "$1/usr/bin/busybox" "$1/usr/bin/busybox-nosuid"
@@ -29,20 +41,21 @@ mv "$1/usr/bin/busybox" "$1/usr/bin/busybox-nosuid"
 # Build and install suid busybox.
 # This _only_ includes utlities which require 'suid' to function.
 cp -f .config-suid .config
-make LD="$LD"
-make CONFIG_PREFIX="$1/usr" LD="$LD" install
+make CC="$CC" HOSTCC="clang" LD="$LD"
+make CONFIG_PREFIX="$1/usr" LD="$LD" CC="$CC" HOSTCC="clang" install
 
 # Aptly name the busybox binaries.
 mv -f "$1/usr/bin/busybox"        "$1/usr/bin/busybox-suid"
 mv -f "$1/usr/bin/busybox-nosuid" "$1/usr/bin/busybox"
 
 # Install the non-suid symlinks.
-busybox --list | while read -r bin; do
+# This requires busybox on the build machine
+"/usr/bin/busybox" --list | while read -r bin; do
     ln -s busybox "$1/usr/bin/$bin"
 done
 
 # Install the suid symlinks.
-busybox-suid --list | while read -r bin; do
+"/usr/bin/busybox-suid" --list | while read -r bin; do
     ln -s busybox-suid "$1/usr/bin/$bin"
 done
 
@@ -58,9 +71,11 @@ install -Dm755 acpid.run           "$1/etc/sv/acpid/run"
 install -Dm755 crond.run           "$1/etc/sv/crond/run"
 install -Dm755 syslogd.run         "$1/etc/sv/syslogd/run"
 install -Dm755 mdev.run            "$1/etc/sv/mdev/run"
+install -Dm755 ntpd.run            "$1/etc/sv/ntpd/run"
 ln -s /run/runit/supervise.acpid   "$1/etc/sv/acpid/supervise"
 ln -s /run/runit/supervise.crond   "$1/etc/sv/crond/supervise"
 ln -s /run/runit/supervise.syslogd "$1/etc/sv/syslogd/supervise"
 ln -s /run/runit/supervise.mdev    "$1/etc/sv/mdev/supervise"
+ln -s /run/runit/supervise.ntpd    "$1/etc/sv/ntpd/supervise"
 
 install -Dm644 mdev.conf "$1/etc/mdev.conf"

@@ -25,6 +25,7 @@ case $KISS_XHOST_ARCH in
    powerpc64le*) TARGET_ARCH="PowerPC" libname="powerpc64le";;
    powerpc64*)   TARGET_ARCH="PowerPC" libname="powerpc64";;
    riscv64*)     TARGET_ARCH="RISCV64" libname="riscv64";;
+   i386*)        TARGET_ARCH="X86"     libname="i386" EXTRAFLAGS="-L$KISS_ROOT/usr/lib/clang/$CLANGVER/lib/linux -lclang_rt.builtins-i386 -Wno-unused-command-line-argument";;
    *) echo "Unsupported platform: $KISS_XHOST_ARCH"; exit 1;;
 esac
 

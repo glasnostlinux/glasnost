@@ -18,7 +18,7 @@ NO_ICONV=YesPlease
 EOF
 
 # TODO: why is this required?
-#cp $KISS_ROOT/usr/lib/crt* .
+cp $KISS_ROOT/usr/lib/crt* .
 
 ./configure \
     --prefix=/usr \

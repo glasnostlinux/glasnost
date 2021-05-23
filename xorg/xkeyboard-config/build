@@ -10,8 +10,8 @@ sed -i 's/perl //;s/xml2lst\.pl/xml2lst/' rules/Makefile.in
     --enable-compat-rules \
     --without-xsltproc \
     --disable-nls \
-    --build="$(cat /etc/os-arch)-linux-musl" \
-    --host="$(cat ${KISS_ROOT}/etc/os-arch)-linux-musl"
+    --build=$KISS_XBUILD_TRIPLE \
+    --host=$KISS_XHOST_TRIPLE
 
 make
 make DESTDIR="$1" install

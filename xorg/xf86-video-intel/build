@@ -1,6 +1,6 @@
 #!/bin/sh -e
 
-if [[ "$(cat ${KISS_ROOT}/etc/os-arch)" != "x86_64" ]]; then
+if [[ "$KISS_XHOST_ARCH" != "x86_64" ]]; then
     echo "This package is only supported on x86_64 targets"
     exit 0
 fi

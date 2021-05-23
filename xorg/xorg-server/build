@@ -22,8 +22,8 @@ done
     --enable-xorg \
     --with-sha1=libcrypto \
     --with-systemd-daemon=off \
-    --build="$(cat /etc/os-arch)-linux-musl" \
-    --host="$(cat ${KISS_ROOT}/etc/os-arch)-linux-musl" \
+    --build=$KISS_XBUILD_TRIPLE \
+    --host=$KISS_XHOST_TRIPLE \
     --with-sysroot=${KISS_ROOT:-/} \
     --exec-prefix=/usr
 

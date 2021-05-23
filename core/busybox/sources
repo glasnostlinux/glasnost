@@ -1,4 +1,12 @@
-https://busybox.net/downloads/busybox-1.33.0.tar.bz2
+https://git.busybox.net/busybox/snapshot/busybox-1_33_1.tar.gz
+files/.config
+files/.config-suid
+files/acpid.run
+files/crond.run
+files/mdev.conf
+files/mdev.run
+files/ntpd.run
+files/syslogd.run
 patches/adduser-no-setgid.patch
 patches/fix-UB+clang.patch
 patches/fsck-resolve-uuid.patch
@@ -8,11 +16,3 @@ patches/lsusb-vendor-product.patch
 patches/modprobe-kernel-version.patch
 patches/print-unicode.patch
 patches/unzip-usage-no-error.patch
-files/.config
-files/.config-suid
-files/acpid.run
-files/crond.run
-files/syslogd.run
-files/mdev.run
-files/ntpd.run
-files/mdev.conf

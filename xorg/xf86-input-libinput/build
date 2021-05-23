@@ -4,8 +4,8 @@
     --prefix=/usr \
     --libdir=/usr/lib \
     --includedir=/usr/include \
-    --build="$(cat /etc/os-arch)-linux-musl" \
-    --host="$(cat ${KISS_ROOT}/etc/os-arch)-linux-musl" \
+    --build=$KISS_XBUILD_TRIPLE \
+    --host=$KISS_XHOST_TRIPLE \
     --with-sysroot=$KISS_ROOT
 
 make
