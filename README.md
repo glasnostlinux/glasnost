@@ -20,6 +20,22 @@ Installation should be treated similar to [KISS Linux](https://k1sslinux.org/ins
  - Built packages are located in: ~/.cache/kiss/bin/_arch_
  - **kiss-bup** utility to allow binary updates on remote machines. Uses busybox httpd and curl.
 
+## How to cross build
+1. You need to run Glasnost on your build machine.  Working inside a chroot is fine.
+2. Inside your Glasnost installation, download the Glasnost tarball for the architecture you want to build for.
+3. Use _sudo_ to extract the tarball somewhere.
+4. Set KISS_ROOT to that location.
+5. Run `kiss b packagename` same as you would normally
+
+## How to install cross-built packages onto another machine
+1. On your build machine, go to ~/.cache/kiss/bin
+2. Run httpd on some port. For example: `httpd -p 54321`
+3. Run `ls -la`, make a note of the directory name that contains the packages you just built.
+4. On the target machine (the one that will receive binary updates) run `export KISS_REMOTE_REPO=http://myserver:54321/reponame`, where _reponame_ is from step 3.
+5. On the target machine, run `kiss-bup`.
+
+_Any packages built on the build machine are installed on the target machine._
+
 ## Motivation
 There are now several machines available capable of running Linux which do not have [Intel ME](https://en.wikipedia.org/wiki/Intel_Management_Engine), [AMD PSP](https://en.wikipedia.org/wiki/AMD_Platform_Security_Processor) or similar technologies. Some, like the [Talos II](https://www.raptorcs.com/TALOSII/) have many cores and are capable of building large packges like WebKit in a relatively short time.
 
