@@ -4,17 +4,13 @@
 get_default_cflags()
 {
     case $1 in
-        aarch64*)     flags="-march=armv8-a -mcpu=generic -fPIC";;
-        armv7*)       flags="-march=armv7a  -mcpu=generic -fPIC -m32";;
-        x86_64*)      flags="-march=x86-64  -mcpu=x86-64  -fPIC";;
-        powerpc64le*) flags="-march=ppc64le -mcpu=ppc64le -fPIC";;
-        powerpc64*)   flags="-march=ppc64   -mcpu=ppc64   -fPIC";;
-        riscv64*)     flags="-march=generic-rv64 -mcpu=generic-rv6 -fPIC -mno-relax";;
+        riscv64*)     flags="-mno-relax";;
     esac
 
-    echo "CFLAGS=\"$flags\""
-    echo "CXXFLAGS=\"$flags\""
-    echo ""
+    if [ ! -z "$flags" ]; then
+        echo "CFLAGS=\"$flags\""
+        echo "CXXFLAGS=\"$flags\""
+    fi
 
 }
 

@@ -2,8 +2,7 @@
 
 ##########################################################################
 # CFLAGS etc. can be set here
-# Generic defaults are provided, these can be changed to match
-# the system you want to build for.
+#
 # To see what values clang supports for a particular arch, try e.g.:
 #
 #   clang --target=x86_64-linux-musl -march=x86-64 -mcpu=?
@@ -11,6 +10,4 @@
 # ...will show supported CPUs for x86_64. Other architectures
 # can be queried in the same way.
 #
-export CFLAGS="-march=armv8-a -mcpu=generic -fPIC -Os"
-export CXXFLAGS="-march=armv8-a -mcpu=generic -fPIC -Os"
 
