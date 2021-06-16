@@ -17,7 +17,7 @@ NO_INSTALL_HARDLINKS=1
 NO_ICONV=YesPlease
 EOF
 
-# TODO: why is this required?
+# Why is this required?
 cp $KISS_ROOT/usr/lib/crt* .
 
 ./configure \

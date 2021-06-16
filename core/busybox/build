@@ -18,6 +18,10 @@ sed -i "s#= g[c+][c+]#= ${CC:=cc}#g" Makefile
 sed -i "s#\(\$(CROSS_COMPILE)\)gcc#\1${CC}#g" Makefile
 sed -i 's|CONFIG_SYSROOT=\"\"|CONFIG_SYSROOT=\"'$KISS_ROOT'\"|' .config
 
+sed -i 's/\-fpic//' Makefile.flags
+sed -i 's/\-fpie//' Makefile.flags
+sed -i 's/\-pie//' Makefile.flags
+
 # Ensure that busybox's build system is aware that 'cc' may point
 # to clang rather than GCC. This is the case in non-GCC systems.
 #case $("$CC" --version) in (*clang*)
@@ -25,10 +29,10 @@ sed -i 's|CONFIG_SYSROOT=\"\"|CONFIG_SYSROOT=\"'$KISS_ROOT'\"|' .config
 #esac
 
 # Disable cflags which cause issues
-export CFLAGS="$CFLAGS -O0 -fno-lto -Wno-ignored-attributes"
+export CFLAGS="$CFLAGS -O0 -fno-lto -Wno-ignored-attributes -mno-stackrealign -Wno-unused-command-line-argument "
 
 export CROSS_COMPILE=" "
-export LD="clang $CFLAGS"
+export LD="clang $CFLAGS -fno-pic"
 
 # Build and install regular busybox.
 # This excludes utilities which require 'suid' to function.

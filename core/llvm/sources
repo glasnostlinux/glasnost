@@ -9,4 +9,6 @@ https://github.com/llvm/llvm-project/releases/download/llvmorg-12.0.0/clang-tool
 patches/libcxx-musl.patch
 patches/llvm-006-aarch64-mf_exec.patch
 patches/crt.patch
+patches/clang-004-ppc64-musl-elfv2.patch
+patches/llvm-002-musl-ppc64-elfv2.patch
 files/c99

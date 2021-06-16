@@ -14,6 +14,7 @@
     --without-icu \
     --without-libpsl \
     --with-pic \
+    --with-openssl \
     --with-ca-fallback \
     --enable-static \
     --enable-shared \
