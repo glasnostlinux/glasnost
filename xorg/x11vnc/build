@@ -1,0 +1,16 @@
+#!/bin/sh -e
+
+patch -p1 < bugfixes.patch
+patch -p1 < libressl.patch
+
+#./autogen.sh
+
+autoreconf -f -i -v
+
+./configure \
+    --prefix=/usr \
+    --build=$KISS_XBUILD_TRIPLE \
+    --host=$KISS_XHOST_TRIPLE
+
+make
+make DESTDIR="$1" install

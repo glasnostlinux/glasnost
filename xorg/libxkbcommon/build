@@ -4,10 +4,14 @@ export DESTDIR="$1"
 
 kiss-meson-config > config.meson
 
+patch -p1 < wayland.patch
+
+[ -d "$KISS_ROOT/var/db/kiss/installed/wayland-protocols" ] && wayland="true"
+
 meson \
     --prefix=/usr \
     -Denable-docs=false \
-    -Denable-wayland=false \
+    -Denable-wayland=${wayland:-false} \
     -Denable-xkbregistry=false \
     --cross-file="config.meson" \
     . output
