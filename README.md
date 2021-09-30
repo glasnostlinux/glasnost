@@ -5,6 +5,7 @@ This repository contains the build files for Glasnost. This is for use with the 
 This allows cross compilation between any of the supported architectures:
  - aarch64
  - armv7
+ - i686
  - powerpc64
  - powerpc64le
  - riscv64
