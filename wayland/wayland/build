@@ -1,0 +1,21 @@
+#!/bin/sh -e
+
+if [ "$KISS_ROOT" ]; then
+    if [ ! -d /var/db/kiss/installed/wayland ]; then
+        echo "Error: to cross-build wayland, you need to have it on your build machine first."
+        exit 1
+    fi
+    opts="--with-host-scanner"
+fi
+
+./configure \
+    --prefix=/usr \
+    --build=$KISS_XBUILD_TRIPLE \
+    --host=$KISS_XHOST_TRIPLE \
+    $opts \
+    --disable-documentation \
+    --disable-dtd-validation \
+    --enable-static
+
+make
+make install

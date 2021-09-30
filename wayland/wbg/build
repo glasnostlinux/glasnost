@@ -1,0 +1,15 @@
+#!/bin/sh -e
+
+kiss-meson-config > meson.config
+
+meson \
+    --prefix=/usr \
+    --cross-file="meson.config" \
+    --buildtype=release \
+    --force-fallback-for=tllist \
+    -Djpeg=enabled \
+    -Dpng=enabled \
+    . output
+
+ninja -C output
+ninja -C output install

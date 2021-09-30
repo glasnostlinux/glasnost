@@ -1,0 +1,12 @@
+#!/bin/sh -e
+
+kiss-meson-config > meson.config
+
+meson \
+    --prefix=/usr \
+    --cross-file="meson.config" \
+    -Djpeg=disabled \
+    . build
+
+ninja -C build
+ninja -C build install

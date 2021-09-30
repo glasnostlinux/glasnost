@@ -1,0 +1,14 @@
+#!/bin/sh -e
+
+: > completions/meson.build
+
+kiss-meson-config > meson.config
+
+meson \
+    --prefix=/usr \
+    --cross-file="meson.config" \
+    --buildtype=release \
+    . output
+
+ninja -C output
+ninja -C output install

@@ -1,0 +1,28 @@
+#!/bin/sh -e
+
+patch -p1 < evdev-wrap.patch
+
+export CFLAGS="$CFLAGS -fPIC"
+
+# Build fails with clang due to -Werror (forced on) and
+# -Wunused-command-line-argument which is triggered by.
+# the below CFLAGS.
+export CFLAGS="-Wno-unused-command-line-argument $CFLAGS"
+
+kiss-meson-config > meson.config
+
+meson \
+    --prefix=/usr \
+    --cross-file="meson.config" \
+    --sysconfdir=/etc \
+    --mandir=/usr/share/man \
+    --libexecdir=/usr/lib \
+    -Ddefault_library=both \
+    -Ddebug-gui=false \
+    -Ddocumentation=false \
+    -Dtests=false \
+    -Dlibwacom=false \
+    . output
+
+ninja -C output
+ninja -C output install
