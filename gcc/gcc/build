@@ -1,0 +1,90 @@
+#!/bin/sh -e
+
+# Work out what architecture to build for
+pkgname="${PWD##*/}"
+arch="${pkgname##*-}"
+
+# We need the appropriate binutils to be installed on the build machine
+if [ ! -d /var/db/kiss/installed/binutils-$arch ]; then
+    echo "You need to install binutils-$arch on your build machine before building gcc-$arch."
+    exit 1
+fi
+
+# Make sure gmp is built with generic options.
+cp gcc/gmp/configfsf.guess gcc/gmp/config.guess
+cp gcc/gmp/configfsf.sub   gcc/gmp/config.sub
+
+# Needed due to a reserved keyword in clang
+# See: https://bugs.freebsd.org/bugzilla/show_bug.cgi?id=239266
+sed -i 's/vec_step/vec_step_var/g' gcc/gcc/tree-vect-loop.c
+
+# Build must happen outside of gcc source.
+mkdir -p gcc-build
+cd gcc-build
+
+
+export libat_cv_have_ifunc=no
+
+# Determine targets for architecture
+case $arch in
+    aarch64)      TARGET_ARCH="aarch64-linux-musl";;
+    armv7)        TARGET_ARCH="armv7-linux-musleabi";;
+    armnone)      TARGET_ARCH="arm-none-eabi";;
+    or1k)         TARGET_ARCH="or1k-elf";;
+    x86_64)       TARGET_ARCH="x86_64-linux-musl";;
+    powerpc64le*) TARGET_ARCH="powerpc64le-linux-musl";;
+    powerpc64*)   TARGET_ARCH="powerpc64-linux-musl";;
+    riscv64*)     TARGET_ARCH="riscv64-linux-musl";;
+    i686*)        TARGET_ARCH="i686-linux-musl";;
+    *) echo "Unsupported platform: $arch"; exit 1;;
+esac
+
+../gcc/configure \
+    --prefix=/usr/gnu \
+    --build=$KISS_XBUILD_TRIPLE \
+    --host=$KISS_XHOST_TRIPLE \
+    --target=$TARGET_ARCH \
+    --libexecdir=/usr/gnu/lib \
+    --mandir=/usr/share/man \
+    --infodir=/usr/share/info \
+    --disable-multilib \
+    --disable-symvers \
+    --disable-libmpx \
+    --disable-libmudflap \
+    --disable-libsanitizer \
+    --disable-werror \
+    --disable-fixed-point \
+    --disable-libstdcxx-pch \
+    --disable-nls \
+    --enable-checking=release \
+    --enable-default-pie \
+    --enable-default-ssp \
+    --enable-tls \
+    --enable-initfini-array \
+    --enable-languages=c,c++ \
+    --without-included-gettext \
+    --with-zstd=no \
+    --with-system-zlib \
+    --with-as="/usr/gnu/bin/${TARGET_ARCH}-as" \
+    --with-ld="/usr/gnu/bin/${TARGET_ARCH}-ld" \
+    --disable-bootstrap \
+    --disable-shared
+
+make all-gcc
+make DESTDIR="$1" install-gcc
+
+#Manpages
+rm -Rf $1/usr/gnu/share
+
+rm -f $1/usr/gnu/bin/cpp
+rm -f $1/usr/gnu/bin/c++
+
+# Save 35MB.
+find "$1" -name libgtkpeer.a  -exec rm -f {} +
+find "$1" -name libgjsmalsa.a -exec rm -f {} +
+find "$1" -name libgij.a      -exec rm -f {} +
+
+for prog in lto-dump gcov-tool gcov-dump gcov gcc-ranlib gcc-nm gcc-ar gcc g++
+do
+    rm -f $1/usr/gnu/bin/$prog
+done

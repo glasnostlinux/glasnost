@@ -1,0 +1,62 @@
+#!/bin/sh -e
+
+# Determine package name
+pkgname="${PWD##*/}"
+arch="${pkgname##*-}"
+
+# Determine targets for architecture
+case $arch in
+    aarch64)      TARGET_ARCH="aarch64-linux-musl";;
+    armv7)        TARGET_ARCH="armv7-linux-musleabi";;
+    armnone)      TARGET_ARCH="arm-none-eabi";;
+    i686*)        TARGET_ARCH="i686-linux-musl";;
+    or1k)         TARGET_ARCH="or1k-elf";;
+    x86_64)       TARGET_ARCH="x86_64-linux-musl";;
+    powerpc64le*) TARGET_ARCH="powerpc64le-linux-musl";;
+    powerpc64*)   TARGET_ARCH="powerpc64-linux-musl";;
+    riscv64*)     TARGET_ARCH="riscv64-linux-musl";;
+    x86_64)       TARGET_ARCH="x86_64-linux-musl";;
+    *) echo "Unsupported platform: $arch"; exit 1;;
+esac
+
+cat > makeinfo <<EOF
+#!/bin/sh
+printf 'makeinfo (GNU texinfo) 5.2\n'
+EOF
+
+chmod +x makeinfo
+export PATH=$PATH:$PWD
+
+./configure \
+    --prefix="/usr/gnu" \
+    --build="$KISS_XBUILD_TRIPLE" \
+    --host="$KISS_XHOST_TRIPLE" \
+    --program-prefix="${TARGET_ARCH}-" \
+    --target="$TARGET_ARCH" \
+    --enable-deterministic-archives \
+    --enable-multiarch \
+    --disable-gold \
+    --disable-lto \
+    --enable-ld=default \
+    --enable-plugins \
+    --enable-multilib \
+    --disable-werror \
+    --disable-gdb \
+    --disable-nls \
+    --disable-readline \
+    --disable-gprof \
+    --with-mmap \
+    --with-system-zlib \
+    CC="$CC"
+
+
+make tooldir=/usr
+make DESTDIR="$1" tooldir=/usr install
+
+rm -Rf $1/usr/lib/bfd-plugins
+rm -Rf $1/usr/share/info
+
+for prog in strip readelf ranlib objdump objcopy nm ld ld.bfd as ar
+do
+    rm -f $1/usr/bin/$prog
+done

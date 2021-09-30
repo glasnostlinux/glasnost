@@ -1,0 +1,7 @@
+#!/bin/sh
+
+#clean=1
+
+if [ ! -z "$clean" ]; then
+  echo "AAA"
+fi
