@@ -10,15 +10,11 @@ NO_EXPAT=YesPlease
 NO_NSEC=YesPlease
 NO_PYTHON=YesPlease
 NO_PERL=YesPlease
-NO_SVN_TESTS=YesPlease
 NO_SYS_POLL_H=1
 NO_CROSS_DIRECTORY_HARDLINKS=1
 NO_INSTALL_HARDLINKS=1
 NO_ICONV=YesPlease
 EOF
-
-# Why is this required?
-cp $KISS_ROOT/usr/lib/crt* .
 
 ./configure \
     --prefix=/usr \
@@ -31,7 +27,6 @@ cp $KISS_ROOT/usr/lib/crt* .
     ac_cv_iconv_omits_bom=no
 
 make LIBS="$(curl-config --static-libs) libgit.a xdiff/lib.a -lz"
-make DESTDIR="$1" install
+make install
 
-cp -rf man "$1/usr/share/man"
-
+cp -Rf man "$1/usr/share/man"

@@ -1,8 +1,10 @@
 #!/bin/sh -e
 
-for patch in *.patch; do
+for patch in patch/*.patch; do
     patch -p1 < "$patch"
 done
+
+sed -i 's/# CONFIG_LFS is not set/CONFIG_LFS=y/g' .config-suid
 
 # CFLAGS cleanup
 # See http://lists.busybox.net/pipermail/busybox/2019-October/087558.html
@@ -18,9 +20,9 @@ sed -i "s#= g[c+][c+]#= ${CC:=cc}#g" Makefile
 sed -i "s#\(\$(CROSS_COMPILE)\)gcc#\1${CC}#g" Makefile
 sed -i 's|CONFIG_SYSROOT=\"\"|CONFIG_SYSROOT=\"'$KISS_ROOT'\"|' .config
 
-sed -i 's/\-fpic//' Makefile.flags
-sed -i 's/\-fpie//' Makefile.flags
-sed -i 's/\-pie//' Makefile.flags
+#sed -i 's/\-fpic//' Makefile.flags
+#sed -i 's/\-fpie//' Makefile.flags
+#sed -i 's/\-pie//' Makefile.flags
 
 # Ensure that busybox's build system is aware that 'cc' may point
 # to clang rather than GCC. This is the case in non-GCC systems.
@@ -29,10 +31,14 @@ sed -i 's/\-pie//' Makefile.flags
 #esac
 
 # Disable cflags which cause issues
-export CFLAGS="$CFLAGS -O0 -fno-lto -Wno-ignored-attributes -mno-stackrealign -Wno-unused-command-line-argument "
-
+export CFLAGS="$CFLAGS -O0 -fno-lto -Wno-ignored-attributes -mno-stackrealign -Wno-unused-command-line-argument"
 export CROSS_COMPILE=" "
 export LD="clang $CFLAGS -fno-pic"
+
+# As of clang 12.0.1, the ssl module cannot be compiled for 32-bit x86.
+if [ "$KISS_XHOST_ARCH" = "i686" ]; then
+    sed -i 's/CONFIG_SSL_CLIENT=y/CONFIG_SSL_CLIENT=n/g' .config
+fi
 
 # Build and install regular busybox.
 # This excludes utilities which require 'suid' to function.
@@ -45,6 +51,7 @@ mv "$1/usr/bin/busybox" "$1/usr/bin/busybox-nosuid"
 # Build and install suid busybox.
 # This _only_ includes utlities which require 'suid' to function.
 cp -f .config-suid .config
+
 make CC="$CC" HOSTCC="clang" LD="$LD"
 make CONFIG_PREFIX="$1/usr" LD="$LD" CC="$CC" HOSTCC="clang" install
 
@@ -53,13 +60,16 @@ mv -f "$1/usr/bin/busybox"        "$1/usr/bin/busybox-suid"
 mv -f "$1/usr/bin/busybox-nosuid" "$1/usr/bin/busybox"
 
 # Install the non-suid symlinks.
-# This requires busybox on the build machine
-"/usr/bin/busybox" --list | while read -r bin; do
+# When cross-building we can't run the build output.
+# Assume host busybox is the same
+/usr/bin/busybox --list | while read -r bin; do
     ln -s busybox "$1/usr/bin/$bin"
 done
 
 # Install the suid symlinks.
-"/usr/bin/busybox-suid" --list | while read -r bin; do
+# When cross-building we can't run the build output.
+# Assume host busybox is the same
+/usr/bin/busybox-suid --list | while read -r bin; do
     ln -s busybox-suid "$1/usr/bin/$bin"
 done
 
@@ -68,18 +78,13 @@ chmod u+s "$1/usr/bin/busybox-suid"
 
 # The acpid command requires that this directory exist
 # and does not automatically create it..
-mkdir -p "$1/etc/acpid"
+mkdir -p "$1/etc/acpi"
 
 # Install runit services.
-install -Dm755 acpid.run           "$1/etc/sv/acpid/run"
-install -Dm755 crond.run           "$1/etc/sv/crond/run"
-install -Dm755 syslogd.run         "$1/etc/sv/syslogd/run"
-install -Dm755 mdev.run            "$1/etc/sv/mdev/run"
-install -Dm755 ntpd.run            "$1/etc/sv/ntpd/run"
-ln -s /run/runit/supervise.acpid   "$1/etc/sv/acpid/supervise"
-ln -s /run/runit/supervise.crond   "$1/etc/sv/crond/supervise"
-ln -s /run/runit/supervise.syslogd "$1/etc/sv/syslogd/supervise"
-ln -s /run/runit/supervise.mdev    "$1/etc/sv/mdev/supervise"
-ln -s /run/runit/supervise.ntpd    "$1/etc/sv/ntpd/supervise"
+for s in acpid crond syslogd mdev ntpd; do
+    mkdir -p "$1/etc/sv/$s"
+    cp -f "$s.run" "$1/etc/sv/$s/run"
+    ln -sf "/run/runit/supervise.$s" "$1/etc/sv/$s/supervise"
+done
 
-install -Dm644 mdev.conf "$1/etc/mdev.conf"
+cp -f mdev.conf "$1/etc/mdev.conf"

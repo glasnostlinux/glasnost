@@ -1,12 +1,20 @@
-#!/bin/sh -e
+#!/bin/sh -ef
+#
+# Intentional, globbing disabled.
+# shellcheck disable=2086
 
-make CC="${CC:-cc} -static" CFLAGS="$CFLAGS" LDFLAGS="$CFLAGS"
+set -- pigz.o yarn.o try.o
 
-install -Dm755 pigz   "$1/usr/bin/pigz"
-install -Dm755 unpigz "$1/usr/bin/unpigz"
-install -Dm644 pigz.1 "$1/usr/share/man/man1/pigz.1"
+for f do
+    clang -c -o "$f" "${f%%.o}.c" $CPPFLAGS -DNOZOPFLI $CFLAGS
+done
+clang -static -o pigz "$@" $CPPFLAGS $CFLAGS -lz $LDFLAGS
 
-ln -sf pigz   "$1/usr/bin/gzip"
-ln -sf pigz   "$1/usr/bin/zcat"
-ln -sf unpigz "$1/usr/bin/gunzip"
-ln -sf pigz.1 "$1/usr/share/man/man1/gzip.1"
+mkdir -p \
+    "$DESTDIR/usr/bin" \
+    "$DESTDIR/usr/share/man/man1"
+
+cp  -f pigz   "$DESTDIR/usr/bin"
+ln -sf pigz   "$DESTDIR/usr/bin/gzip"
+cp  -f pigz.1 "$DESTDIR/usr/share/man/man1"
+ln -sf pigz.1 "$DESTDIR/usr/share/man/man1/gzip.1"

@@ -1,4 +1,1 @@
-bzip2
-libressl make
-linux-headers
-pigz
+../../modules/repo/core/busybox/depends

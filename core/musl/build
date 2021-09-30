@@ -6,6 +6,7 @@ export CLANGVER=$(cat $KISS_ROOT/var/db/kiss/installed/llvm/version | cut -d " "
 # Determine the name of the compiler-rt library
 case $KISS_XHOST_ARCH in
    armv7) ABI="armhf";;
+   i686)  ABI="i386";;
    *)     ABI=$KISS_XHOST_ARCH;;
 esac
 

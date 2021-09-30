@@ -1,12 +1,10 @@
 #!/bin/sh -e
 
-export CFLAGS="-fPIC $CFLAGS"
+export CFLAGS="$CFLAGS -fPIC"
 
 ./configure \
     --prefix=/usr \
-    --libdir=/usr/lib \
-    --shared \
     --archs="-arch $KISS_XHOST_ARCH"
 
 make
-make DESTDIR="$1" install
+make install

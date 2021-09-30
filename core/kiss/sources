@@ -1,3 +1,2 @@
-git+https://github.com/glasnostlinux/kiss.git#fb59e619e546ccd6b07bd3f90768eee19c1bcd27
-https://github.com/kisslinux/website/archive/272a98cc078c9efde38c4e550b1f50d1ca501d9f.tar.gz docs
-https://github.com/kisslinux/wiki/archive/d8e6ec9084648df184f23b0f86a248c23c1b6d8d.tar.gz wiki
+git+https://github.com/glasnostlinux/kiss.git#6f179d43188cbc7ab5441a5c0c090ab6ef324f20
+https://github.com/kisslinux/website/archive/36935cdf3e7e453bf02224485bf0326442dae03c.tar.gz docs

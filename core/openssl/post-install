@@ -1,0 +1,5 @@
+#!/bin/sh
+
+echo ""
+echo "    You should run /etc/ssl/update-certdata.sh"
+echo ""

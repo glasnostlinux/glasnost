@@ -1,25 +1,31 @@
 #!/bin/sh -e
 
+# Upstream recently broke static linking. It is still supported via LDFLAGS but
+# this disables output of the shared library. This sed call adds -all-static to
+# the curl commands' compilation (keeping libraries in tact).
+# See: https://github.com/curl/curl/issues/7475
+sed 's/\(curl_LDADD =\)/\1 -all-static/' src/Makefile.in > _
+mv -f _ src/Makefile.in
+
 ./configure \
     --prefix=/usr \
+    --build=$KISS_XBUILD_TRIPLE \
+    --host=$KISS_XHOST_TRIPLE \
     --enable-ipv6 \
     --enable-unix-sockets \
     --enable-hidden-symbols \
-    --without-libidn \
-    --without-libidn2 \
     --disable-manual \
     --disable-ldap \
     --disable-ares \
+    --with-openssl \
+    --with-pic \
+    --with-ca-fallback \
     --without-librtmp \
     --without-icu \
     --without-libpsl \
-    --with-pic \
-    --with-openssl \
-    --with-ca-fallback \
-    --enable-static \
-    --enable-shared \
-    --build=$KISS_XBUILD_TRIPLE \
-    --host=$KISS_XHOST_TRIPLE
+    --without-libidn \
+    --without-libidn2 \
+    --without-zstd
 
 make LDFLAGS="$LDFLAGS" CFLAGS="$CFLAGS" curl_LDFLAGS=-all-static
 make DESTDIR="$1" install

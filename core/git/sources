@@ -1,2 +1,1 @@
-https://mirrors.edge.kernel.org/pub/software/scm/git/git-2.32.0.tar.xz
-https://mirrors.edge.kernel.org/pub/software/scm/git/git-manpages-2.32.0.tar.xz man
+../../modules/repo/core/git/sources

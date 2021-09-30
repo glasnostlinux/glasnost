@@ -1,20 +1,14 @@
 #!/bin/sh -e
 
-install -D kiss         "$1/usr/bin/kiss"
+mkdir -p \
+    "$1/usr/bin" \
+    "$1/usr/share/doc/kiss"
 
-# Install kiss utilities.
-cp contrib/* "$1/usr/bin/"
+cp -f  kiss contrib/*  "$1/usr/bin"
+cp -f  docs/site/*.txt "$1/usr/share/doc/kiss"
+cp -rf docs/site/wiki  "$1/usr/share/doc/kiss"
 
-# Install distribution documentation.
-for doc in docs/site/*.txt; do
-    install -Dm644 "$doc" "$1/usr/share/doc/kiss/${doc##*/}"
-done
-
-# Install the Wiki.
-cp -r wiki "$1/usr/share/doc/kiss/wiki"
-
-# Remove unnecessary pages.
-rm -f "$1/usr/share/doc/kiss/wiki/README.txt" \
-      "$1/usr/share/doc/kiss/news.txt" \
-      "$1/usr/share/doc/kiss/blog.txt" \
-      "$1/usr/share/doc/kiss/screenshots.txt"
+rm -f \
+    "$1/usr/share/doc/kiss/README.txt" \
+    "$1/usr/share/doc/kiss/post.txt" \
+    "$1/usr/share/doc/kiss/tidbits.txt"

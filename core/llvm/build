@@ -1,10 +1,8 @@
 #!/bin/sh -e
 
-patch -p1 < libcxx-musl.patch
-patch -p1 < llvm-006-aarch64-mf_exec.patch
-patch -p1 < crt.patch
-patch -p1 < clang-004-ppc64-musl-elfv2.patch
-patch -p1 < llvm-002-musl-ppc64-elfv2.patch
+for patch in *.patch; do
+    patch -p1 < "$patch"
+done
 
 # Disable sanitizer
 sed -i 's/!defined(_GCC_MAX_ALIGN_T)/& \&\& !defined(__DEFINED_max_align_t)/' libcxx/include/stddef.h
@@ -21,17 +19,15 @@ export CLANGVER=$(cat $KISS_ROOT/var/db/kiss/installed/llvm/version | cut -d " "
 
 # Determine targets for architecture
 case $KISS_XHOST_ARCH in
-   aarch64)      TARGET_ARCH="AArch64" libname="aarch64";;
-   armv7)        TARGET_ARCH="ARMv7"   libname="armhf"  EXTRAFLAGS="-L$KISS_ROOT/usr/lib/clang/$CLANGVER/lib/linux -lclang_rt.builtins-armhf -Wno-unused-command-line-argument";;
-   x86_64)       TARGET_ARCH="X86"     libname="x86_64";;
-   powerpc64le*) TARGET_ARCH="PowerPC" libname="powerpc64le";;
-   powerpc64*)   TARGET_ARCH="PowerPC" libname="powerpc64";;
-   riscv64*)     TARGET_ARCH="RISCV64" libname="riscv64";;
-   i386*)        TARGET_ARCH="X86"     libname="i386" EXTRAFLAGS="-L$KISS_ROOT/usr/lib/clang/$CLANGVER/lib/linux -lclang_rt.builtins-i386 -Wno-unused-command-line-argument";;
+   aarch64)     TARGET_ARCH="AArch64" libname="aarch64";;
+   armv7)       TARGET_ARCH="ARMv7"   libname="armhf"  EXTRAFLAGS="-L$KISS_ROOT/usr/lib/clang/$CLANGVER/lib/linux -lclang_rt.builtins-armhf -Wno-unused-command-line-argument";;
+   i686)        TARGET_ARCH="X86"     libname="i386" EXTRAFLAGS="-L$KISS_ROOT/usr/lib/clang/$CLANGVER/lib/linux -lclang_rt.builtins-i386 -Wno-unused-command-line-argument";;
+   powerpc64)   TARGET_ARCH="PowerPC" libname="powerpc64";;
+   powerpc64le) TARGET_ARCH="PowerPC" libname="powerpc64le";;
+   riscv64)     TARGET_ARCH="RISCV64" libname="riscv64";;
+   x86_64)      TARGET_ARCH="X86"     libname="x86_64";;
    *) echo "Unsupported platform: $KISS_XHOST_ARCH"; exit 1;;
 esac
-
-export DESTDIR="$1"
 
 kiss-cmake-config > toolchain.cmake
 
@@ -127,6 +123,6 @@ ln -s -f llvm-objcopy otool
 
 # symlinks to crtbegin/crtend files
 # This is mainly done for Rust.
-cd $1/usr/lib/clang/12.0.0/lib/linux
+cd $1/usr/lib/clang/12.0.1/lib/linux
 install -Dm755 clang_rt.crtbegin-$libname.o $1/usr/lib/crtbegin.o
 install -Dm755 clang_rt.crtend-$libname.o   $1/usr/lib/crtend.o

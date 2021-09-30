@@ -8,4 +8,4 @@ export CFLAGS="$CFLAGS -static"
     --host=$KISS_XHOST_TRIPLE
 
 make
-make DESTDIR="$1" install
+make install

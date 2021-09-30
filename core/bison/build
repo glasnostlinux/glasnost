@@ -1,0 +1,20 @@
+#!/bin/sh -e
+
+./configure \
+    --prefix=/usr \
+    --build=$KISS_XBUILD_TRIPLE \
+    --host=$KISS_XHOST_TRIPLE \
+    --disable-nls \
+    --without-libtextstyle-prefix
+
+make
+
+make \
+    install-libLIBRARIES \
+    install-binPROGRAMS \
+    install-nodist_binSCRIPTS \
+    install-dist_m4sugarDATA \
+    install-dist_skeletonsDATA \
+    install-dist_pkgdataDATA \
+    install-aclocalDATA \
+    install-man1

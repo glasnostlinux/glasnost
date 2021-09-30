@@ -1,3 +1,0 @@
-#!/bin/sh
-
-printf "\n    You should run: /etc/ssl/update-certdata.sh\n\n"

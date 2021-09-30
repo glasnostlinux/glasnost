@@ -1,3 +1,1 @@
-curl     make
-libressl make
-zlib     make
+../../modules/repo/core/git/depends
