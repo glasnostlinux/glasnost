@@ -1,8 +1,0 @@
-libICE
-libSM
-libX11
-libXau
-libXext
-libXt
-libxcb
-zlib
