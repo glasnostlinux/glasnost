@@ -80,9 +80,9 @@ cmake -G "Ninja" \
     -DLLVM_LINK_LLVM_DYLIB=ON \
     -DLLVM_TARGETS_TO_BUILD="ARM;AArch64;AMDGPU;PowerPC;RISCV;X86" \
     -DLLVM_TARGET_ARCH="$TARGET_ARCH" \
+    -DCMAKE_TOOLCHAIN_FILE="$(realpath toolchain.cmake)" \
     -DLLVM_TABLEGEN="/usr/bin/llvm-tblgen" \
     -DCLANG_TABLEGEN="/usr/bin/clang-tblgen" \
-    -DCMAKE_TOOLCHAIN_FILE="$(realpath toolchain.cmake)" \
     -Wno-dev llvm
 
 ninja -C build
@@ -123,6 +123,6 @@ ln -s -f llvm-objcopy otool
 
 # symlinks to crtbegin/crtend files
 # This is mainly done for Rust.
-cd $1/usr/lib/clang/12.0.1/lib/linux
+cd $1/usr/lib/clang/13.0.0/lib/linux
 install -Dm755 clang_rt.crtbegin-$libname.o $1/usr/lib/crtbegin.o
 install -Dm755 clang_rt.crtend-$libname.o   $1/usr/lib/crtend.o
