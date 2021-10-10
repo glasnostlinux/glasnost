@@ -12,8 +12,8 @@ patch -p1 < nojsonc.patch
     --disable-docs \
     --disable-nls \
     --disable-jsonc \
-    --build="$(cat /etc/os-arch)-linux-musl" \
-    --host="$(cat ${KISS_ROOT}/etc/os-arch)-linux-musl"
+    --build=$KISS_XBUILD_TRIPLE \
+    --host=$KISS_XHOST_TRIPLE
 
 make
-make DESTDIR="$1" install
+make install

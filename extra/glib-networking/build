@@ -1,7 +1,5 @@
 #!/bin/sh -e
 
-export DESTDIR="$1"
-
 kiss-meson-config > meson.config
 
 export CFLAGS="$CFLAGS -lgnutls"

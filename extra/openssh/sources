@@ -1,2 +1,1 @@
-https://ftp.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-8.5p1.tar.gz
-files/sshd.run
+../../modules/repo/extra/openssh/sources

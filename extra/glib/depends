@@ -1,4 +1,1 @@
-libffi
-meson   make
-pkgconf make
-zlib
+../../modules/repo/extra/glib/depends

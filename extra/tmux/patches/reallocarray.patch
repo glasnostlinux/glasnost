@@ -1,0 +1,36 @@
+--- configure.ac.orig
++++ configure.ac
+@@ -155,10 +155,7 @@
+ 
+ # Check if strtonum works.
+ AC_MSG_CHECKING([for working strtonum])
+-AC_RUN_IFELSE([AC_LANG_PROGRAM(
+-         [#include <stdlib.h>],
+-         [return (strtonum("0", 0, 1, NULL) == 0 ? 0 : 1);]
+-	 )],
++AC_CHECK_FUNC(strtonum,
+ 	 [AC_DEFINE(HAVE_STRTONUM) AC_MSG_RESULT(yes)],
+ 	 [AC_LIBOBJ(strtonum) AC_MSG_RESULT(no)]
+ )
+@@ -167,19 +164,13 @@
+ # system. When compiled it always returns NULL and crashes the program. To
+ # detect this we need a more complicated test.
+ AC_MSG_CHECKING([for working reallocarray])
+-AC_RUN_IFELSE([AC_LANG_PROGRAM(
+-		[#include <stdlib.h>],
+-		[return (reallocarray(NULL, 1, 1) == NULL);]
+-	)],
++AC_CHECK_FUNC(reallocarray,
+ 	AC_MSG_RESULT(yes),
+ 	[AC_LIBOBJ(reallocarray) AC_MSG_RESULT([no])],
+ 	[AC_LIBOBJ(reallocarray) AC_MSG_RESULT([no])]
+ )
+ AC_MSG_CHECKING([for working recallocarray])
+-AC_RUN_IFELSE([AC_LANG_PROGRAM(
+-		[#include <stdlib.h>],
+-		[return (recallocarray(NULL, 1, 1, 1) == NULL);]
+-	)],
++AC_CHECK_FUNC(recallocarray,
+ 	AC_MSG_RESULT(yes),
+ 	[AC_LIBOBJ(recallocarray) AC_MSG_RESULT([no])],
+ 	[AC_LIBOBJ(recallocarray) AC_MSG_RESULT([no])]

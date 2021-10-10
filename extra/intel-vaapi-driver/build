@@ -1,13 +1,5 @@
 #!/bin/sh -e
 
-case $(cat $KISS_ROOT/etc/os-arch) in
-   x86_64) ;;
-   *) echo "Unsupported platform: $(cc -dumpmachine)"; exit 0;;
-esac
-
-
-export DESTDIR="$1"
-
 # Fix build fail with GCC 10.
 export CFLAGS="$CFLAGS -fcommon"
 

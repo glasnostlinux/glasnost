@@ -1,7 +1,0 @@
-#!/bin/sh -e
-
-sed -i 's|lib64|lib|' config/Makefile.linux
-
-make CC="$CC" AR="${AR:-ar}" LD="$CC" RANLIB="${RANLIB:-ranlib}" CFLAGS.EXTRA="-fPIC $CFLAGS $CPPFLAGS" LDFLAGS.EXTRA="$LDFLAGS" STRIP=
-
-make GLEW_DEST="$1/usr" install

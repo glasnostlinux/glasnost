@@ -1,16 +1,20 @@
 #!/bin/sh -e
 
+export CFLAGS="$CFLAGS -Wno-format -Wno-implicit-fallthrough"
+
+sed -i 's,#include <sys/sysinfo.h>,,g' common/utils.c
+
 ./configure \
     --prefix=/usr \
-    --build="$(cat /etc/os-arch)-linux-musl" \
-    --host="$(cat $KISS_ROOT/etc/os-arch)-linux-musl" \
+    --build=$KISS_XBUILD_TRIPLE \
+    --host=$KISS_XHOST_TRIPLE \
     --bindir=/usr/bin \
     --disable-python \
     --disable-documentation \
     --disable-backtrace \
     --disable-zstd
 
-clang kernel-lib/mktables.c -o mktables
+$CC kernel-lib/mktables.c -o mktables
 
 make
-make DESTDIR="$1" install
+make install

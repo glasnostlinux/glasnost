@@ -1,33 +1,60 @@
 #!/bin/sh -e
 
-# Remove 'atk-bridge' dependency which removes the 'dbus' dependency.
-sed -i 's/ATK_PACKAGES="atk atk-bridge-2.0"/ATK_PACKAGES="atk"/' \
-    configure
+patch -p1 < no-fribidi.patch
+patch -p1 < fix-firefox.patch
 
-sed -i '/<atk-bridge.h>/d;/atk_bridge_adaptor_init/d' \
-    gtk/a11y/gtkaccessibility.c
+# Remove configure check for atk-bridge and fribidi. Funny enough, atk-bridge
+# is not required under wayland and there are ifdefs in place to ensure this.
+# The build system forces the dependency anyway so we must remove it.
+sed -e 's/\(ATK_PACKAGES="atk\) atk-bridge-2.0"/\1"/' \
+    -e 's/fribidi >= 0\.19\.7//g' \
+    configure > _
+mv -f _ configure
 
 # Don't build GTK examples/demos/testsuite.
-sed -i 's/demos tests testsuite examples//' Makefile.am Makefile.in
-sed -i 's/docs m4macros/m4macros/'          Makefile.am Makefile.in
+sed 's/demos tests testsuite examples//;s/docs \(m4macros\)/\1/' Makefile.in > _
+mv -f _ Makefile.in
 
-export GLIB_COMPILE_RESOURCES=/usr/bin/glib-compile-resources
+# Build libepoxy for gtk+3's sole use. This is the only package that requires
+# the library. While the build system supports building this as a subproject,
+# it is broken so we must do it ourselves.
+(
+    cd libepoxy
+    kiss-meson-config > meson.config
 
-export CFLAGS=" -lepoxy $CFLAGS"
+    meson \
+        --prefix=/usr \
+        --cross-file="meson.config" \
+        --sysconfdir=/etc \
+        --mandir=/usr/share/man \
+        -Ddefault_library=static \
+        -Dhas-dlvsym=false \
+        -Degl=yes \
+        -Dtests=false \
+        -Dglx=no \
+        -Dx11=false \
+        . output
 
-./configure \
+    ninja -C output
+
+    DESTDIR=$PWD ninja -C output install
+)
+
+# Point gtk+3 to the vendored libepoxy.
+export PKG_CONFIG_PATH=$PWD/libepoxy/usr/lib/pkgconfig
+export CFLAGS="$CFLAGS -L$PWD/libepoxy/usr/lib"
+export CFLAGS="$CFLAGS -I$PWD/libepoxy/usr/include"
+
+#export GLIB_COMPILE_RESOURCES=/usr/bin/glib-compile-resources
+
+sh ./configure \
     --prefix=/usr \
-    --build="$(cat /etc/os-arch)-linux-musl" \
-    --host="$(cat ${KISS_ROOT}/etc/os-arch)-linux-musl" \
+    --build=$KISS_XBUILD_TRIPLE \
+    --host=$KISS_XHOST_TRIPLE \
     --sysconfdir=/etc \
     --localstatedir=/var \
-    --enable-xkb \
-    --enable-xinerama \
-    --enable-xrandr \
-    --enable-xfixes \
-    --enable-xcomposite \
-    --enable-xdamage \
-    --enable-x11-backend \
+    --enable-wayland-backend \
+    --disable-x11-backend \
     --disable-schemas-compile \
     --disable-cups \
     --disable-papi \
@@ -39,10 +66,86 @@ export CFLAGS=" -lepoxy $CFLAGS"
     --enable-colord=no \
     --enable-gtk-doc-html=no
 
+
+#    --sysconfdir=/etc \
+#    --localstatedir=/var \
+#    --enable-xkb \
+#    --enable-xinerama \
+#    --enable-xrandr \
+#    --enable-xfixes \
+#    --enable-xcomposite \
+#    --enable-xdamage \
+#    --disable-x11-backend \
+#    --enable-wayland-backend \
+#    --disable-schemas-compile \
+#    --disable-cups \
+#    --disable-papi \
+#    --disable-cloudprint \
+#    --disable-glibtest \
+#    --disable-nls \
+#    --disable-installed-tests \
+#    --enable-introspection=no \
+#    --enable-colord=no \
+#    --enable-gtk-doc-html=no
+
 make
-make DESTDIR="$1" install
+make install
+
+
+
+# GTK+3 on Wayland requires gsettings-desktop-schemas for gsettings to work
+# correctly. Under X11 it made use of xsettings but this is no longer the case.
+(
+    cd schemas
+    kiss-meson-config > meson.config
+
+    meson \
+        --prefix=/usr \
+        --cross-file="meson.config" \
+        -Dintrospection=false \
+        . output
+
+    ninja -C output
+    ninja -C output install
+)
+
+# We don't compile with librsvg which leads to this utility solely causing
+# compiler errors for some packages. It has no use at all.
+rm -f "$1/usr/bin/gtk-encode-symbolic-svg"
+
+# Remove epoxy references from installed pkg-config files. The build system
+# should have done this for us as it is statically linked.
+for f in "$1/usr/lib/pkgconfig/"*.pc; do
+    sed 's/epoxy >= 1.4//' "$f" > _
+    mv -f _ "$f"
+done
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # We don't compile with librsvg which leads to this
 # utility solely causing compiler errors for some
 # packages. It has no use at all.
-rm -f "$1/usr/bin/gtk-encode-symbolic-svg"
+#rm -f "$1/usr/bin/gtk-encode-symbolic-svg"
+
+
+
+
+
+
+
+
+

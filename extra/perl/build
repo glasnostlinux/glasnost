@@ -8,17 +8,14 @@ export CFLAGS="$CFLAGS -DNO_POSIX_2008_LOCALE -D_GNU_SOURCE -fno-lto"
 export CC=clang
 export CXX=clang++
 
-target="$(cat $KISS_ROOT/etc/os-arch)"
-build="$(cat /etc/os-arch)"
-
-if [ $build != $target ]; then
+if [ "$KISS_XBUILD_TRIPLE" != "$KISS_XHOST_TRIPLE" ]; then
     crossopt=-Dusecrosscompile
 fi
 
 ./configure \
     --prefix=/usr \
-    --target="$target-linux-musl" \
-    --build="$build-linux-musl" \
+    --build=$KISS_XBUILD_TRIPLE \
+    --target=$KISS_XHOST_TRIPLE \
     --sysroot=${KISS_ROOT:-/} \
     -Des \
     -Dvendorprefix=/usr \
@@ -48,7 +45,7 @@ fi
     -Dd_static_inline
 
 make
-make DESTDIR="$1" install
+make install
 
 # Remove all unneeded files.
 find "$1" -name \*.pod       -exec rm -f {} +
@@ -57,6 +54,7 @@ find "$1" -name README\*     -exec rm -f {} +
 find "$1" -name TODO\*       -exec rm -f {} +
 find "$1" -name Change\*     -exec rm -f {} +
 find "$1" -name \*.bs        -exec rm -f {} +
+#find "$1" -name \*.0 -type f -exec rm -f {} +
 
 # Fix permissions.
 find "$1/usr/lib" -type f -exec chmod 644 {} \;

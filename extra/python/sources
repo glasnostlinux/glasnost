@@ -1,7 +1,1 @@
-https://www.python.org/ftp/python/3.9.4/Python-3.9.4.tar.xz
-patches/cross.patch
-patches/python3-always-pip.patch
-patches/musl.patch
-patches/clang.patch
-patches/setup.patch
-patches/bpo-43112.patch
+../../modules/repo/extra/python/sources

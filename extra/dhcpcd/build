@@ -2,16 +2,17 @@
 
 ./configure \
     --prefix=/usr \
-    --build="$(cat /etc/os-arch)-linux-musl" \
-    --host="$(cat ${KISS_ROOT}/etc/os-arch)-linux-musl" \
+    --build=$KISS_XBUILD_TRIPLE \
+    --host=$KISS_XHOST_TRIPLE \
     --sbindir=/usr/bin \
     --sysconfdir=/etc \
     --rundir=/run \
     --libexecdir=/usr/lib/dhcpcd
 
 make
-make DESTDIR="$1" install
+make install
 
 # Install runit service.
-install -Dm 755 dhcpcd.run        "$1/etc/sv/dhcpcd/run"
-ln -s /run/runit/supervise.dhcpcd "$1/etc/sv/dhcpcd/supervise"
+mkdir -p "$1/etc/sv/dhcpcd"
+cp -f dhcpcd.run "$1/etc/sv/dhcpcd/run"
+ln -sf /run/runit/supervise.dhcpcd "$1/etc/sv/dhcpcd/supervise"

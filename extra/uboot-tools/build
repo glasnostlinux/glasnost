@@ -1,0 +1,17 @@
+#!/bin/sh -e
+
+sed -i 's/\-lgcc//g' Makefile
+
+make CC="$CC" HOSTCC="$CC" pinephone_defconfig
+make CC="$CC" HOSTCC="$CC" tools
+
+# Install files
+mkdir -p "$1/usr/bin"
+
+cp tools/spl_size_limit  $1/usr/bin
+cp tools/gen_ethaddr_crc $1/usr/bin
+cp tools/mkenvimage      $1/usr/bin
+cp tools/fdtgrep         $1/usr/bin
+cp tools/dumpimage       $1/usr/bin
+cp tools/mkimage         $1/usr/bin
+cp tools/sunxi-spl-image-builder $1/usr/bin

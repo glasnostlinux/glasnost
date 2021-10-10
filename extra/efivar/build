@@ -1,28 +1,20 @@
 #!/bin/sh -e
 
-# LTO is used when CFLAGS are unset causing a compilation
-# error with GCC 10. LTO can be set by the user though
-# '-flto-partition=none' is also needed.
-sed -i 's/ -flto//' Make.defaults
+patch -p1 < no-add-needed.patch
 
-for patch in *.patch; do
-    patch -p1 < "$patch"
-done
+#CCLD="clang"
+export CFLAGS="$CFLAGS -Wno-unused-command-line-argument"
 
-#CFLAGS_FOR_BUILD=""
-#CCLD_FOR_BUILD=""
-#CCLDFLAGS=""
-CCLD="clang"
+# Disable test program 'thread-test' as it causes build failures when using
+# parallel make (due to missing dependency on libefivar.so). Other workarounds
+# include patching the Makefile or forcing -j1 (what we used to do).
+# See: https://github.com/rhboot/efivar/pull/169
+sed 's/thread-test//' src/Makefile > _
+mv -f _ src/Makefile
 
-# Avoid repeating ourselves.
-mk() {
-    make \
-        libdir=/usr/lib/ \
-        bindir=/usr/bin/ \
-        mandir=/usr/share/man/ \
-        includedir=/usr/include/ \
-        "$@"
-}
+export HOSTCC="clang"
+export HOST_CFLAGS=""
+export HOST_LDFLAGS=""
 
-mk CC="${CC:-cc}"
-mk DESTDIR="$1" install
+make HOST_MARCH="" COMPILER="$CC"
+make libdir=/usr/lib/ install

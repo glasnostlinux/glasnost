@@ -1,0 +1,101 @@
+--- configure.orig
++++ configure
+@@ -5490,85 +5490,6 @@
+ esac
+ 
+ 
+-
+-# Clang sanitizers wrap reallocarray even if it isn't available on the target
+-# system. When compiled it always returns NULL and crashes the program. To
+-# detect this we need a more complicated test.
+-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for working reallocarray" >&5
+-$as_echo_n "checking for working reallocarray... " >&6; }
+-if test "$cross_compiling" = yes; then :
+-  { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+-$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+-as_fn_error $? "cannot run test program while cross compiling
+-See \`config.log' for more details" "$LINENO" 5; }
+-else
+-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+-/* end confdefs.h.  */
+-#include <stdlib.h>
+-int
+-main ()
+-{
+-return (reallocarray(NULL, 1, 1) == NULL);
+-
+-  ;
+-  return 0;
+-}
+-_ACEOF
+-if ac_fn_c_try_run "$LINENO"; then :
+-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+-$as_echo "yes" >&6; }
+-else
+-  case " $LIBOBJS " in
+-  *" reallocarray.$ac_objext "* ) ;;
+-  *) LIBOBJS="$LIBOBJS reallocarray.$ac_objext"
+- ;;
+-esac
+- { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+-$as_echo "no" >&6; }
+-
+-fi
+-rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
+-  conftest.$ac_objext conftest.beam conftest.$ac_ext
+-fi
+-
+-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for working recallocarray" >&5
+-$as_echo_n "checking for working recallocarray... " >&6; }
+-if test "$cross_compiling" = yes; then :
+-  { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+-$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+-as_fn_error $? "cannot run test program while cross compiling
+-See \`config.log' for more details" "$LINENO" 5; }
+-else
+-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+-/* end confdefs.h.  */
+-#include <stdlib.h>
+-int
+-main ()
+-{
+-return (recallocarray(NULL, 1, 1, 1) == NULL);
+-
+-  ;
+-  return 0;
+-}
+-_ACEOF
+-if ac_fn_c_try_run "$LINENO"; then :
+-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+-$as_echo "yes" >&6; }
+-else
+-  case " $LIBOBJS " in
+-  *" recallocarray.$ac_objext "* ) ;;
+-  *) LIBOBJS="$LIBOBJS recallocarray.$ac_objext"
+- ;;
+-esac
+- { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+-$as_echo "no" >&6; }
+-
+-fi
+-rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
+-  conftest.$ac_objext conftest.beam conftest.$ac_ext
+-fi
+-
+-
+ # Look for clock_gettime. Must come before event_init.
+ { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing clock_gettime" >&5
+ $as_echo_n "checking for library containing clock_gettime... " >&6; }
+--- compat.h.orig
++++ compat.h
+@@ -406,10 +406,8 @@
+ void		 freezero(void *, size_t);
+ #endif
+ 
+-#ifndef HAVE_REALLOCARRAY
+ /* reallocarray.c */
+ void		*reallocarray(void *, size_t, size_t);
+-#endif
+ 
+ #ifndef HAVE_RECALLOCARRAY
+ /* recallocarray.c */

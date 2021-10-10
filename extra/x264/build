@@ -1,14 +1,17 @@
 #!/bin/sh -e
 
-patch -p1 < x264-no-bash.patch
+export CFLAGS="$CFLAGS -fno-lto"
+export CXXFLAGS="$CXXFLAGS -fno-lto"
+
+patch -p1 < portability.patch
 
 ./configure \
     --prefix=/usr \
-    --host="$(cat ${KISS_ROOT}/etc/os-arch)-linux-musl" \
+    --host=$KISS_XHOST_TRIPLE \
     --disable-swscale \
     --enable-static \
     --enable-pic \
     --enable-shared
 
 make
-make DESTDIR="$1" install
+make install

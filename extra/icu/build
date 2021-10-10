@@ -6,7 +6,7 @@ export CC="${CC:-/usr/bin/cc}"
 export CXX="${CXX:-/usr/bin/c++}"
 
 # If this is a cross build, need to build on the native platform first
-if [ "$(cat /etc/os-arch)" != "$(cat $KISS_ROOT/etc/os-arch)" ]; then
+if [ "$KISS_XBUILD_TRIPLE" != "$KISS_XHOST_TRIPLE" ]; then
     echo "Building native icu first"
     mkdir -p buildhost/out
     cd buildhost
@@ -24,8 +24,8 @@ source/configure \
     --prefix=/usr \
     --sbindir=/usr/bin \
     $cross_args \
-    --build="$(cat /etc/os-arch)-linux-musl" \
-    --host="$(cat $KISS_ROOT/etc/os-arch)-linux-musl"
+    --build=$KISS_XBUILD_TRIPLE \
+    --host=$KISS_XHOST_TRIPLE
 
 make
-make DESTDIR="$1" install
+make install

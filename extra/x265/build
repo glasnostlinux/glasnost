@@ -1,14 +1,17 @@
 #!/bin/sh -e
 
-export DESTDIR="$1"
+noasm="-DENABLE_ASSEMBLY=OFF"
+# Enabling asm on aarch64 causes build failures
+case $KISS_XHOST_ARCH in
+   aarch64)    OPTS=$noasm;;
+esac
 
 kiss-cmake-config > cmake.config
 
-# TODO: work out how to enable asm where appropriate
 cmake source \
     -DCMAKE_INSTALL_PREFIX=/usr \
     -DCMAKE_TOOLCHAIN_FILE="$(realpath cmake.config)" \
-    -DENABLE_ASSEMBLY=OFF \
+    $OPTS \
     -DCMAKE_BUILD_TYPE=Release
 
 cmake --build .

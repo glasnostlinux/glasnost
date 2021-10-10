@@ -1,27 +1,37 @@
 #!/bin/sh -e
 
-patch -p1 < fix-busybox-diff.patch
+export CFLAGS="$CFLAGS -fno-lto"
+export CXXFLAGS="$CXXFLAGS -fno-lto"
 
-#export CC=${CC:-clang}
-#export CXX=${CXX:-clang++}
+# These cause problems with clang:
+rm vp9_rtcd.h
+rm vp8_rtcd.h
+rm vpx_scale_rtcd.h
+rm vpx_dsp_rtcd.h
 
-# Remove the perl requirement from configure
-# as we have removed the perl requirement
-# ourselves :-).
-sed -i 's/perl/:/g' configure
+
+# Remove the perl requirement from configure.
+# Also fix issue with non-GNU diff.
+sed 's/perl/:/g;s/diff --version/command -v diff/' configure > _
+mv -f _ configure
 
 # Determine arch
-case $(cat $KISS_ROOT/etc/os-arch) in
-   aarch64) target=arm64-linux-gcc;;
-   x86_64) target=x86_64-linux-gcc;;
+case $KISS_XHOST_ARCH in
+   aarch64)     target=arm64-linux-gcc;;
+   armv7)       target=armv7-linux-gcc;;
+   i686)        target=x86-linux-gcc;;
+   powerpc64)   target=generic-gnu;;
    powerpc64le) target=ppc64le-linux-gcc;;
-   powerpc64) target=generic-gnu;;
-   *) echo "Unsupported platform: $(cc -dumpmachine)"; exit;;
+   riscv64)     target=generic-gnu;;
+   x86_64)      target=x86_64-linux-gcc;;
+   *) echo "Unsupported platform: $KISS_XHOST_ARCH"; exit 1;;
 esac
 
-# --disable-static
+export CROSS=" "
 
-./configure \
+#     --disable-static \
+
+sh ./configure \
     --prefix=/usr \
     --enable-vp8 \
     --enable-vp9 \
@@ -41,4 +51,4 @@ esac
     --target=$target
 
 make
-make DESTDIR="$1" install
+make install

@@ -4,8 +4,8 @@ patch -p1 < libpng-1.6.37-apng.patch
 
 ./configure \
     --prefix=/usr \
-    --build="$(cat /etc/os-arch)-linux-musl" \
-    --host="$(cat ${KISS_ROOT}/etc/os-arch)-linux-musl"
+    --build=$KISS_XBUILD_TRIPLE \
+    --host=$KISS_XHOST_TRIPLE
 
 make
-make DESTDIR="$1" install
+make install

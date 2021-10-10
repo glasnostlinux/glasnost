@@ -1,16 +1,56 @@
 #!/bin/sh
 # Print a suitable meson toolchain file based on $KISS_ROOT
 
-# Add crossbuild options if required
-if [[ "$(cat /etc/os-arch)" != "$(cat ${KISS_ROOT}/etc/os-arch)" ]]; then
-    # Cross build
-    echo "$(cat /usr/share/meson/build.meson)"
+[ -z "$KISS_XBUILD_ARCH" ] && echo "This must be run from within a KISS build script" && exit 1
+
+cpufam() {
+    case $1 in
+        armv7)       printf "arm";;
+        aarch64)     printf "aarch64";;
+        i686)        printf "x86";;
+        x86_64)      printf "x86_64";;
+        powerpc64le) printf "ppc64";;
+        powerpc64)   printf "ppc64";;
+        riscv64)     printf "riscv64";;
+        *)
+    esac
+}
+
+cpu() {
+    case $1 in
+        armv7)       printf "armv7";;
+        aarch64)     printf "aarch64";;
+        i686)        printf "x86";;
+        x86_64)      printf "x86_64";;
+        powerpc64le) printf "ppc64le";;
+        powerpc64)   printf "ppc64";;
+        riscv64)     printf "riscv64";;
+        *)
+    esac
+}
+
+endian() {
+    case $1 in
+        powerpc64)   printf "big";;
+        *)           printf "little"
+    esac
+}
+
+echo "[build_machine]"
+echo "system = 'linux'"
+echo "cpu_family = '$(cpufam $KISS_XBUILD_ARCH)'"
+echo "cpu = '$(cpu $KISS_XBUILD_ARCH)'"
+echo "endian = '$(endian $KISS_XBUILD_ARCH)'"
+echo ""
+
+for t in "host_machine" "target_machine"; do
+    echo "[$t]"
+    echo "system = 'linux'"
+    echo "cpu_family = '$(cpufam $KISS_XHOST_ARCH)'"
+    echo "cpu = '$(cpu $KISS_XHOST_ARCH)'"
+    echo "endian = '$(endian $KISS_XHOST_ARCH)'"
     echo ""
-    echo "$(cat $KISS_ROOT/usr/share/meson/host.meson)"
-    echo ""
-    echo "$(cat $KISS_ROOT/usr/share/meson/target.meson)"
-    echo ""
-fi
+done
 
 echo "[properties]"
 echo "sys_root = '${KISS_ROOT:-/}'"

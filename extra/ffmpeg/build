@@ -1,47 +1,82 @@
 #!/bin/sh -e
 
-case $(cat $KISS_ROOT/etc/os-arch) in
-   aarch64) target=aarch64;;
-   x86_64) target=x86_64;;
-   powerpc64le) target=ppc64;;
-   powerpc64) target=ppc64;;
-   *) echo "Unsupported platform: $(cc -dumpmachine)"; exit;;
-esac
-
 patch -p1 < ppc64.patch
+
+# LTO causes problems
+export CFLAGS="$CFLAGS -fno-lto"
+export CXXFLAGS="$CXXFLAGS -fno-lto"
+
+case $KISS_XHOST_ARCH in
+   aarch64)     target=aarch64;;
+   arm)         target=arm;;
+   i686)        target=i686;;
+   powerpc64)   target=ppc64;;
+   powerpc64le) target=ppc64;;
+   riscv64)     target=riscv64;;
+   x86_64)      target=x86_64;;
+   *) echo "Unsupported platform: $KISS_XHOST_ARCH"; exit 1;;
+esac
 
 ./configure \
     --cc="${CC:-cc}" \
     --cxx="${CXX:-c++}" \
-    --dep-cc="${CC:-cc}" \
-    --prefix=/usr \
-    --disable-cross-compile \
-    --sysroot=${KISS_ROOT:-/} \
-    --target-os=linux \
+    --host-cc="clang" \
     --arch=$target \
-    --enable-shared \
+    --enable-cross-compile \
+    --prefix=/usr \
+    --disable-debug \
+    --disable-libxml2 \
+    --disable-static \
+    --disable-libxcb \
+    --disable-libxcb-shm \
+    --disable-libxcb-xfixes \
+    --disable-libxcb-shape \
+    --disable-xlib \
     --enable-gpl \
-    --enable-version3 \
-    --enable-nonfree \
-    --enable-openssl \
     --enable-libass \
+    --enable-libdrm \
     --enable-libmp3lame \
     --enable-libopus \
     --enable-libvorbis \
     --enable-libvpx \
+    --enable-libwebp \
     --enable-libx264 \
     --enable-libx265 \
     --enable-libxvid \
-    --enable-libwebp \
-    --enable-libdrm \
+    --enable-nonfree \
+    --enable-openssl \
+    --enable-shared \
+    --enable-version3 \
     --x86asmexe=nasm \
-    --disable-debug \
-    --enable-cross-compile \
-    --disable-libxml2
+
+
+#    --prefix=/usr \
+#    --sysroot="${KISS_ROOT:-/}" \
+#    --target-os=linux \
+#    --arch=$target \
+#    --enable-shared \
+#    --enable-gpl \
+#    --enable-version3 \
+#    --enable-nonfree \
+#    --enable-openssl \
+#    --enable-libass \
+#    --enable-libmp3lame \
+#    --enable-libopus \
+#    --enable-libvorbis \
+#    --enable-libvpx \
+#    --enable-libx264 \
+#    --enable-libx265 \
+#    --enable-libxvid \
+#    --enable-libwebp \
+#    --enable-libdrm \
+#    --x86asmexe=nasm \
+#    --disable-debug \
+#    --enable-cross-compile \
+#    --disable-libxml2
 
 sed -i 's/gcc/clang/g' ffbuild/config.mak
 
 make
-make DESTDIR="$1" install
+make install
 
 rm -rf "$1/usr/share/ffmpeg/examples"

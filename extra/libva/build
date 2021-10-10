@@ -1,7 +1,5 @@
 #!/bin/sh -e
 
-export DESTDIR="$1"
-
 kiss-meson-config > meson.config
 
 meson \
@@ -9,6 +7,9 @@ meson \
     --cross-file="meson.config" \
     --sysconfdir=/etc \
     --mandir=/usr/share/man \
+    -Dwith_wayland=yes \
+    -Dwith_x11=no \
+    -Dwith_glx=no \
     -Ddocs=false \
     -Dintrospection=false \
     . output

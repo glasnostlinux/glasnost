@@ -2,14 +2,15 @@
 
 ./configure \
     --prefix=/usr \
-    --build="$(cat /etc/os-arch)-linux-musl" \
-    --host="$(cat $KISS_ROOT/etc/os-arch)-linux-musl" \
+    --build=$KISS_XBUILD_TRIPLE \
+    --host=$KISS_XHOST_TRIPLE \
     --disable-nls \
     --with-nettle-mini \
     --with-included-libtasn1 \
     --with-included-unistring \
     --enable-static \
-    --with-p11-kit
+    --with-p11-kit \
+    --with-default-trust-store-file=/etc/ssl/cert.pem
 
 make
-make DESTDIR="$1" install
+make install

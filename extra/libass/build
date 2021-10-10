@@ -1,10 +1,19 @@
 #!/bin/sh -e
 
-./configure \
+patch -p1 < no-fribidi.patch
+
+# Remove fribidi configure checks.
+sed -e 's/as_fn_error.*fribidi/: 0 "/' \
+    -e '/pkg_requires="fribidi >= .*/d' \
+    configure > _
+mv -f _ configure
+
+sh ./configure \
+    FRIBIDI_LIBS="  " \
     --prefix=/usr \
-    --build="$(cat /etc/os-arch)-linux-musl" \
-    --host="$(cat ${KISS_ROOT}/etc/os-arch)-linux-musl" \
+    --build=$KISS_XBUILD_TRIPLE \
+    --host=$KISS_XHOST_TRIPLE \
     --enable-fontconfig
 
 make
-make DESTDIR="$1" install
+make install

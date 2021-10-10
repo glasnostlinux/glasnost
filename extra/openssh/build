@@ -2,8 +2,8 @@
 
 ./configure \
     --prefix=/usr \
-    --build="$(cat /etc/os-arch)-linux-musl" \
-    --host="$(cat ${KISS_ROOT}/etc/os-arch)-linux-musl" \
+    --build=$KISS_XBUILD_TRIPLE \
+    --host=$KISS_XHOST_TRIPLE \
     --datadir=/usr/share/openssh \
     --sysconfdir=/etc/ssh \
     --sbindir=/usr/bin \
@@ -21,9 +21,11 @@
 make
 make DESTDIR="$1" install
 
-install -m 755 contrib/ssh-copy-id   "$1/usr/bin/ssh-copy-id"
-install -m 644 contrib/ssh-copy-id.1 "$1/usr/share/man/man8/ssh-copy-id.1"
+cp -f contrib/ssh-copy-id   "$1/usr/bin"
+cp -f contrib/ssh-copy-id.1 "$1/usr/share/man/man1"
+chmod +x "$1/usr/bin/ssh-copy-id"
 
 # Install runit services.
-install -Dm 755 sshd.run "$1/etc/sv/sshd/run"
-ln -s /run/runit/supervise.sshd "$1/etc/sv/sshd/supervise"
+mkdir -p "$1/etc/sv/sshd"
+cp -f sshd.run "$1/etc/sv/sshd/run"
+ln -sf /run/runit/supervise.sshd "$1/etc/sv/sshd/supervise"

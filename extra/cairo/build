@@ -1,27 +1,28 @@
 #!/bin/sh -e
 
 # Disable building 'cairo-sphinx'.
-sed -i "s/BUILD_SPHINX_TRUE=/BUILD_SPHINX_TRUE='#'/"   configure
-sed -i "s/BUILD_SPHINX_FALSE='#'/BUILD_SPHINX_FALSE=/" configure
+sed -e "s/\(BUILD_SPHINX_TRUE=\)/\1'#'/" \
+    -e "s/\(BUILD_SPHINX_FALSE=\)'#'/\1=/" \
+    configure > _
+mv -f _ configure
 
-# Disable building tests.
-sed -i 's/test perf//g' Makefile.in
+# Disable building tests and documentation.
+sed 's/boilerplate test perf//g;s/src doc/src/g' Makefile.in > _
+mv -f _ Makefile.in
 
-./configure \
+sh ./configure \
     --prefix=/usr \
-    --build="$(cat /etc/os-arch)-linux-musl" \
-    --host="$(cat ${KISS_ROOT}/etc/os-arch)-linux-musl" \
+    --build=$KISS_XBUILD_TRIPLE \
+    --host=$KISS_XHOST_TRIPLE \
     --disable-static \
     --enable-tee \
-    --enable-gl \
-    --enable-egl \
-    --enable-xlib-xcb \
-    --enable-xcb \
-    --enable-xlib-xrender \
-    --enable-xlib \
+    --disable-xlib-xcb \
+    --disable-xcb \
+    --disable-xlib-xrender \
+    --disable-xlib \
     --disable-trace \
     --disable-valgrind \
     --disable-gtk-doc-html
 
 make
-make DESTDIR="$1" install
+make install

@@ -1,2 +1,3 @@
+autoconf make
 ncurses
 python make

@@ -3,8 +3,17 @@
 patch -p1 < mandoc-no-warn.patch
 
 sed -i '/int dummy/d' compat_err.c
+#sed -i '/int dummy/d' ./compat_*.c
 sed -i 's,"more -s","less",g' main.c
-sed -i "s/CC=.*/CC='$CC'/"    configure
+#sed -i 's/CC=.*/CC="$CC"/'    configure
+
+# Change default pager.
+sed 's,"more -s","less",g' main.c > _
+mv -f _ main.c
+
+# Use CC rather than broken default.
+sed 's/CC=.*/CC="\$CC"/' configure > _
+mv -f _ configure
 
 cat > configure.local <<EOF
 PREFIX=/usr
@@ -14,9 +23,13 @@ SBINDIR=/usr/bin
 CC="${CC:-cc}"
 CFLAGS="$CFLAGS"
 LN="ln -sf"
+HAVE_ENDIAN="yes"
+HAVE_NANOSLEEP="yes"
 EOF
 
-./configure
+sh ./configure
 
 make
-make -B -j1 DESTDIR="$1" base-install
+make -j1 base-install
+
+chmod 755 "$1/usr/bin/"*

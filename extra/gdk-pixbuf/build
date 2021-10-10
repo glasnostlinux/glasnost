@@ -1,25 +1,38 @@
 #!/bin/sh -e
 
-export DESTDIR="$1"
-
-sed -i "/subdir('tests')/d" meson.build
+: > tests/meson.build
 
 kiss-meson-config > meson.config
 
 meson \
     --prefix=/usr \
     --cross-file="meson.config" \
-    --sysconfdir=/etc \
     --mandir=/usr/share/man \
+    -Ddebug=false \
     -Dgir=false \
     -Djasper=false \
+    -Djpeg=true \
     -Dpng=true \
+    -Dtiff=false \
     -Ddocs=false \
     -Dman=false \
     -Dgio_sniffing=false \
     -Dinstalled_tests=false \
     -Dbuiltin_loaders=all \
     . output
+
+
+#    --sysconfdir=/etc \
+#    --mandir=/usr/share/man \
+#    -Dgir=false \
+#    -Djasper=false \
+#    -Dpng=true \
+#    -Ddocs=false \
+#    -Dman=false \
+#    -Dgio_sniffing=false \
+#    -Dinstalled_tests=false \
+#    -Dbuiltin_loaders=all \
+#    . output
 
 ninja -C output
 ninja -C output install

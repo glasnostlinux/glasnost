@@ -1,12 +1,12 @@
-##!/bin/sh -e
+#!/bin/sh -e
 
 ./configure \
     --prefix=/usr \
-    --build="$(cat /etc/os-arch)-linux-musl" \
-    --host="$(cat $KISS_ROOT/etc/os-arch)-linux-musl" \
+    --build=$KISS_XBUILD_TRIPLE \
+    --host=$KISS_XHOST_TRIPLE \
     --without-ndiff \
     --with-openssl=openssl \
     --without-zenmap
 
 make
-make DESTDIR="$1" install
+make install

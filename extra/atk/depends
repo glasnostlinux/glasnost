@@ -1,4 +1,1 @@
-glib
-libffi
-meson   make
-pkgconf make
+../../modules/repo/extra/atk/depends

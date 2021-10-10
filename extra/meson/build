@@ -6,37 +6,6 @@ python setup.py install \
     --optimize=1 \
     --skip-build
 
-# Determine platform properties
-case $(cat $KISS_ROOT/etc/os-arch) in
-   aarch64) export CPUFAM="aarch64" CPU="aarch64" END="little";;
-   x86_64) export CPUFAM="x86_64" CPU="x86_64" END="little";;
-   powerpc64le) export CPUFAM="ppc64" CPU="ppc64le" END="little";;
-   powerpc64) export CPUFAM="ppc64"  CPU="ppc64" END="big";;
-   *) echo "Unsupported platform."; exit 1;;
-esac
-
-# Write crossbuild templates
-cat > local.meson <<EOF
-system = 'linux'
-cpu_family = '$CPUFAM'
-cpu = '$CPU'
-endian = '$END'
-EOF
-
-(echo "[build_machine]"  ; cat local.meson) > build.meson
-(echo "[host_machine]"   ; cat local.meson) > host.meson
-(echo "[target_machine]" ; cat local.meson) > target.meson
-
-# Set binaries for build host
-#cat >> build.meson <<EOF
-#
-#[binaries]
-#pkgconfig = 'pkgconf'
-#EOF
-
 # Install files used for cross building
 mkdir -p "$1/usr/share/meson"
-install -Dm644 build.meson       "$1/usr/share/meson/build.meson"
-install -Dm644 host.meson        "$1/usr/share/meson/host.meson"
-install -Dm644 target.meson      "$1/usr/share/meson/target.meson"
 install -Dm755 kiss-meson-config "$1/usr/bin/kiss-meson-config"

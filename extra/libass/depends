@@ -1,6 +1,1 @@
-expat
-fontconfig
-freetype-harfbuzz
-fribidi
-nasm    make
-pkgconf make
+../../modules/repo/extra/libass/depends

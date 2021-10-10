@@ -1,4 +1,6 @@
-#!/bin/sh
+#!/bin/sh -e
 
-# TODO: deal with cross arch install?
-# gdk-pixbuf-query-loaders --update-cache
+echo ""
+echo "You should run this on your target machine:"
+echo "    gdk-pixbuf-query-loaders --update-cache"
+echo ""

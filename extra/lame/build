@@ -1,10 +1,17 @@
 #!/bin/sh -e
 
+# Disable HTML documentation.
+sed 's/html man/man/' doc/Makefile.in > _
+mv -f _ doc/Makefile.in
+
 ./configure \
+    ac_cv_lib_ncurses_initscr=no \
+    ac_cv_lib_curses_initscr=no \
     --prefix=/usr \
-    --build="$(cat /etc/os-arch)-linux-musl" \
-    --host="$(cat ${KISS_ROOT}/etc/os-arch)-linux-musl" \
-    --enable-shared
+    --build=$KISS_XBUILD_TRIPLE \
+    --host=$KISS_XHOST_TRIPLE \
+    --enable-shared \
+    --disable-gtktest
 
 make
-make DESTDIR="$1" install
+make install

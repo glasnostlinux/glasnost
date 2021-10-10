@@ -1,7 +1,5 @@
 #!/bin/sh -e
 
-pkg_dir=$1
-
 mkdir tmp
 
 # Build just for the purposes of zic
@@ -16,7 +14,7 @@ make DESTDIR="$1" ZIC="$(realpath tmp/usr/bin/zic)" ZICDIR=/usr/bin install
 
 set -- africa asia australasia europe northamerica southamerica
 
-./tmp/usr/bin/zic -d "$pkg_dir/usr/share/zoneinfo" "$@"
-./tmp/usr/bin/zic -d "$pkg_dir/usr/share/zoneinfo/posix" "$@"
-./tmp/usr/bin/zic -d "$pkg_dir/usr/share/zoneinfo/right" -L leapseconds "$@"
-./tmp/usr/bin/zic -d "$pkg_dir/usr/share/zoneinfo" -p America/New_York
+./tmp/usr/bin/zic -d "$DESTDIR/usr/share/zoneinfo" "$@"
+./tmp/usr/bin/zic -d "$DESTDIR/usr/share/zoneinfo/posix" "$@"
+./tmp/usr/bin/zic -d "$DESTDIR/usr/share/zoneinfo/right" -L leapseconds "$@"
+./tmp/usr/bin/zic -d "$DESTDIR/usr/share/zoneinfo" -p America/New_York

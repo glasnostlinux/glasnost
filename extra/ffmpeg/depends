@@ -2,12 +2,12 @@ alsa-lib
 lame
 libass
 libogg
-libressl
 libvorbis
 libvpx
 libwebp
 linux-headers make
 nasm          make
+openssl
 opus
 pkgconf make
 x264

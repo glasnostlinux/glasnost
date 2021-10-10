@@ -9,9 +9,8 @@ vim_cv_tgetent=zero \
 ac_cv_small_wchar_t=no \
 ./configure \
     --prefix=/usr \
-    --build="$(cat /etc/os-arch)-linux-musl" \
-    --host="$(cat ${KISS_ROOT}/etc/os-arch)-linux-musl" \
-    --with-tlib=ncursesw \
+    --build=$KISS_XBUILD_TRIPLE \
+    --host=$KISS_XHOST_TRIPLE \
     --enable-cscope \
     --enable-multibyte \
     --with-ex-name=vim-ex \
@@ -21,11 +20,11 @@ ac_cv_small_wchar_t=no \
     --disable-rubyinterp \
     --disable-netbeans \
     --disable-gpm \
-    --disable-hangulinput \
     --disable-xim \
     --disable-gui \
     --disable-nls \
-    --without-x
+    --without-x \
+    --with-tlib=ncursesw
 
 make
-make DESTDIR="$1" install
+make install

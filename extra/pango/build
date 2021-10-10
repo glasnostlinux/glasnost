@@ -1,9 +1,14 @@
 #!/bin/sh -e
 
-export DESTDIR="$1"
+patch -p1 < no-fribidi.patch
 
-sed -i "/subdir('tests')/d"    meson.build
-sed -i "/subdir('examples')/d" meson.build
+# Disable download of missing (optional) dependencies
+# during the build. This cannot be turned off otherwise.
+rm -rf subprojects
+
+: > tests/meson.build
+: > examples/meson.build
+: > docs/meson.build
 
 kiss-meson-config > meson.config
 
@@ -12,8 +17,9 @@ meson \
     --cross-file="meson.config" \
     -Dgir=false \
     -Dgtk_doc=false \
+    -Dxft=disabled \
     -Dintrospection=disabled \
-    -Dinstalled_tests=false \
+    -Dinstall_tests=false \
     . build
 
 ninja -C build

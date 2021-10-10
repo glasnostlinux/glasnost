@@ -3,6 +3,9 @@
 # Makefile uses a flag which is incompatible with busybox.
 sed -i 's/644 -T/644 /g' Makefile
 
+# Fix MAX_PATH build issue
+patch -p1 < maxpath.patch
+
 make
 make PREFIX=/usr SBINDIR=/usr/bin DESTDIR="$1" install
 
@@ -11,3 +14,4 @@ rm -rf "$1/usr/lib"
 rm -rf "$1/etc/udev"
 rm -rf "$1/usr/share/zsh"
 rm -rf "$1/usr/share/bash-completion"
+rm -rf "$1/usr/lib/systemd"

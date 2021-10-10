@@ -1,9 +1,16 @@
 #!/bin/sh -e
 
+patch -p0 < reallocarray.patch
+
+autoreconf -f -i -v
+
 ./configure \
     --prefix=/usr \
-    --build="$(cat /etc/os-arch)-linux-musl" \
-    --host="$(cat ${KISS_ROOT}/etc/os-arch)-linux-musl"
+    --build=$KISS_XBUILD_TRIPLE \
+    --host=$KISS_XHOST_TRIPLE \
+    --sysconfdir=/etc \
+    --mandir=/usr/share/man \
+    --localstatedir=/var
 
 make
 make DESTDIR="$1" install

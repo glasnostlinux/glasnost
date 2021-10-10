@@ -1,5 +1,1 @@
-bzip2
-expat
-libffi
-sqlite
-zlib
+../../modules/repo/extra/python/depends

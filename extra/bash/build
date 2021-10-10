@@ -1,0 +1,26 @@
+#!/bin/sh -e
+
+export CFLAGS="$CFLAGS -static"
+
+patch -p1 < bash-5.1-parallel_make.patch
+
+for patch in bash51-0??; do
+    patch -p0 < "$patch"
+done
+
+export CC_FOR_BUILD="clang"
+
+./configure \
+    --prefix=/usr \
+    --build=$KISS_XBUILD_TRIPLE \
+    --host=$KISS_XHOST_TRIPLE \
+    --without-bash-malloc \
+    --without-installed-readline \
+    --disable-nls
+
+sed -i 's/gcc/clang/g' Makefile
+
+make
+make install
+
+ln -s bash "$1/usr/bin/sh"

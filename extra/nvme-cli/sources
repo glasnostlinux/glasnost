@@ -1,1 +1,2 @@
-https://github.com/linux-nvme/nvme-cli/archive/v1.13.tar.gz
+https://github.com/linux-nvme/nvme-cli/archive/vVERSION.tar.gz
+patches/maxpath.patch

@@ -1,9 +1,6 @@
 #!/bin/sh -e
 
-export DESTDIR="$1"
-
-# Don't build tests.
-sed -i "/subdir('tests')/d" meson.build
+: > tests/meson.build
 
 kiss-meson-config > meson.config
 

@@ -1,0 +1,4 @@
+#!/bin/sh
+
+chown root:wheel $KISS_ROOT/usr/bin/ssu
+chmod 4754       $KISS_ROOT/usr/bin/ssu

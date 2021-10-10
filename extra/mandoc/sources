@@ -1,2 +1,1 @@
-https://fossies.org/linux/misc/mandoc-1.14.5.tar.gz
-patches/mandoc-no-warn.patch
+../../modules/repo/extra/mandoc/sources

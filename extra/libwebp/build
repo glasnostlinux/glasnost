@@ -2,12 +2,13 @@
 
 ./configure \
     --prefix=/usr \
-    --build="$(cat /etc/os-arch)-linux-musl" \
-    --host="$(cat ${KISS_ROOT}/etc/os-arch)-linux-musl" \
+    --build=$KISS_XBUILD_TRIPLE \
+    --host=$KISS_XHOST_TRIPLE \
     --disable-static \
+    --disable-tiff \
     --enable-libwebpmux \
     --enable-libwebpdemux \
     --enable-libwebpdecoder
 
 make
-make DESTDIR="$1" install
+make install

@@ -1,9 +1,0 @@
-#!/bin/sh -e
-
-patch -p1 < surf-playexternal-20190724-b814567.diff
-
-sed -i 's,/usr/include,,g;s,/usr/lib,,g' config.mk
-sed -i "/CFLAGS/s|\${CPPFLAGS}|& $CFLAGS|g" config.mk
-sed -i "/LDFLAGS/s|\-s|$LDFLAGS|g" config.mk
-make CC="$CC"
-make PREFIX=/usr DESTDIR="$1" install

@@ -1,21 +1,23 @@
 #!/bin/sh -e
 
-sed -i '/chown/d' GNUmakefile
-
 # Needed when cross building
 sed -i 's/UID_MAX/65535/g' doas.c
 sed -i 's/GID_MAX/65535/g' doas.c
 
+BINOWN="$(id -u)" \
+BINGRP="$(id -g)" \
 ./configure \
     --prefix=/usr \
-    --build="$(cat /etc/os-arch)-linux-musl" \
-    --host="$(cat ${KISS_ROOT}/etc/os-arch)-linux-musl" \
+    --build=$KISS_XBUILD_TRIPLE \
+    --host=$KISS_XHOST_TRIPLE \
     --enable-static \
     --with-shadow \
     --with-timestamp \
     --without-pam
 
 make
-make DESTDIR="$1" install
+make install
 
-install -Dm600 doas.conf "$1/etc/doas.conf"
+mkdir -p "$1/etc"
+cp -f doas.conf "$1/etc"
+chmod 600 "$1/etc/doas.conf"

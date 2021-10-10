@@ -6,8 +6,6 @@ patch -p1 < cmake-no-execinfo.patch
 # Check for cmake on the build machine
 if [ -d "/var/db/kiss/installed/cmake" ]; then
 
-    export DESTDIR="$1"
-
     kiss-cmake-config > cmake.config
     echo "SET(CMake_RUN_CXX_FILESYSTEM ON)"                >> cmake.config
     echo "SET(CMake_RUN_CXX_FILESYSTEM__TRYRUN_OUTPUT ON)" >> cmake.config
@@ -40,10 +38,12 @@ else
         --system-bzip2
 
     make
-    make DESTDIR="$1" install
+    make install
 fi
 
-rm -rf "$1/usr/doc"
-rm -rf "$1/usr/share/cmake"*/Help
+rm -rf \
+    "$1/usr/doc" \
+    "$1/usr/share/cmake"*/Help \
+    "$1/usr/share/bash-completion"
 
 install -Dm755 kiss-cmake-config "$1/usr/bin/kiss-cmake-config"

@@ -1,15 +1,28 @@
 #!/bin/sh -e
 
+# Determine arch
+case $KISS_XHOST_ARCH in
+    powerpc64)   extra_opts="--with-coroutine=ppc64le";;
+esac
+
+
+# LTO causes segfaults
 export CFLAGS="$CFLAGS -fno-lto"
 export CXXFLAGS="$CXXFLAGS -fno-lto"
 export LDFLAGS="$LDFLAGS -fno-lto"
 
 ./configure \
     --prefix=/usr \
-    --build="$(cat /etc/os-arch)-linux-musl" \
-    --host="$(cat $KISS_ROOT/etc/os-arch)-linux-musl" \
+    --build=$KISS_XBUILD_TRIPLE \
+    --host=$KISS_XHOST_TRIPLE \
     --enable-shared \
+    $extra_opts \
     --disable-rpath
 
+# Work around a bug in busybox's sh that causes an infinite loop when
+# redirecting. Use tee for redirection instead.
+sed 's/} > $@/} | tee $@/g' Makefile > _
+mv -f _ Makefile
+
 make
-make DESTDIR="$1" install
+make install

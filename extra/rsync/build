@@ -8,8 +8,8 @@ export CFLAGS="-static $CFLAGS"
 
 ./configure \
     --prefix=/usr \
-    --build="$(cat /etc/os-arch)-linux-musl" \
-    --host="$(cat ${KISS_ROOT}/etc/os-arch)-linux-musl" \
+    --build=$KISS_XBUILD_TRIPLE \
+    --host=$KISS_XHOST_TRIPLE \
     --with-included-popt \
     --disable-xxhash \
     --disable-zstd \
@@ -17,4 +17,4 @@ export CFLAGS="-static $CFLAGS"
     --without-included-zlib
 
 make
-make DESTDIR="$1" install
+make install

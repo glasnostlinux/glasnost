@@ -1,4 +1,5 @@
 #!/bin/sh
 
-fc-cache --sysroot=${KISS_ROOT:-/} -vf &
-
+if [ -f /usr/bin/fc-cache ]; then
+    fc-cache --sysroot=${KISS_ROOT:-/} -vf &
+fi

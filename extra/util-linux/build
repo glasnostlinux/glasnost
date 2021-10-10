@@ -2,8 +2,8 @@
 
 ./configure \
     --prefix=/usr \
-    --build="$(cat /etc/os-arch)-linux-musl" \
-    --host="$(cat ${KISS_ROOT}/etc/os-arch)-linux-musl" \
+    --build=$KISS_XBUILD_TRIPLE \
+    --host=$KISS_XHOST_TRIPLE \
     --localstatedir=/var \
     --bindir=/usr/bin \
     --sbindir=/usr/bin \
@@ -18,8 +18,12 @@
     --without-systemd
 
 make
-make DESTDIR="$1" install
+make install
 
 # Fix broken --sbindir.
 mv -f "$1/usr/sbin/"* "$1/usr/bin"
 rmdir "$1/usr/sbin"
+
+rm -rf \
+    "$1/usr/share/doc" \
+    "$1/usr/share/bash-completion"

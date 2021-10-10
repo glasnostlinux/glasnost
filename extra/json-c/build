@@ -1,0 +1,13 @@
+#!/bin/sh -e
+
+kiss-cmake-config > cmake.config
+
+cmake -B build \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DCMAKE_TOOLCHAIN_FILE="$(realpath cmake.config)" \
+    -DCMAKE_INSTALL_LIBDIR=lib \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_TESTING=OFF
+
+cmake --build   build
+cmake --install build

@@ -1,9 +1,1 @@
-cairo
-fontconfig
-freetype-harfbuzz
-fribidi
-glib
-libXft
-libXrender
-meson   make
-pkgconf make
+../../modules/repo/extra/pango/depends

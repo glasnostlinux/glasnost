@@ -1,2 +1,2 @@
-https://github.com/rhboot/efivar/releases/download/37/efivar-37.tar.bz2
-patches/0001-Support-custom-cflags-for-CC_FOR_BUILD-and-CCLD_FOR_.patch
+https://github.com/rhboot/efivar/archive/VERSION.tar.gz
+patches/no-add-needed.patch

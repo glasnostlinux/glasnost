@@ -2,6 +2,8 @@
 
 ./configure \
     --prefix=/usr \
+    --build=$KISS_XBUILD_TRIPLE \
+    --host=$KISS_XHOST_TRIPLE \
     --mandir=/usr/share/man \
     --enable-pc-files \
     --disable-rpath-hack \
@@ -11,12 +13,10 @@
     --without-ada \
     --without-tests \
     --without-debug \
-    --without-cxx-binding \
-    --build="$(cat /etc/os-arch)-linux-musl" \
-    --host="$(cat ${KISS_ROOT}/etc/os-arch)-linux-musl"
+    --without-cxx-binding
 
 make
-make DESTDIR="$1" install
+make install
 
 # Force ncurses to link against wide-character ncurses library.
 for lib in ncurses form panel menu; do

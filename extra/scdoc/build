@@ -1,0 +1,6 @@
+#!/bin/sh -e
+
+sed -i -e "s|^HOST_SCDOC=.*|HOST_SCDOC=/usr/bin/scdoc|g" Makefile
+
+make PREFIX=/usr
+make PREFIX=/usr install

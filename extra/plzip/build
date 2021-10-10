@@ -7,8 +7,8 @@
 
 ./configure \
     --prefix=/usr \
-    --build="$(cat /etc/os-arch)-linux-musl" \
-    --host="$(cat ${KISS_ROOT}/etc/os-arch)-linux-musl" \
+    --build=$KISS_XBUILD_TRIPLE \
+    --host=$KISS_XHOST_TRIPLE \
     CXXFLAGS="$CXXFLAGS -static -lc++abi -L$PWD/lzlib -I$PWD/lzlib"
 
 make

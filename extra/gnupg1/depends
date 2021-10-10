@@ -1,4 +1,1 @@
-bzip2
-curl
-libressl
-zlib
+../../modules/repo/extra/gnupg1/depends

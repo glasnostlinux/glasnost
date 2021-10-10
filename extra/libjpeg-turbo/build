@@ -1,26 +1,15 @@
 #!/bin/sh -e
 
-export DESTDIR="$1"
-
-# Determine arch
-case $(cat $KISS_ROOT/etc/os-arch) in
-   aarch64) target=aarch64;;
-   x86_64) target=x86_64;;
-   powerpc64le) target=ppc64le;;
-   powerpc64) target=ppc64;;
-   *) echo "Unsupported platform: $(cc -dumpmachine)"; exit;;
-esac
-
+patch -p1 < no-docs.patch
 
 kiss-cmake-config > cmake.config
 
+# -DWITH_SIMD=False \
 cmake -B build \
     -DCMAKE_INSTALL_PREFIX=/usr \
     -DCMAKE_TOOLCHAIN_FILE="$(realpath cmake.config)" \
     -DCMAKE_INSTALL_LIBDIR=/usr/lib \
     -DCMAKE_SHARED_LIBS=True \
-    -DWITH_SIMD=False \
-    -DCMAKE_SYSTEM_PROCESSOR=$target \
     -DCMAKE_BUILD_TYPE=Release \
     -DWITH_JPEG8=1
 

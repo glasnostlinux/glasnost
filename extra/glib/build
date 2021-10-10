@@ -1,26 +1,31 @@
 #!/bin/sh -e
 
-export DESTDIR="$1"
+# Remove 'libelf' dependency.
+sed 's/HAVE_LIBELF/HAVE_KISS/' gio/meson.build > _
+mv -f _ gio/meson.build
 
-# Remove 'libelf' and 'util-linux' dependencies.
-sed -i 's/HAVE_LIBELF/HAVE_KISS/'      gio/meson.build
-sed -i 's/libmount_dep.found()/false/' meson.build
+# Remove 'util-linux' dependency.
+sed 's/libmount_dep.found()/false/' meson.build > _
+mv -f _ meson.build
 
-# Don't build tests/fuzzing stuff.
-find . -type f -name meson.build -exec \
-    sed -i "/subdir('tests')/d;/subdir('fuzzing')/d" {} +
+: > glib/tests/meson.build
+: > tests/meson.build
+: > gobject/tests/mesom.build
+: > gio/tests/meson.build
+: > fuzzing/meson.build
 
 kiss-meson-config > config.meson
 
+# -Dinternal_pcre=true \
+
 meson \
     --prefix=/usr \
+    --cross-file="config.meson" \
     -Dlibmount=disabled \
     -Dinstalled_tests=false \
     -Ddefault_library=both \
     -Dman=false \
     -Dfam=false \
-    -Dinternal_pcre=true \
-    --cross-file="config.meson" \
     . build
 
 ninja -C build
@@ -28,5 +33,6 @@ ninja -C build install
 
 # Note: json-glib not building cross ppc64le->aarch64
 # Error compiling asm( ... ) statement
+# Therefore this is not included.
 
-kiss l dbus >/dev/null 2>&1 || rm -rf "$1/usr/bin/gdbus"
+rm -rf "$1/usr/bin/gdbus"

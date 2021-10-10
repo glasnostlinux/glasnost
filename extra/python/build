@@ -6,15 +6,10 @@ cat >> Modules/Setup <<EOF
 _uuid nis ossaudiodev
 EOF
 
-
-# TODO:
-# Don't link to ncurses and readline if present
-
 # Reported 20-27% performance improvements.
 # See: "PythonNoSemanticInterpositionSpeedup"
-export CFLAGS="-fno-semantic-interposition -I$KISS_ROOT/usr/include -isysroot $KISS_ROOT/usr"
-export CXXFLAGS="-fno-semantic-interposition -I$KISS_ROOT/usr/include -isysroot $KISS_ROOT/usr"
-export LDFLAGS="$LDFLAGS -fno-semantic-interposition "
+export CFLAGS="$CFLAGS -fno-semantic-interposition"
+export LDFLAGS="$LDFLAGS -fno-semantic-interposition"
 export AR=ar
 export RANLIB=ranlib
 export READELF=readelf
@@ -23,53 +18,28 @@ for patch in *.patch; do
     patch -p1 < "$patch"
 done
 
-_arch=$KISS_XHOST_TRIPLE
-
-# Detect big endian platforms
-if [ $KISS_XHOST_ARCH == "powerpc64" ]; then
-    BIG_ENDIAN=yes
-fi
-
-if [ "$_arch" == "armv7-linux-musleabihf" ]; then
-    _arch=arm-linux-musleabihf
-fi
-
-# force system libs
-rm -r Modules/expat \
-    Modules/_ctypes/darwin* \
-    Modules/_ctypes/libffi*
+# Python assuemes readelf is not multi-arch
+sed -i 's/readelf|/readelfx|/' configure
 
 ac_cv_file__dev_ptc=no \
 ac_cv_file__dev_ptmx=no \
 ax_cv_c_float_words_bigendian="${BIG_ENDIAN:-no}" \
 ./configure \
     --prefix=/usr \
+    --build=$KISS_XBUILD_TRIPLE \
+    --host=$KISS_XHOST_TRIPLE \
     --enable-shared \
     --with-system-expat \
     --with-system-ffi \
     --with-ensurepip=yes \
     --without-doc-strings \
-    --build=$KISS_XBUILD_TRIPLE \
-    --host=$KISS_XHOST_TRIPLE \
-    --target=$KISS_XHOST_TRIPLE \
-    --enable-shared \
     --disable-ipv6
 
-# Fix cross build
-sed -i 's/\-I\$(prefix)\/include \-c \$(srcdir)\/Modules\/zlibmodule.c/\-I\$(KISS_ROOT)\/usr\/include \-c \$(srcdir)\/Modules\/zlibmodule.c/' Makefile
-
-# Build zlib module explicitly, this is missed when cross building
-make
-make Modules/zlib.cpython-39-$_arch.so
-make DESTDIR="$1" install
-
-install -Dm644 Modules/zlib.cpython-39-$_arch.so "$1/usr/lib/python3.9/lib-dynload/zlib.cpython-39-$_arch.so"
+make EXTRA_CFLAGS="$CFLAGS -DTHREAD_STACK_SIZE=0x100000"
+make install
 
 ln -s python3 "$1/usr/bin/python"
 ln -s pip3    "$1/usr/bin/pip"
-
-# Make static library writable.
-chmod u+w "$1/usr/lib/libpython"*
 
 # Let's make some kind of effort to reduce the overall
 # size of Python by removing a bunch of rarely used and
@@ -80,7 +50,7 @@ chmod u+w "$1/usr/lib/libpython"*
 {
     cd "$1/usr/lib/python"*
     rm -rf test ./*/test ./*/tests
-    rm -rf pydoc* idlelib turtle* config-* ensurepip
+    rm -rf pydoc* idlelib turtle* config-*
 
     cd "$1/usr/bin"
     rm -f pydoc* idle*
