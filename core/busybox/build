@@ -4,7 +4,10 @@ for patch in patch/*.patch; do
     patch -p1 < "$patch"
 done
 
-sed -i 's/# CONFIG_LFS is not set/CONFIG_LFS=y/g' .config-suid
+# Disable LFS support in suid binary for i686 (clang build error)
+if [ "$KISS_XHOST_ARCH" = "i686" ]; then
+    sed -i 's/# CONFIG_LFS is not set/CONFIG_LFS=y/g' .config-suid
+fi
 
 # CFLAGS cleanup
 # See http://lists.busybox.net/pipermail/busybox/2019-October/087558.html

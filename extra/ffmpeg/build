@@ -21,58 +21,29 @@ esac
     --cc="${CC:-cc}" \
     --cxx="${CXX:-c++}" \
     --host-cc="clang" \
-    --arch=$target \
-    --enable-cross-compile \
     --prefix=/usr \
-    --disable-debug \
-    --disable-libxml2 \
-    --disable-static \
-    --disable-libxcb \
-    --disable-libxcb-shm \
-    --disable-libxcb-xfixes \
-    --disable-libxcb-shape \
-    --disable-xlib \
+    --sysroot="${KISS_ROOT:-/}" \
+    --target-os=linux \
+    --arch=$target \
+    --enable-shared \
     --enable-gpl \
+    --enable-version3 \
+    --enable-nonfree \
+    --enable-openssl \
     --enable-libass \
-    --enable-libdrm \
     --enable-libmp3lame \
     --enable-libopus \
     --enable-libvorbis \
     --enable-libvpx \
-    --enable-libwebp \
     --enable-libx264 \
     --enable-libx265 \
     --enable-libxvid \
-    --enable-nonfree \
-    --enable-openssl \
-    --enable-shared \
-    --enable-version3 \
+    --enable-libwebp \
+    --enable-libdrm \
     --x86asmexe=nasm \
-
-
-#    --prefix=/usr \
-#    --sysroot="${KISS_ROOT:-/}" \
-#    --target-os=linux \
-#    --arch=$target \
-#    --enable-shared \
-#    --enable-gpl \
-#    --enable-version3 \
-#    --enable-nonfree \
-#    --enable-openssl \
-#    --enable-libass \
-#    --enable-libmp3lame \
-#    --enable-libopus \
-#    --enable-libvorbis \
-#    --enable-libvpx \
-#    --enable-libx264 \
-#    --enable-libx265 \
-#    --enable-libxvid \
-#    --enable-libwebp \
-#    --enable-libdrm \
-#    --x86asmexe=nasm \
-#    --disable-debug \
-#    --enable-cross-compile \
-#    --disable-libxml2
+    --disable-debug \
+    --enable-cross-compile \
+    --disable-libxml2
 
 sed -i 's/gcc/clang/g' ffbuild/config.mak
 

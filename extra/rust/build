@@ -1,0 +1,130 @@
+#!/bin/sh -e
+
+patch -p1 < libressl.patch
+patch -p1 < cross.patch
+
+# Set shared linking as the default.
+for f in \
+    compiler/rustc_target/src/spec/linux_musl_base.rs \
+    vendor/rustc-ap-rustc_target/src/spec/linux_musl_base.rs
+do
+    sed 's/\(crt_static_default = \)true/\1false/' "$f" > _
+    mv -f _ "$f"
+done
+
+# Clear vendor checksums
+sed -i 's/\("files":{\)[^}]*/\1/' \
+    vendor/openssl-sys/.cargo-checksum.json \
+    vendor/openssl-src/.cargo-checksum.json \
+    vendor/rustc-ap-rustc_target/.cargo-checksum.json \
+    vendor/libc/.cargo-checksum.json
+
+# Bootstrap correct version
+sed -i 's/1.55.0/1.56.0/' src/stage0.txt
+
+build="$KISS_XBUILD_ARCH-unknown-linux-$KISS_XBUILD_ABI"
+target="$KISS_XHOST_ARCH-unknown-linux-$KISS_XHOST_ABI"
+
+# This package mimics the download process of rust's 'x.py'
+# bootstrap library to allow for the removal of the internet
+# connection requirement per build.
+{
+    cache_dir="build/cache/2021-09-09"
+    mkdir -p $cache_dir
+
+    for tarball in *.tar.xz\?no-extract; do
+        mv -f "$tarball" "$cache_dir/${tarball%%\?no-extract}"
+    done
+}
+
+
+cat > config.toml <<EOF
+[build]
+build           =   "$build"
+host            = [ "$target" ]
+target          = [ "aarch64-unknown-linux-musl", "armv7-unknown-linux-musleabihf", "powerpc64-unknown-linux-musl", "powerpc64le-unknown-linux-musl", "x86_64-unknown-linux-musl" ]
+docs            = false
+compiler-docs   = false
+extended        = true
+submodules      = false
+python          = "python3"
+locked-deps     = true
+vendor          = true
+sanitizers      = false
+profiler        = false
+tools           = ["cargo"]
+cargo-native-static = true
+full-bootstrap  = false
+
+[install]
+prefix = "/usr"
+
+[rust]
+channel         = "stable"
+rpath           = true
+codegen-units   = 1
+backtrace       = false
+jemalloc        = false
+codegen-tests   = false
+llvm-libunwind  = "system"
+debug           = false
+debuginfo-level = 0
+optimize        = true
+
+EOF
+
+# Set up roots and compilers for each arch
+{
+    mkdir -p roots/bin
+
+    for arch in aarch64 armv7 powerpc64 powerpc64le x86_64
+    do
+        _root="$PWD/roots/$arch"
+        sed "s|_kissRoot|$_root|g" cc-target  > roots/bin/cc-$arch
+        sed "s|_kissRoot|$_root|g" cxx-target > roots/bin/cxx-$arch
+
+        if [ "$arch" = "armv7" ]; then
+            target="armv7-unknown-linux-musleabihf"
+        else
+            target="$arch-unknown-linux-musl"
+        fi
+
+        sed -i "s|_targetArch|$target|g" roots/bin/cc-$arch
+        sed -i "s|_targetArch|$target|g" roots/bin/cxx-$arch
+
+        cat >> config.toml <<EOF
+
+[target.$target]
+llvm-config = "/usr/bin/llvm-config"
+musl-root   = "$_root/usr"
+musl-libdir = "$_root/usr/lib"
+crt-static  = false
+cc          = "$(realpath roots/bin/cc-$arch)"
+cxx         = "$(realpath roots/bin/cxx-$arch)"
+linker      = "$(realpath roots/bin/cc-$arch)"
+EOF
+
+    done
+    chmod a+x roots/bin/*
+}
+
+
+env \
+LIBDIR_aarch64-unknown-linux-musl="$(realpath roots/aarch64/usr/lib)" \
+LIBDIR_powerpc64-unknown-linux-musl="$(realpath roots/powerpc64/usr/lib)" \
+LIBDIR_powerpc64le-unknown-linux-musl="$(realpath roots/powerpc64le/usr/lib)" \
+LIBDIR_x86_64-unknown-linux-musl="$(realpath roots/x86_64/usr/lib)" \
+LIBDIR_armv7-unknown-linux-musleabihf="$(realpath roots/armv7/usr/lib)" \
+AARCH64_UNKNOWN_LINUX_MUSL_OPENSSL_DIR="$(realpath roots/aarch64/usr)" \
+POWERPC64_UNKNOWN_LINUX_MUSL_OPENSSL_DIR="$(realpath roots/powerpc64/usr)" \
+POWERPC64LE_UNKNOWN_LINUX_MUSL_OPENSSL_DIR="$(realpath roots/powerpc64le/usr)" \
+X86_64_UNKNOWN_LINUX_MUSL_OPENSSL_DIR="$(realpath roots/x86_64/usr)" \
+ARMV7_UNKNOWN_LINUX_MUSLEABIHF_OPENSSL_DIR="$(realpath roots/armv7/usr)" \
+CFLAGS="-Wno-unused-command-line-argument -Wno-shift-op-parentheses" \
+CXXFLAGS="-Wno-shift-op-parentheses" \
+LDFLAGS="" \
+RUSTFLAGS="" \
+DESTDIR="$1" python3 ./x.py -j "$(nproc)" install
+
+rm -rf "$1/usr/lib/rustlib/src/"
+rm -f  "$1/usr/lib/rustlib/uninstall.sh"

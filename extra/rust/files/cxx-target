@@ -1,0 +1,14 @@
+#!/bin/sh
+
+
+ROOT=_kissRoot
+
+llvm_ver="$(cat ${ROOT}/var/db/kiss/installed/llvm/version | cut -d " " -f 1)"
+llvm_lib="$(clang --target=_targetArch --sysroot=$ROOT/usr -resource-dir=$ROOT/usr/lib/clang/$llvm_ver -print-libgcc-file-name)"
+llvm_lib=${llvm_lib##*/}
+llvm_lib=${llvm_lib##lib}
+llvm_lib=${llvm_lib%%\.a}
+
+args="--target=_targetArch --sysroot=$ROOT/usr -resource-dir=$ROOT/usr/lib/clang/$llvm_ver -L$ROOT/usr/lib/clang/$llvm_ver/lib/linux -l$llvm_lib  -L$ROOT/usr/lib -I$ROOT/usr/include -I$ROOT/usr/include/c++/v1"
+
+clang++ $args "$@" $args -fPIC

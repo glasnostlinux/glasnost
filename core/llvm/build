@@ -126,3 +126,5 @@ ln -s -f llvm-objcopy otool
 cd $1/usr/lib/clang/13.0.0/lib/linux
 install -Dm755 clang_rt.crtbegin-$libname.o $1/usr/lib/crtbegin.o
 install -Dm755 clang_rt.crtend-$libname.o   $1/usr/lib/crtend.o
+touch $1/usr/lib/crtbeginS.o
+touch $1/usr/lib/crtendS.o

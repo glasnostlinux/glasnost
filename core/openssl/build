@@ -7,13 +7,14 @@ case $KISS_XHOST_ARCH in
    x86_64)      target=linux-x86_64-clang;;
    i686)        target=linux-x86-clang;;
    powerpc64le) target=linux-ppc64le;;
-   powerpc64)   target=linux-ppc64 options="no-asm";;
+   powerpc64)   target=linux-ppc64;;
    riscv64)     target=linux64-riscv64;;
    *) echo "Unsupported platform: $KISS_XHOST_ARCH"; exit 1;;
 esac
 
 export CFLAGS="$CFLAGS"
 export CXXFLAGS="$CXXFLAGS"
+export PKG_CONFIG_SYSROOT_DIR=
 
 ./Configure \
     --prefix=/usr \

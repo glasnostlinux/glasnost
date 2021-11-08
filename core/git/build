@@ -1,6 +1,6 @@
 #!/bin/sh -e
 
-export CFLAGS="$CFLAGS -static -L${KISS_ROOT}/usr/lib "
+export CFLAGS="$CFLAGS -static"
 
 cat > config.mak <<EOF
 NO_GETTEXT=YesPlease
@@ -26,7 +26,10 @@ EOF
     ac_cv_fread_reads_directories=yes \
     ac_cv_iconv_omits_bom=no
 
-make LIBS="$(curl-config --static-libs) libgit.a xdiff/lib.a -lz"
+
+LIBS="$KISS_ROOT/usr/lib/libcurl.a --sysroot=$KISS_ROOT/usr -L$KISS_ROOT/usr/lib -lssl -lcrypto -lssl -lcrypto -lz"
+
+make LIBS="$LIBS libgit.a xdiff/lib.a"
 make install
 
 cp -Rf man "$1/usr/share/man"

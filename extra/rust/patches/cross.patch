@@ -1,0 +1,30 @@
+--- a/compiler/rustc_llvm/build.rs.orig
++++ a/compiler/rustc_llvm/build.rs
+@@ -241,11 +241,9 @@
+     cmd.arg(llvm_link_arg).arg("--ldflags");
+     for lib in output(&mut cmd).split_whitespace() {
+         if is_crossed {
+-            if let Some(stripped) = lib.strip_prefix("-LIBPATH:") {
+-                println!("cargo:rustc-link-search=native={}", stripped.replace(&host, &target));
+-            } else if let Some(stripped) = lib.strip_prefix("-L") {
+-                println!("cargo:rustc-link-search=native={}", stripped.replace(&host, &target));
+-            }
++            let libdir_env_var_name = format!("LIBDIR_{}", &target.as_str());
++            let libdir_loc = env::var(libdir_env_var_name).unwrap();
++            println!("cargo:rustc-link-search=native={}", libdir_loc);
+         } else if let Some(stripped) = lib.strip_prefix("-LIBPATH:") {
+             println!("cargo:rustc-link-search=native={}", stripped);
+         } else if let Some(stripped) = lib.strip_prefix("-l") {
+--- a/compiler/rustc_llvm/src/lib.rs	2021-07-30 23:10:43.290000000 +0100
++++ a/compiler/rustc_llvm/src/lib.rs	2021-07-30 23:11:12.340000000 +0100
+@@ -176,3 +176,10 @@
+         LLVMInitializeBPFAsmParser
+     );
+ }
++
++#[link(name = "c++abi", kind = "static")]
++extern {}
++#[link(name = "c++", kind = "static")]
++extern {}
++#[link(name = "z", kind = "static")]
++extern {}
