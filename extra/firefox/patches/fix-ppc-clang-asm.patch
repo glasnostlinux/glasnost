@@ -1,0 +1,215 @@
+--- a/xpcom/reflect/xptcall/md/unix/xptcinvoke_asm_ppc64_linux.S
++++ a/xpcom/reflect/xptcall/md/unix/xptcinvoke_asm_ppc64_linux.S
+@@ -62,11 +62,11 @@
+ .NS_InvokeByIndex:
+ #endif
+         mflr    0
+-        std     0,16(r1)
++        std     0,16(1)
+ 
+-        std     r29,-24(r1)
+-        std     r30,-16(r1)
+-        std     r31,-8(r1)
++        std     r29,-24(1)
++        std     r30,-16(1)
++        std     r31,-8(1)
+ 
+         mr      r29,r3                  # Save 'that' in r29
+         mr      r30,r4                  # Save 'methodIndex' in r30
+@@ -105,14 +105,14 @@
+ 
+         # Set up to invoke function
+ 
+-        ld      r9,0(r29)               # vtable (r29 is 'that')
++        ld      r9,0(29)               # vtable (r29 is 'that')
+         mr      r3,r29                  # self is first arg, obviously
+ 
+         sldi    r30,r30,3               # Find function descriptor 
+         add     r9,r9,r30
+-        ld      r12,0(r9)
++        ld      r12,0(9)
+ 
+-        std     r2,STACK_TOC(r1)        # Save r2 (TOC pointer)
++        std     r2,STACK_TOC(1)        # Save r2 (TOC pointer)
+ 
+ #if _CALL_ELF == 2
+         mtctr   r12
+@@ -124,37 +124,37 @@
+ #endif
+ 
+         # Load FP and GP registers as required
+-        ld      r4, -(23*8)(r31) 
+-        ld      r5, -(22*8)(r31) 
+-        ld      r6, -(21*8)(r31) 
+-        ld      r7, -(20*8)(r31) 
+-        ld      r8, -(19*8)(r31) 
+-        ld      r9, -(18*8)(r31) 
+-        ld      r10, -(17*8)(r31) 
++        ld      r4, -(23*8)(31) 
++        ld      r5, -(22*8)(31) 
++        ld      r6, -(21*8)(31) 
++        ld      r7, -(20*8)(31) 
++        ld      r8, -(19*8)(31) 
++        ld      r9, -(18*8)(31) 
++        ld      r10, -(17*8)(31) 
+ 
+-        lfd     f1, -(16*8)(r31)
+-        lfd     f2, -(15*8)(r31)
+-        lfd     f3, -(14*8)(r31)
+-        lfd     f4, -(13*8)(r31)
+-        lfd     f5, -(12*8)(r31)
+-        lfd     f6, -(11*8)(r31)
+-        lfd     f7, -(10*8)(r31)
+-        lfd     f8, -(9*8)(r31)
+-        lfd     f9, -(8*8)(r31)
+-        lfd     f10, -(7*8)(r31)
+-        lfd     f11, -(6*8)(r31)
+-        lfd     f12, -(5*8)(r31)
+-        lfd     f13, -(4*8)(r31)
++        lfd     f1, -(16*8)(31)
++        lfd     f2, -(15*8)(31)
++        lfd     f3, -(14*8)(31)
++        lfd     f4, -(13*8)(31)
++        lfd     f5, -(12*8)(31)
++        lfd     f6, -(11*8)(31)
++        lfd     f7, -(10*8)(31)
++        lfd     f8, -(9*8)(31)
++        lfd     f9, -(8*8)(31)
++        lfd     f10, -(7*8)(31)
++        lfd     f11, -(6*8)(31)
++        lfd     f12, -(5*8)(31)
++        lfd     f13, -(4*8)(31)
+ 
+         bctrl                           # Do it
+ 
+-        ld      r2,STACK_TOC(r1)        # Load our own TOC pointer
+-        ld      r1,0(r1)                # Revert stack frame
+-        ld      0,16(r1)                # Reload lr
++        ld      r2,STACK_TOC(1)        # Load our own TOC pointer
++        ld      r1,0(1)                # Revert stack frame
++        ld      0,16(1)                # Reload lr
+         mtlr    0
+-        ld      29,-24(r1)              # Restore NVGPRS
+-        ld      30,-16(r1)
+-        ld      31,-8(r1)
++        ld      29,-24(1)              # Restore NVGPRS
++        ld      30,-16(1)
++        ld      31,-8(1)
+         blr
+ 
+ #if _CALL_ELF == 2
+--- a/xpcom/reflect/xptcall/md/unix/xptcstubs_asm_ppc64_linux.S
++++ a/xpcom/reflect/xptcall/md/unix/xptcstubs_asm_ppc64_linux.S
+@@ -58,35 +58,35 @@
+ #endif
+         mflr    r0
+ 
+-        std     r4, -56(r1)                     # Save all GPRS
+-        std     r5, -48(r1)
+-        std     r6, -40(r1)
+-        std     r7, -32(r1)
+-        std     r8, -24(r1)
+-        std     r9, -16(r1)
+-        std     r10, -8(r1)
++        std     r4, -56(1)                     # Save all GPRS
++        std     r5, -48(1)
++        std     r6, -40(1)
++        std     r7, -32(1)
++        std     r8, -24(1)
++        std     r9, -16(1)
++        std     r10, -8(1)
+ 
+-        stfd    f13, -64(r1)                    # ... and FPRS
+-        stfd    f12, -72(r1)
+-        stfd    f11, -80(r1)
+-        stfd    f10, -88(r1)
+-        stfd    f9, -96(r1)
+-        stfd    f8, -104(r1)
+-        stfd    f7, -112(r1)
+-        stfd    f6, -120(r1)
+-        stfd    f5, -128(r1)
+-        stfd    f4, -136(r1)
+-        stfd    f3, -144(r1)
+-        stfd    f2, -152(r1)
+-        stfd    f1, -160(r1)
++        stfd    f13, -64(1)                    # ... and FPRS
++        stfd    f12, -72(1)
++        stfd    f11, -80(1)
++        stfd    f10, -88(1)
++        stfd    f9, -96(1)
++        stfd    f8, -104(1)
++        stfd    f7, -112(1)
++        stfd    f6, -120(1)
++        stfd    f5, -128(1)
++        stfd    f4, -136(1)
++        stfd    f3, -144(1)
++        stfd    f2, -152(1)
++        stfd    f1, -160(1)
+ 
+         subi    r6,r1,56                        # r6 --> gprData
+         subi    r7,r1,160                       # r7 --> fprData
+         addi    r5,r1,STACK_PARAMS              # r5 --> extra stack args
+ 
+-        std     r0, 16(r1)
++        std     r0, 16(1)
+ 	
+-        stdu    r1,-288(r1)
++        stdu    r1,-288(1)
+                                                 # r3 has the 'self' pointer
+                                                 # already
+ 
+@@ -97,8 +97,8 @@
+         bl      PrepareAndDispatch
+         nop
+ 
+-        ld      1,0(r1)                         # restore stack
+-        ld      r0,16(r1)                       # restore LR
++        ld      1,0(1)                         # restore stack
++        ld      r0,16(1)                       # restore LR
+         mtlr    r0
+         blr
+ 
+--- a/security/nss/lib/freebl/ppc-gcm.s
++++ a/security/nss/lib/freebl/ppc-gcm.s
+@@ -639,13 +639,13 @@
+ .endm
+ 
+     # store non-volatile general registers
+-    std          31,-8(SP);
+-    std          30,-16(SP);
+-    std          29,-24(SP);
+-    std          28,-32(SP);
+-    std          27,-40(SP);
+-    std          26,-48(SP);
+-    std          25,-56(SP);
++    std          31,-8(1);
++    std          30,-16(1);
++    std          29,-24(1);
++    std          28,-32(1);
++    std          27,-40(1);
++    std          26,-48(1);
++    std          25,-56(1);
+ 
+     # store non-volatile vector registers
+     addi         9, SP, -80
+@@ -1031,13 +1031,13 @@
+     lvx          24, 0, 9
+     
+     # restore non-volatile general registers
+-    ld           31,-8(SP);
+-    ld           30,-16(SP);
+-    ld           29,-24(SP);
+-    ld           28,-32(SP);
+-    ld           27,-40(SP);
+-    ld           26,-48(SP);
+-    ld           25,-56(SP);
++    ld           31,-8(1);
++    ld           30,-16(1);
++    ld           29,-24(1);
++    ld           28,-32(1);
++    ld           27,-40(1);
++    ld           26,-48(1);
++    ld           25,-56(1);
+     blr
+ .size ppc_aes_gcmCRYPT, . - ppc_aes_gcmCRYPT
+ 

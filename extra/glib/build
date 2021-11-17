@@ -16,8 +16,6 @@ mv -f _ meson.build
 
 kiss-meson-config > config.meson
 
-# -Dinternal_pcre=true \
-
 meson \
     --prefix=/usr \
     --cross-file="config.meson" \
@@ -30,9 +28,5 @@ meson \
 
 ninja -C build
 ninja -C build install
-
-# Note: json-glib not building cross ppc64le->aarch64
-# Error compiling asm( ... ) statement
-# Therefore this is not included.
 
 rm -rf "$1/usr/bin/gdbus"

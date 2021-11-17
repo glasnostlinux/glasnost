@@ -1,4 +1,4 @@
-https://static.rust-lang.org/dist/rustc-1.56.0-src.tar.xz
+https://static.rust-lang.org/dist/rustc-VERSION-src.tar.xz
 https://github.com/glasnostlinux/glasnost/releases/download/1.56.0/cargo-1.56.0-aarch64-unknown-linux-musl.tar.xz?no-extract
 https://github.com/glasnostlinux/glasnost/releases/download/1.56.0/cargo-1.56.0-powerpc64-unknown-linux-musl.tar.xz?no-extract
 https://github.com/glasnostlinux/glasnost/releases/download/1.56.0/cargo-1.56.0-powerpc64le-unknown-linux-musl.tar.xz?no-extract

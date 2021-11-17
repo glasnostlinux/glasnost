@@ -15,11 +15,10 @@ kiss-meson-config > meson.config
 meson \
     --prefix=/usr \
     --cross-file="meson.config" \
-    -Dgir=false \
     -Dgtk_doc=false \
     -Dxft=disabled \
     -Dintrospection=disabled \
-    -Dinstall_tests=false \
+    -Dinstall-tests=false \
     . build
 
 ninja -C build

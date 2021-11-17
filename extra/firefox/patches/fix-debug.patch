@@ -1,0 +1,22 @@
+--- a/widget/gtk/GfxInfo.cpp
++++ a/widget/gtk/GfxInfo.cpp
+@@ -27,9 +27,6 @@
+ #include "WidgetUtilsGtk.h"
+ 
+ #define EXIT_STATUS_BUFFER_TOO_SMALL 2
+-#ifdef DEBUG
+-bool fire_glxtest_process();
+-#endif
+ 
+ namespace mozilla::widget {
+ 
+@@ -1147,9 +1144,6 @@
+   // If the pid is zero, then we have never run the test process to query for
+   // driver information. This would normally be run on startup, but we need to
+   // manually invoke it for XPC shell tests.
+-  if (glxtest_pid == 0) {
+-    fire_glxtest_process();
+-  }
+   return NS_OK;
+ }
+ 

@@ -1,0 +1,60 @@
+#!/bin/sh -e
+
+if [ "$KISS_ROOT" ]; then
+    echo ""
+    echo " Error: nodejs does not currently support cross compiling"
+    echo ""
+    exit 1
+fi
+
+# Fix build when libatomic.so does not exist in the system.
+# This may be provided by compiler-rt which requires no additional
+# linker flags to be used.
+[ -r "$KISS_ROOT/usr/lib/libatomic.so" ] || {
+    sed 's/-latomic//' node.gyp > _
+    mv -f _ node.gyp
+}
+
+sed -i "s/, '-mminimal-toc'//g" common.gypi
+
+case "$KISS_XBUILD_ARCH" in
+    armv7) _args="--dest-cpu=arm" ;;
+    aarch64) _args="--dest-cpu=arm64" ;;
+    powerpc64*) _args="--dest-cpu=ppc64" ;;
+    i686) _args="--dest-cpu=x86" ;;
+    x86_64) _args="--dest-cpu=x86_64" ;;
+    *) msg_error "Unrecognised architecture: $KISS_XBUILD_ARCH" ;;
+esac
+
+if [ "$KISS_XBUILD_TRIPLE" != "$KISS_XHOST_TRIPLE" ]; then
+    _cross="--cross-compiling"
+fi
+
+export LD="$CXX"
+
+./configure \
+    --shared-zlib \
+    --shared-openssl \
+    --with-intl=none \
+    --without-etw \
+    --without-dtrace \
+    --without-report \
+    --without-node-snapshot \
+    --without-node-code-cache \
+    $_args \
+    $_cross \
+    --ninja
+
+export CC_host="clang"
+export CXX_host="clang++"
+
+ninja -C out/Release
+tools/install.py install "$1" /usr
+
+# Remove unneeded files.
+rm -rf \
+    "$1/usr/include/node/openssl" \
+    "$1/usr/share/doc" \
+    "$1/usr/share/systemtap" \
+    "$1/usr/lib/node_modules/npm/scripts" \
+    "$1/usr/lib/node_modules/npm/configure"

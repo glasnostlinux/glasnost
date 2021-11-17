@@ -18,6 +18,11 @@ build_freetype() (
 
     ninja -C output
     ninja -C output install
+
+echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+    find . -name "*freetype-config*"
+echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+
 )
 
 

@@ -1,1 +1,7 @@
-../../modules/repo/extra/pango/depends
+cairo
+fontconfig
+freetype-harfbuzz
+glib
+glib    make
+meson   make
+pkgconf make

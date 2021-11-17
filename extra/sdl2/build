@@ -1,0 +1,13 @@
+#!/bin/sh -e
+
+sed -i 's/`$PKG_CONFIG --variable=wayland_scanner wayland-scanner`/wayland-scanner/g' configure
+
+./configure \
+    --prefix=/usr \
+    --build=$KISS_XBUILD_TRIPLE \
+    --host=$KISS_XHOST_TRIPLE \
+    --disable-video-x11 \
+    --enable-video-wayland
+
+make
+make DESTDIR="$1" install

@@ -1,3 +1,3 @@
-https://gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-1.42.tar.bz2
+https://gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-VERSION.tar.bz2
 patches/cross.patch
 patches/echo-fix.patch

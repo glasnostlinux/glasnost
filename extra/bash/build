@@ -21,6 +21,6 @@ export CC_FOR_BUILD="clang"
 sed -i 's/gcc/clang/g' Makefile
 
 make
-make install
+make DESTDIR="$1" install
 
 ln -s bash "$1/usr/bin/sh"

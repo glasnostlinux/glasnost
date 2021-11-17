@@ -1,19 +1,19 @@
 #!/bin/sh -e
 
-patch -p1 < nojsonc.patch
+export CFLAGS="$CFLAGS -I$KISS_ROOT/usr/include/freetype2"
 
 ./configure \
     AUTOMAKE=/bin/true \
     --prefix=/usr \
+    --build=$KISS_XBUILD_TRIPLE \
+    --host=$KISS_XHOST_TRIPLE \
+    --with-sysroot="${KISS_ROOT}/usr" \
     --localstatedir=/var \
     --sysconfdir=/etc \
     --with-xmldir=/etc/fonts \
     --enable-static \
     --disable-docs \
-    --disable-nls \
-    --disable-jsonc \
-    --build=$KISS_XBUILD_TRIPLE \
-    --host=$KISS_XHOST_TRIPLE
+    --disable-nls
 
 make
 make install

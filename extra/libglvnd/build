@@ -1,7 +1,5 @@
 #!/bin/sh -e
 
-export DESTDIR="$1"
-
 sed -i "s/subdir('tests')//g" meson.build
 
 kiss-meson-config > meson.config

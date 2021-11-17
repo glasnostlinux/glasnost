@@ -28,7 +28,6 @@ mv -f _ Makefile.in
         --sysconfdir=/etc \
         --mandir=/usr/share/man \
         -Ddefault_library=static \
-        -Dhas-dlvsym=false \
         -Degl=yes \
         -Dtests=false \
         -Dglx=no \
@@ -41,9 +40,10 @@ mv -f _ Makefile.in
 )
 
 # Point gtk+3 to the vendored libepoxy.
-export PKG_CONFIG_PATH=$PWD/libepoxy/usr/lib/pkgconfig
-export CFLAGS="$CFLAGS -L$PWD/libepoxy/usr/lib"
+export PKG_CONFIG_PATH=$PWD/libepoxy/usr/lib/pkgconfig:$PKG_CONFIG_PATH
+export CFLAGS="$CFLAGS -L$PWD/libepoxy/usr/lib -I $KISS_ROOT/usr/include/gdk-pixbuf-2.0  -I $KISS_ROOT/usr/include/atk-1.0"
 export CFLAGS="$CFLAGS -I$PWD/libepoxy/usr/include"
+unset PKG_CONFIG_SYSROOT_DIR
 
 #export GLIB_COMPILE_RESOURCES=/usr/bin/glib-compile-resources
 

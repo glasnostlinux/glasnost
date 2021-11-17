@@ -10,10 +10,25 @@ mv -f _ configure
 sed 's/boilerplate test perf//g;s/src doc/src/g' Makefile.in > _
 mv -f _ Makefile.in
 
+# Something up with pkgconf - have to override these:
+export pixman_CFLAGS="-I$KISS_ROOT/usr/include/pixman-1"
+export FREETYPE_CFLAGS=" -I$KISS_ROOT/usr/include/freetype2"
+export glib_CFLAGS="-I$KISS_ROOT/usr/include/glib-2.0 -I$KISS_ROOT/usr/lib/glib-2.0/include"
+export GOBJECT_CFLAGS=$glib_CFLAGS
+
+# Endian-ness is not detected correctly
+if [ "$KISS_XBUILD_ARCH" = "powerpc64" ]; then
+    _be="yes"
+else
+    _be="no"
+fi
+
+ac_cv_c_bigendian=$_be \
 sh ./configure \
     --prefix=/usr \
     --build=$KISS_XBUILD_TRIPLE \
     --host=$KISS_XHOST_TRIPLE \
+    --with-sysroot \
     --disable-static \
     --enable-tee \
     --disable-xlib-xcb \
