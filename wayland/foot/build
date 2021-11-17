@@ -1,5 +1,7 @@
 #!/bin/sh -e
 
+export PKG_CONFIG_SYSROOT_DIR=
+
 kiss-meson-config > meson.config
 
 meson \

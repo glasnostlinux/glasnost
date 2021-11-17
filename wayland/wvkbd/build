@@ -1,0 +1,8 @@
+#!/bin/sh -e
+
+git submodule update --init --recursive
+
+make
+
+mkdir -p $1/usr/bin
+cp wvkbd-mobintl $1/usr/bin
