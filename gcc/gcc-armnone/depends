@@ -1,0 +1,5 @@
+binutils-armnone
+binutils-armnone make
+bison            make
+flex             make
+zlib

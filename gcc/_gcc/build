@@ -4,12 +4,6 @@
 pkgname="${PWD##*/}"
 arch="${pkgname##*-}"
 
-# We need the appropriate binutils to be installed on the build machine
-if [ ! -d /var/db/kiss/installed/binutils-$arch ]; then
-    echo "You need to install binutils-$arch on your build machine before building gcc-$arch."
-    exit 1
-fi
-
 # Make sure gmp is built with generic options.
 cp gcc/gmp/configfsf.guess gcc/gmp/config.guess
 cp gcc/gmp/configfsf.sub   gcc/gmp/config.sub

@@ -1,0 +1,5 @@
+binutils-powerpc64le
+binutils-powerpc64le make
+bison                make
+flex                 make
+zlib

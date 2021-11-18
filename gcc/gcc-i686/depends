@@ -1,0 +1,5 @@
+binutils-i686
+binutils-i686 make
+bison         make
+flex          make
+zlib
