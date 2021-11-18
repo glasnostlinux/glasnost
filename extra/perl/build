@@ -3,7 +3,7 @@
 export BUILD_ZLIB=0
 export BUILD_BZIP2=0
 export LDFLAGS="$LDFLAGS -pthread -fno-lto"
-export CFLAGS="$CFLAGS -DNO_POSIX_2008_LOCALE -D_GNU_SOURCE -fno-lto"
+export CFLAGS="$CFLAGS -DNO_POSIX_2008_LOCALE -D_GNU_SOURCE -fno-lto -fPIC"
 
 export CC=clang
 export CXX=clang++
