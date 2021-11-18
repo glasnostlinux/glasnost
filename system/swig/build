@@ -1,0 +1,24 @@
+#!/bin/sh -e
+
+./configure \
+    --prefix=/usr \
+    --build=$KISS_XBUILD_TRIPLE \
+    --host=$KISS_XHOST_TRIPLE \
+    --without-perl5 \
+    --without-octave \
+    --without-scilab \
+    --without-java \
+    --without-javascript \
+    --without-android \
+    --without-guile \
+    --without-mzscheme \
+    --without-ruby \
+    --without-php \
+    --without-ocaml \
+    --without-csharp \
+    --without-lua \
+    --without-r \
+    --without-go
+
+make
+make install

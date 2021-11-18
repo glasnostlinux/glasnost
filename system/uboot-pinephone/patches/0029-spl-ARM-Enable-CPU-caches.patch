@@ -1,0 +1,148 @@
+From 6ad822cb4d64beda76cade8761c49b55620a8b5b Mon Sep 17 00:00:00 2001
+From: Ondrej Jirman <megous@megous.com>
+Date: Tue, 14 Jan 2020 03:56:32 +0100
+Subject: [PATCH 29/29] spl: ARM: Enable CPU caches
+
+http://u-boot.10912.n7.nabble.com/RFC-PATCH-0-3-spl-Add-D-cache-support-td274750.html
+
+Signed-off-by: Ondrej Jirman <megous@megous.com>
+---
+ arch/arm/lib/cache-cp15.c | 29 ++++++++++++++++++++++++
+ common/spl/spl.c          | 46 +++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 75 insertions(+)
+
+diff --git a/arch/arm/lib/cache-cp15.c b/arch/arm/lib/cache-cp15.c
+index aab1bf4360..c2fe0acdc4 100644
+--- a/arch/arm/lib/cache-cp15.c
++++ b/arch/arm/lib/cache-cp15.c
+@@ -116,6 +116,25 @@ __weak void dram_bank_mmu_setup(int bank)
+ 		set_section_dcache(i, DCACHE_DEFAULT_OPTION);
+ }
+ 
++#if defined(CONFIG_SPL_BUILD) && (defined(CONFIG_SPL_MAX_SIZE) || \
++				  defined(CONFIG_SPL_MAX_FOOTPRINT))
++__weak void sram_bank_mmu_setup(phys_addr_t start, phys_addr_t size)
++{
++	int i;
++
++	for (i = start >> MMU_SECTION_SHIFT;
++	     i < (start >> MMU_SECTION_SHIFT) + (size >> MMU_SECTION_SHIFT);
++	     i++)
++#if defined(CONFIG_SYS_ARM_CACHE_WRITETHROUGH)
++		set_section_dcache(i, DCACHE_WRITETHROUGH);
++#elif defined(CONFIG_SYS_ARM_CACHE_WRITEALLOC)
++		set_section_dcache(i, DCACHE_WRITEALLOC);
++#else
++		set_section_dcache(i, DCACHE_WRITEBACK);
++#endif
++}
++#endif
++
+ /* to activate the MMU we need to set up virtual memory: use 1M areas */
+ static inline void mmu_setup(void)
+ {
+@@ -131,6 +150,16 @@ static inline void mmu_setup(void)
+ 		dram_bank_mmu_setup(i);
+ 	}
+ 
++#if defined(CONFIG_SPL_BUILD)
++#if defined(CONFIG_SPL_MAX_SIZE)
++	sram_bank_mmu_setup(CONFIG_SPL_TEXT_BASE,
++			    ALIGN(CONFIG_SPL_MAX_SIZE, MMU_SECTION_SIZE));
++#elif defined(CONFIG_SPL_MAX_FOOTPRINT)
++	sram_bank_mmu_setup(CONFIG_SPL_TEXT_BASE,
++			    ALIGN(CONFIG_SPL_MAX_FOOTPRINT, MMU_SECTION_SIZE));
++#endif
++#endif
++
+ #if defined(CONFIG_ARMV7_LPAE) && __LINUX_ARM_ARCH__ != 4
+ 	/* Set up 4 PTE entries pointing to our 4 1GB page tables */
+ 	for (i = 0; i < 4; i++) {
+diff --git a/common/spl/spl.c b/common/spl/spl.c
+index a0a608fd77..40c9022928 100644
+--- a/common/spl/spl.c
++++ b/common/spl/spl.c
+@@ -10,6 +10,7 @@
+ #include <bloblist.h>
+ #include <binman_sym.h>
+ #include <bootstage.h>
++#include <cpu_func.h>
+ #include <dm.h>
+ #include <handoff.h>
+ #include <hang.h>
+@@ -636,6 +637,35 @@ void board_init_f(ulong dummy)
+ }
+ #endif
+ 
++#if !(defined(CONFIG_SYS_ICACHE_OFF) && defined(CONFIG_SYS_DCACHE_OFF)) && \
++		defined(CONFIG_ARM)
++int reserve_mmu(void)
++{
++	phys_addr_t ram_top = 0;
++	/* reserve TLB table */
++	gd->arch.tlb_size = PGTABLE_SIZE;
++
++#ifdef CONFIG_SYS_SDRAM_BASE
++	ram_top = CONFIG_SYS_SDRAM_BASE;
++#endif
++	ram_top += get_effective_memsize();
++	gd->arch.tlb_addr = ram_top - gd->arch.tlb_size;
++	debug("TLB table from %08lx to %08lx\n", gd->arch.tlb_addr,
++	      gd->arch.tlb_addr + gd->arch.tlb_size);
++	return 0;
++}
++
++__weak int dram_init_banksize(void)
++{
++#if defined(CONFIG_NR_DRAM_BANKS) && defined(CONFIG_SYS_SDRAM_BASE)
++	gd->bd->bi_dram[0].start = CONFIG_SYS_SDRAM_BASE;
++	gd->bd->bi_dram[0].size = get_effective_memsize();
++#endif
++	return 0;
++}
++
++#endif
++
+ void board_init_r(gd_t *dummy1, ulong dummy2)
+ {
+ 	u32 spl_boot_list[] = {
+@@ -651,6 +681,12 @@ void board_init_r(gd_t *dummy1, ulong dummy2)
+ 	debug(">>" SPL_TPL_PROMPT "board_init_r()\n");
+ 
+ 	spl_set_bd();
++#if !(defined(CONFIG_SYS_ICACHE_OFF) && defined(CONFIG_SYS_DCACHE_OFF)) && \
++		defined(CONFIG_ARM)
++	dram_init_banksize();
++	reserve_mmu();
++	enable_caches();
++#endif
+ 
+ #if defined(CONFIG_SYS_SPL_MALLOC_START)
+ 	mem_malloc_init(CONFIG_SYS_SPL_MALLOC_START,
+@@ -661,6 +697,11 @@ void board_init_r(gd_t *dummy1, ulong dummy2)
+ 		if (spl_init())
+ 			hang();
+ 	}
++	if (IS_ENABLED(CONFIG_SPL_ALLOC_BD) && spl_alloc_bd()) {
++		puts("Cannot alloc bd\n");
++		hang();
++	}
++
+ #if !defined(CONFIG_PPC) && !defined(CONFIG_ARCH_MX6)
+ 	/*
+ 	 * timer_init() does not exist on PPC systems. The timer is initialized
+@@ -728,6 +769,11 @@ void board_init_r(gd_t *dummy1, ulong dummy2)
+ 			       ret);
+ 	}
+ 
++#if !(defined(CONFIG_SYS_ICACHE_OFF) && defined(CONFIG_SYS_DCACHE_OFF)) && \
++		defined(CONFIG_ARM)
++	cleanup_before_linux();
++#endif
++
+ #ifdef CONFIG_CPU_V7M
+ 	spl_image.entry_point |= 0x1;
+ #endif
+-- 
+2.31.1
+

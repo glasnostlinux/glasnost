@@ -1,0 +1,77 @@
+From 84fbf777e029e28cf0cd182f8bf5e1c41c3b2c93 Mon Sep 17 00:00:00 2001
+From: Samuel Holland <samuel@sholland.org>
+Date: Sun, 20 Jun 2021 14:24:29 -0500
+Subject: [PATCH 18/29] sunxi: Support building a SPL as a TOC0 image
+
+Now that mkimage can generate TOC0 images, and the SPL can interpret
+them, hook up the build infrastructure so the user can choose which
+image type to build.
+
+Signed-off-by: Samuel Holland <samuel@sholland.org>
+---
+ arch/arm/mach-sunxi/Kconfig |  2 ++
+ board/sunxi/Kconfig         | 24 ++++++++++++++++++++++++
+ scripts/Makefile.spl        |  3 ++-
+ 3 files changed, 28 insertions(+), 1 deletion(-)
+ create mode 100644 board/sunxi/Kconfig
+
+diff --git a/arch/arm/mach-sunxi/Kconfig b/arch/arm/mach-sunxi/Kconfig
+index bc8509b72a..4c466325f3 100644
+--- a/arch/arm/mach-sunxi/Kconfig
++++ b/arch/arm/mach-sunxi/Kconfig
+@@ -1088,6 +1088,8 @@ config BLUETOOTH_DT_DEVICE_FIXUP
+ 	  The used address is "bdaddr" if set, and "ethaddr" with the LSB
+ 	  flipped elsewise.
+ 
++source "board/sunxi/Kconfig"
++
+ endif
+ 
+ config CHIP_DIP_SCAN
+diff --git a/board/sunxi/Kconfig b/board/sunxi/Kconfig
+new file mode 100644
+index 0000000000..c5c0929db5
+--- /dev/null
++++ b/board/sunxi/Kconfig
+@@ -0,0 +1,24 @@
++choice
++	prompt "SPL Image Type"
++	default SUNXI_SPL_IMAGE_EGON
++
++config SUNXI_SPL_IMAGE_EGON
++	bool "eGON (non-secure)"
++	help
++	  Select this option to embed the SPL binary in an eGON.BT0 image,
++	  which is compatible with the non-secure boot ROM (NBROM).
++
++	  This is usually the correct option to choose.
++
++config SUNXI_SPL_IMAGE_TOC0
++	bool "TOC0 (secure)"
++	help
++	  Select this option to embed the SPL binary in a TOC0 image,
++	  which is compatible with the secure boot ROM (SBROM).
++
++endchoice
++
++config SUNXI_SPL_IMAGE_TYPE
++	string
++	default "sunxi_egon" if SUNXI_SPL_IMAGE_EGON
++	default "sunxi_toc0" if SUNXI_SPL_IMAGE_TOC0
+diff --git a/scripts/Makefile.spl b/scripts/Makefile.spl
+index 5be1a9ba1b..7cc78bb318 100644
+--- a/scripts/Makefile.spl
++++ b/scripts/Makefile.spl
+@@ -414,7 +414,8 @@ endif
+ $(obj)/$(SPL_BIN).sfp: $(obj)/$(SPL_BIN).bin FORCE
+ 	$(call if_changed,mkimage)
+ 
+-MKIMAGEFLAGS_sunxi-spl.bin = -T sunxi_egon \
++MKIMAGEFLAGS_sunxi-spl.bin = -T $(CONFIG_SUNXI_SPL_IMAGE_TYPE) \
++	-a $(CONFIG_SPL_TEXT_BASE) \
+ 	-n $(CONFIG_DEFAULT_DEVICE_TREE)
+ 
+ OBJCOPYFLAGS_u-boot-spl-dtb.hex := -I binary -O ihex --change-address=$(CONFIG_SPL_TEXT_BASE)
+-- 
+2.31.1
+

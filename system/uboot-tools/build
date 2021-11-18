@@ -1,0 +1,12 @@
+#!/bin/sh -e
+
+make CC="$CC" HOSTCC=clang tools-only_defconfig
+make CC="$CC" HOSTCC=clang tools-all
+
+mkdir -p $1/usr/bin
+cd tools
+for tool in bmp_logo dumpimage env/fw_printenv \
+    fit_check_sign fit_info gdb/gdbcont gdb/gdbsend gen_eth_addr img2srec \
+    mkenvimage mkimage ncb proftool ubsha1 xway-swap-bytes; do
+    cp $tool $1/usr/bin
+done

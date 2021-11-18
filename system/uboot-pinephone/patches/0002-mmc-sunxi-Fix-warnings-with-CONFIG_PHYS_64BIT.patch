@@ -1,0 +1,41 @@
+From 43e334d01e4ffb3d536bee35d8eeb57a2e0c497f Mon Sep 17 00:00:00 2001
+From: Andre Przywara <andre.przywara@arm.com>
+Date: Thu, 29 Apr 2021 09:31:58 +0100
+Subject: [PATCH 02/29] mmc: sunxi: Fix warnings with CONFIG_PHYS_64BIT
+
+When enabling PHYS_64BIT on 32-bit platforms, we get two warnings about
+pointer casts in sunxi_mmc.c. Those are related to MMIO addresses, which
+are always below 1GB on all Allwinner SoCs, so there is no problem with
+anything having more than 32 bits.
+
+Add the proper casts to make it compile cleanly.
+
+Signed-off-by: Andre Przywara <andre.przywara@arm.com>
+---
+ drivers/mmc/sunxi_mmc.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/mmc/sunxi_mmc.c b/drivers/mmc/sunxi_mmc.c
+index 87b79fcf5e..869af993d3 100644
+--- a/drivers/mmc/sunxi_mmc.c
++++ b/drivers/mmc/sunxi_mmc.c
+@@ -631,14 +631,14 @@ static int sunxi_mmc_probe(struct udevice *dev)
+ 	cfg->f_min = 400000;
+ 	cfg->f_max = 52000000;
+ 
+-	priv->reg = (void *)dev_read_addr(dev);
++	priv->reg = dev_read_addr_ptr(dev);
+ 
+ 	/* We don't have a sunxi clock driver so find the clock address here */
+ 	ret = dev_read_phandle_with_args(dev, "clocks", "#clock-cells", 0,
+ 					  1, &args);
+ 	if (ret)
+ 		return ret;
+-	ccu_reg = (u32 *)ofnode_get_addr(args.node);
++	ccu_reg = (u32 *)(uintptr_t)ofnode_get_addr(args.node);
+ 
+ 	priv->mmc_no = ((uintptr_t)priv->reg - SUNXI_MMC0_BASE) / 0x1000;
+ 	priv->mclkreg = (void *)ccu_reg + get_mclk_offset() + priv->mmc_no * 4;
+-- 
+2.31.1
+

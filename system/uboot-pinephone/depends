@@ -1,0 +1,4 @@
+atf
+crust
+gcc-aarch64 make
+swig make

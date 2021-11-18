@@ -1,0 +1,198 @@
+From 0289a01c9ee211195728e14b4f26dd2e5226561a Mon Sep 17 00:00:00 2001
+From: Samuel Holland <samuel@sholland.org>
+Date: Fri, 28 May 2021 18:26:39 -0500
+Subject: [PATCH] drivers: irq: Remove deprecated GPIO polling code
+
+Since v5.13, specifically commit 189bef235dd3 ("arm64: dts: allwinner:
+Move wakeup-capable IRQs to r_intc"), Linux routes the GPIO EINT IRQs to
+R_INTC during suspend and shutdown. This means Crust will detect pending
+EINT IRQs using the normal R_INTC status polling code.
+
+This change completely obsoletes the GPIO register polling code, so that
+code and its associated Kconfig options can be removed.
+
+Signed-off-by: Samuel Holland <samuel@sholland.org>
+---
+ configs/pinephone_defconfig    |  2 --
+ drivers/Kconfig                |  1 -
+ drivers/irq/Kconfig            | 51 ----------------------------------
+ drivers/irq/irq.c              | 29 ++-----------------
+ drivers/irq/irq.h              | 16 -----------
+ drivers/irq/sun6i-a31-r-intc.c |  4 +--
+ 6 files changed, 4 insertions(+), 99 deletions(-)
+ delete mode 100644 drivers/irq/Kconfig
+ delete mode 100644 drivers/irq/irq.h
+
+diff --git a/configs/pinephone_defconfig b/configs/pinephone_defconfig
+index 5e720f1f..875ad025 100644
+--- a/configs/pinephone_defconfig
++++ b/configs/pinephone_defconfig
+@@ -1,4 +1,2 @@
+-CONFIG_IRQ_POLL_EINT=y
+-CONFIG_IRQ_POLL_EINT_LAST_BANK=0
+ CONFIG_MFD_AXP20X=y
+ # CONFIG_SERIAL is not set
+diff --git a/drivers/Kconfig b/drivers/Kconfig
+index 0cb6dae5..5f513533 100644
+--- a/drivers/Kconfig
++++ b/drivers/Kconfig
+@@ -8,7 +8,6 @@ menu "Device drivers"
+ source "dram/Kconfig"
+ source "cir/Kconfig"
+ source "clock/Kconfig"
+-source "irq/Kconfig"
+ source "regmap/Kconfig"
+ source "mfd/Kconfig"
+ source "pmic/Kconfig"
+diff --git a/drivers/irq/Kconfig b/drivers/irq/Kconfig
+deleted file mode 100644
+index 84330c8b..00000000
+--- a/drivers/irq/Kconfig
++++ /dev/null
+@@ -1,51 +0,0 @@
+-#
+-# Copyright © 2020-2021 The Crust Firmware Authors.
+-# SPDX-License-Identifier: BSD-3-Clause OR GPL-2.0-only
+-#
+-
+-menu "Interrupt and wakeup options"
+-
+-config IRQ_POLL_EINT
+-	bool "Poll the GPIO controller for EINT IRQs (DEPRECATED)"
+-	help
+-		Check the main GPIO controller (the one containing ports
+-		A through H) for external interrupts (EINTs) when
+-		polling for wakeup IRQs.
+-
+-		This allows EINT-capable pins on those ports to be used
+-		as wakeup sources. The pins must be configured as EINT
+-		pins by Linux before entering suspend.
+-
+-		Note: This option is not needed when using a Linux patch
+-		set released in 2021. The newer driver plumbs the EINT
+-		IRQs through to R_INTC.
+-
+-		Say Y if your board has a device connected to port A-H
+-		that must be able to wake up or turn on the system, and
+-		you are using an older kernel. Otherwise, say N.
+-
+-if IRQ_POLL_EINT
+-
+-config IRQ_POLL_EINT_FIRST_BANK
+-	int "First EINT bank to poll"
+-	range 0 7
+-	default 0
+-	help
+-		Begin the EINT polling loop at the nth EINT-capable GPIO
+-		bank, counting from 0. This number is not related to the
+-		GPIO bank letter.
+-
+-config IRQ_POLL_EINT_LAST_BANK
+-	int "Last EINT bank to poll"
+-	range 0 7
+-	default 2 if PLATFORM_A64
+-	default 2 if PLATFORM_A83T
+-	default 7 if PLATFORM_H6
+-	help
+-		End the EINT polling loop at the nth EINT-capable GPIO
+-		bank, counting from 0. This number is not related to the
+-		GPIO bank letter.
+-
+-endif
+-
+-endmenu
+diff --git a/drivers/irq/irq.c b/drivers/irq/irq.c
+index 85efcb32..ae675374 100644
+--- a/drivers/irq/irq.c
++++ b/drivers/irq/irq.c
+@@ -4,32 +4,7 @@
+  */
+ 
+ #include <irq.h>
+-#include <mmio.h>
+ #include <stdint.h>
+-#include <platform/devices.h>
+-
+-#include "irq.h"
+-
+-#define EINT_CTL_REG(n)    (0x20 * (n) + 0x0210)
+-#define EINT_STATUS_REG(n) (0x20 * (n) + 0x0214)
+-
+-uint32_t
+-irq_poll_eint(void)
+-{
+-	uint32_t pending = 0;
+-
+-#if CONFIG(IRQ_POLL_EINT)
+-	uint32_t first = CONFIG_IRQ_POLL_EINT_FIRST_BANK;
+-	uint32_t last  = CONFIG_IRQ_POLL_EINT_LAST_BANK;
+-
+-	for (uint32_t bank = first; bank <= last; ++bank) {
+-		pending |= mmio_read_32(DEV_PIO + EINT_CTL_REG(bank)) &
+-		           mmio_read_32(DEV_PIO + EINT_STATUS_REG(bank));
+-	}
+-#endif
+-
+-	return pending;
+-}
+ 
+ uint32_t WEAK
+ irq_needs_avcc(void)
+@@ -40,11 +15,11 @@ irq_needs_avcc(void)
+ uint32_t WEAK
+ irq_needs_vdd_sys(void)
+ {
+-	return CONFIG(IRQ_POLL_EINT);
++	return 0;
+ }
+ 
+ uint32_t WEAK
+ irq_poll(void)
+ {
+-	return irq_poll_eint();
++	return 0;
+ }
+diff --git a/drivers/irq/irq.h b/drivers/irq/irq.h
+deleted file mode 100644
+index 314329d5..00000000
+--- a/drivers/irq/irq.h
++++ /dev/null
+@@ -1,16 +0,0 @@
+-/*
+- * Copyright © 2021 The Crust Firmware Authors.
+- * SPDX-License-Identifier: BSD-3-Clause OR GPL-2.0-only
+- */
+-
+-#ifndef IRQ_PRIVATE_H
+-#define IRQ_PRIVATE_H
+-
+-#include <stdint.h>
+-
+-/**
+- * Poll for interrupts from the main PIO controller's EINT pins.
+- */
+-uint32_t irq_poll_eint(void);
+-
+-#endif /* IRQ_PRIVATE_H */
+diff --git a/drivers/irq/sun6i-a31-r-intc.c b/drivers/irq/sun6i-a31-r-intc.c
+index 5cd56440..c140994e 100644
+--- a/drivers/irq/sun6i-a31-r-intc.c
++++ b/drivers/irq/sun6i-a31-r-intc.c
+@@ -79,7 +79,7 @@ irq_needs_avcc(void)
+ uint32_t
+ irq_needs_vdd_sys(void)
+ {
+-	uint32_t enabled = CONFIG(IRQ_POLL_EINT);
++	uint32_t enabled = 0;
+ 
+ 	/* Only read registers with relevant bits. */
+ 	for (int i = 0; i < NUM_MUX_REGS; ++i) {
+@@ -96,7 +96,7 @@ irq_needs_vdd_sys(void)
+ uint32_t
+ irq_poll(void)
+ {
+-	uint32_t pending = irq_poll_eint();
++	uint32_t pending = 0;
+ 
+ 	for (int i = 0; i < NUM_IRQ_REGS; ++i)
+ 		pending |= mmio_read_32(DEV_R_INTC + INTC_IRQ_PEND_REG(i));

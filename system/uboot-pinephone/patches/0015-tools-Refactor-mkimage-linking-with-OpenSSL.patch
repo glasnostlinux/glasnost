@@ -1,0 +1,181 @@
+From 0aa9ea61cfbd9b4ddb9339ac1e0f4692bdc831da Mon Sep 17 00:00:00 2001
+From: Samuel Holland <samuel@sholland.org>
+Date: Sun, 20 Jun 2021 13:50:35 -0500
+Subject: [PATCH 15/29] tools: Refactor mkimage linking with OpenSSL
+
+Some mkimage features require linking with OpenSSL. Instead of linking
+OpenSSL based on the individual platform symbols, create a single
+Kconfig symbol which can be selected by platforms as necessary. Then,
+all OpenSSL-dependent image types can be enabled at once.
+
+Signed-off-by: Samuel Holland <samuel@sholland.org>
+---
+ arch/arm/mach-imx/mxs/Kconfig |  2 ++
+ arch/arm/mach-mvebu/Kconfig   |  1 +
+ common/Kconfig.boot           |  2 ++
+ scripts/config_whitelist.txt  |  1 -
+ tools/Kconfig                 |  3 +++
+ tools/Makefile                | 22 +++++++---------------
+ tools/mxsimage.c              |  3 ---
+ 7 files changed, 15 insertions(+), 19 deletions(-)
+
+diff --git a/arch/arm/mach-imx/mxs/Kconfig b/arch/arm/mach-imx/mxs/Kconfig
+index 9f48ffda41..f067a9c38e 100644
+--- a/arch/arm/mach-imx/mxs/Kconfig
++++ b/arch/arm/mach-imx/mxs/Kconfig
+@@ -3,6 +3,7 @@ if ARCH_MX23
+ config MX23
+ 	bool
+ 	default y
++	select MKIMAGE_LINK_OPENSSL
+ 
+ choice
+ 	prompt "MX23 board select"
+@@ -34,6 +35,7 @@ if ARCH_MX28
+ config MX28
+ 	bool
+ 	default y
++	select MKIMAGE_LINK_OPENSSL
+ 
+ choice
+ 	prompt "MX28 board select"
+diff --git a/arch/arm/mach-mvebu/Kconfig b/arch/arm/mach-mvebu/Kconfig
+index cda65f7478..2a4f861015 100644
+--- a/arch/arm/mach-mvebu/Kconfig
++++ b/arch/arm/mach-mvebu/Kconfig
+@@ -29,6 +29,7 @@ config ARMADA_38X
+ 	bool
+ 	select ARMADA_32BIT
+ 	select HAVE_MVEBU_EFUSE
++	select MKIMAGE_LINK_OPENSSL
+ 
+ config ARMADA_38X_HS_IMPEDANCE_THRESH
+ 	hex  "Armada 38x USB 2.0 High-Speed Impedance Threshold (0x0 - 0x7)"
+diff --git a/common/Kconfig.boot b/common/Kconfig.boot
+index 89a3161f1f..7d022d1ccf 100644
+--- a/common/Kconfig.boot
++++ b/common/Kconfig.boot
+@@ -80,6 +80,7 @@ config FIT_SIGNATURE
+ 	select RSA_VERIFY
+ 	select IMAGE_SIGN_INFO
+ 	select FIT_FULL_CHECK
++	select MKIMAGE_LINK_OPENSSL
+ 	help
+ 	  This option enables signature verification of FIT uImages,
+ 	  using a hash signed and verified using RSA. If
+@@ -115,6 +116,7 @@ config FIT_CIPHER
+ 	bool "Enable ciphering data in a FIT uImages"
+ 	depends on DM
+ 	select AES
++	select MKIMAGE_LINK_OPENSSL
+ 	help
+ 	  Enable the feature of data ciphering/unciphering in the tool mkimage
+ 	  and in the u-boot support of the FIT image.
+diff --git a/scripts/config_whitelist.txt b/scripts/config_whitelist.txt
+index 3dbcc042a8..e013e1f26a 100644
+--- a/scripts/config_whitelist.txt
++++ b/scripts/config_whitelist.txt
+@@ -1066,7 +1066,6 @@ CONFIG_MXC_UART_BASE
+ CONFIG_MXC_USB_FLAGS
+ CONFIG_MXC_USB_PORT
+ CONFIG_MXC_USB_PORTSC
+-CONFIG_MXS
+ CONFIG_MXS_AUART
+ CONFIG_MXS_AUART_BASE
+ CONFIG_MXS_OCOTP
+diff --git a/tools/Kconfig b/tools/Kconfig
+index b2f5012240..df3dffa9e1 100644
+--- a/tools/Kconfig
++++ b/tools/Kconfig
+@@ -9,4 +9,7 @@ config MKIMAGE_DTC_PATH
+ 	  some cases the system dtc may not support all required features
+ 	  and the path to a different version should be given here.
+ 
++config MKIMAGE_LINK_OPENSSL
++	bool
++
+ endmenu
+diff --git a/tools/Makefile b/tools/Makefile
+index d020c55d66..8843185703 100644
+--- a/tools/Makefile
++++ b/tools/Makefile
+@@ -75,9 +75,10 @@ ECDSA_OBJS-$(CONFIG_FIT_SIGNATURE) := $(addprefix lib/ecdsa/, ecdsa-libcrypto.o)
+ AES_OBJS-$(CONFIG_FIT_CIPHER) := $(addprefix lib/aes/, \
+ 					aes-encrypt.o aes-decrypt.o)
+ 
+-# Cryptographic helpers that depend on openssl/libcrypto
+-LIBCRYPTO_OBJS-$(CONFIG_FIT_SIGNATURE) := $(addprefix lib/, \
+-					fdt-libcrypto.o)
++# Cryptographic helpers and image types that depend on openssl/libcrypto
++OPENSSL_OBJS-$(CONFIG_MKIMAGE_LINK_OPENSSL) := \
++			lib/fdt-libcrypto.o \
++			mxsimage.o \
+ 
+ ROCKCHIP_OBS = lib/rc4.o rkcommon.o rkimage.o rksd.o rkspi.o
+ 
+@@ -101,7 +102,6 @@ dumpimage-mkimage-objs := aisimage.o \
+ 			kwbimage.o \
+ 			lib/md5.o \
+ 			lpc32xximage.o \
+-			mxsimage.o \
+ 			omapimage.o \
+ 			os_support.o \
+ 			pblimage.o \
+@@ -121,7 +121,7 @@ dumpimage-mkimage-objs := aisimage.o \
+ 			zynqimage.o \
+ 			zynqmpimage.o \
+ 			zynqmpbif.o \
+-			$(LIBCRYPTO_OBJS-y) \
++			$(OPENSSL_OBJS-y) \
+ 			$(LIBFDT_OBJS) \
+ 			gpimage.o \
+ 			gpimage-common.o \
+@@ -136,12 +136,7 @@ fit_info-objs   := $(dumpimage-mkimage-objs) fit_info.o
+ fit_check_sign-objs   := $(dumpimage-mkimage-objs) fit_check_sign.o
+ file2include-objs := file2include.o
+ 
+-ifneq ($(CONFIG_MX23)$(CONFIG_MX28)$(CONFIG_FIT_SIGNATURE),)
+-# Add CONFIG_MXS into host CFLAGS, so we can check whether or not register
+-# the mxsimage support within tools/mxsimage.c .
+-HOSTCFLAGS_mxsimage.o += -DCONFIG_MXS
+-endif
+-
++ifneq ($(CONFIG_MKIMAGE_LINK_OPENSSL),)
+ ifdef CONFIG_FIT_SIGNATURE
+ # This affects include/image.h, but including the board config file
+ # is tricky, so manually define this options here.
+@@ -159,12 +154,9 @@ ifdef CONFIG_SYS_U_BOOT_OFFS
+ HOSTCFLAGS_kwbimage.o += -DCONFIG_SYS_U_BOOT_OFFS=$(CONFIG_SYS_U_BOOT_OFFS)
+ endif
+ 
+-ifneq ($(CONFIG_ARMADA_38X),)
++# Enable image features which depend on OpenSSL.
+ HOSTCFLAGS_kwbimage.o += -DCONFIG_KWB_SECURE
+-endif
+ 
+-# MXSImage needs LibSSL
+-ifneq ($(CONFIG_MX23)$(CONFIG_MX28)$(CONFIG_ARMADA_38X)$(CONFIG_FIT_SIGNATURE)$(CONFIG_FIT_CIPHER),)
+ HOSTCFLAGS_kwbimage.o += \
+ 	$(shell pkg-config --cflags libssl libcrypto 2> /dev/null || echo "")
+ HOSTLDLIBS_mkimage += \
+diff --git a/tools/mxsimage.c b/tools/mxsimage.c
+index 002f4b525a..2bfbb421eb 100644
+--- a/tools/mxsimage.c
++++ b/tools/mxsimage.c
+@@ -5,8 +5,6 @@
+  * Copyright (C) 2012-2013 Marek Vasut <marex@denx.de>
+  */
+ 
+-#ifdef CONFIG_MXS
+-
+ #include <errno.h>
+ #include <fcntl.h>
+ #include <stdio.h>
+@@ -2363,4 +2361,3 @@ U_BOOT_IMAGE_TYPE(
+ 	NULL,
+ 	mxsimage_generate
+ );
+-#endif
+-- 
+2.31.1
+

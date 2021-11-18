@@ -1,0 +1,13 @@
+#!/bin/sh -e
+
+export CFLAGS="$CFLAGS -Wno-error=cast-qual -Wcast-qual"
+
+kiss-meson-config > meson.config
+
+meson \
+    --prefix=/usr \
+    --cross-file="meson.config" \
+    . build
+
+ninja -C build
+ninja -C build install

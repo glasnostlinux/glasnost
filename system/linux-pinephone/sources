@@ -1,0 +1,4 @@
+https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-VERSION.tar.xz
+patches/all.patch
+https://xff.cz/git/linux-firmware/plain/anx7688-fw.bin
+files/.config

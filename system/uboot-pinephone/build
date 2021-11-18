@@ -1,0 +1,45 @@
+#!/bin/sh -e
+
+if [ "$KISS_XHOST_ARCH" != "aarch64" ]; then
+    echo "This package is for aarch64 only"
+    exit 1
+fi
+
+for patch in *.patch; do
+    echo "PATCHING: $patch"
+    patch -p1 < "$patch"
+done
+
+unset CFLAGS
+unset CXXFLAGS
+unset LDFLAGS
+
+export BL31="$KISS_ROOT/usr/share/atf/sun50i_a64/bl31.bin"
+export SCP="$KISS_ROOT/usr/share/atf/a64/scp.bin"
+export PATH="/usr/gnu/bin:$PATH"
+export PKG_CONFIG_SYSROOT_DIR=
+
+sed -i 's/\-lgcc//g' Makefile
+
+make HOSTCC=clang HOSTLD=clang CROSS_COMPILE=aarch64-linux-musl- pinephone_defconfig
+
+  echo 'CONFIG_IDENT_STRING="Glasnot Linux"' >> .config
+  echo 'CONFIG_SERIAL_PRESENT=y' >> .config
+  echo 'CONFIG_GZIP=y' >> .config
+  echo 'CONFIG_CMD_UNZIP=y' >> .config
+  echo 'CONFIG_CMD_EXT4=y' >> .config
+  echo 'CONFIG_SUPPORT_RAW_INITRD=y' >> .config
+  echo 'CONFIG_CMD_EXT4_WRITE=n' >> .config
+  echo 'CONFIG_EXT4_WRITE=n' >> .config
+  echo 'CONFIG_BOOTDELAY=0' >> .config
+  echo 'CONFIG_DRAM_CLK=492' >> .config
+
+make HOSTCC=clang HOSTLD=clang CROSS_COMPILE=aarch64-linux-musl- all
+
+cat u-boot-sunxi-with-spl.bin > u-boot-sunxi-with-spl-pinephone.bin
+
+# Install files
+mkdir -p "$1/boot/extlinux"
+mkdir -p "$1/usr/bin"
+cp u-boot-sunxi-with-spl-pinephone.bin $1/boot
+cp extlinux.conf $1/boot/extlinux/

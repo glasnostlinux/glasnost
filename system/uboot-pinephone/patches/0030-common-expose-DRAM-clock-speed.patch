@@ -1,0 +1,53 @@
+From a568d5efe609fec974d44fec4cba31288ab0f621 Mon Sep 17 00:00:00 2001
+From: Bobby The Builder <bob@najdan.com>
+Date: Mon, 29 Mar 2021 16:42:07 -0400
+Subject: [PATCH 4/5] common: expose DRAM clock speed
+
+add memory/ram_freq
+---
+ common/board_f.c | 6 ++++--
+ common/main.c    | 7 +++++++
+ 2 files changed, 11 insertions(+), 2 deletions(-)
+
+diff --git a/common/board_f.c b/common/board_f.c
+index 0cddf0359d..e481c70ef0 100644
+--- a/common/board_f.c
++++ b/common/board_f.c
+@@ -227,12 +227,14 @@ static int show_dram_config(void)
+ 		print_size(gd->bd->bi_dram[i].size, "\n");
+ #endif
+ 	}
+-	debug("\nDRAM:  ");
++	debug("\nDRAM Size:  ");
+ 
+ 	print_size(size, "");
+ 	board_add_ram_info(0);
+ 	putc('\n');
+-
++#if defined(CONFIG_DRAM_CLK)
++	printf("DRAM Clock: %d MHz\n", CONFIG_DRAM_CLK);
++#endif
+ 	return 0;
+ }
+ 
+diff --git a/common/main.c b/common/main.c
+index ae5bcdb32f..85adcc6c13 100644
+--- a/common/main.c
++++ b/common/main.c
+@@ -46,6 +46,13 @@ void main_loop(void)
+ 	if (IS_ENABLED(CONFIG_VERSION_VARIABLE))
+ 		env_set("ver", version_string);  /* set version variable */
+ 
++#if defined(CONFIG_DRAM_CLK)
++	char ram_clk_string[11];
++	sprintf(ram_clk_string, "%d", CONFIG_DRAM_CLK);
++	env_set("ram_freq", ram_clk_string);
++	printf("Set ram_freq : %s\n", ram_clk_string);
++#endif
++
+ 	cli_init();
+ 
+ 	if (IS_ENABLED(CONFIG_USE_PREBOOT))
+-- 
+2.31.1
+

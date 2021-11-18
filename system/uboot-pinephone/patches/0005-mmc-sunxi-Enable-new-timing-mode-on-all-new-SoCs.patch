@@ -1,0 +1,44 @@
+From 5f2f7a0ed7346c3369cd22348c372892e903c60e Mon Sep 17 00:00:00 2001
+From: Andre Przywara <andre.przywara@arm.com>
+Date: Wed, 5 May 2021 10:04:41 +0100
+Subject: [PATCH 05/29] mmc: sunxi: Enable "new timing mode" on all new SoCs
+
+All SoCs since the Allwinner A64 (H5, H6, R40, H616) feature to so
+called "new timing mode", so enable this in Kconfig for those SoCs.
+
+Signed-off-by: Andre Przywara <andre.przywara@arm.com>
+---
+ arch/arm/mach-sunxi/Kconfig | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/arch/arm/mach-sunxi/Kconfig b/arch/arm/mach-sunxi/Kconfig
+index 8e9012dbbf..e22a9c9103 100644
+--- a/arch/arm/mach-sunxi/Kconfig
++++ b/arch/arm/mach-sunxi/Kconfig
+@@ -152,6 +152,7 @@ config SUN50I_GEN_H6
+ 	bool
+ 	select FIT
+ 	select SPL_LOAD_FIT
++	select MMC_SUNXI_HAS_NEW_MODE
+ 	select SUPPORT_SPL
+ 	---help---
+ 	Select this for sunxi SoCs which have H6 like peripherals, clocks
+@@ -297,6 +298,7 @@ config MACH_SUN8I_R40
+ 	select CPU_V7_HAS_VIRT
+ 	select ARCH_SUPPORT_PSCI
+ 	select SUNXI_GEN_SUN6I
++	select MMC_SUNXI_HAS_NEW_MODE
+ 	select SUPPORT_SPL
+ 	select SUNXI_DRAM_DW
+ 	select SUNXI_DRAM_DW_32BIT
+@@ -346,6 +348,7 @@ config MACH_SUN50I_H5
+ 	bool "sun50i (Allwinner H5)"
+ 	select ARM64
+ 	select MACH_SUNXI_H3_H5
++	select MMC_SUNXI_HAS_NEW_MODE
+ 	select FIT
+ 	select SPL_LOAD_FIT
+ 
+-- 
+2.31.1
+

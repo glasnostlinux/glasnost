@@ -1,0 +1,99 @@
+From 4bb23c0a439a47e34c04ce4c117465e669918f26 Mon Sep 17 00:00:00 2001
+From: Samuel Holland <samuel@sholland.org>
+Date: Sun, 20 Jun 2021 14:23:11 -0500
+Subject: [PATCH 17/29] sunxi: Support both SPL image types
+
+SPL uses the image header to detect the boot device and to find the
+offset of U-Boot proper. Since this information is stored differently in
+eGON and TOC0 image headers, add code to find the correct value based on
+the image type currently in use.
+
+Signed-off-by: Samuel Holland <samuel@sholland.org>
+---
+ arch/arm/include/asm/arch-sunxi/spl.h |  2 --
+ arch/arm/mach-sunxi/board.c           | 20 ++++++++++++++------
+ include/sunxi_image.h                 | 14 ++++++++++++++
+ 3 files changed, 28 insertions(+), 8 deletions(-)
+
+diff --git a/arch/arm/include/asm/arch-sunxi/spl.h b/arch/arm/include/asm/arch-sunxi/spl.h
+index 58cdf806d9..157b11e489 100644
+--- a/arch/arm/include/asm/arch-sunxi/spl.h
++++ b/arch/arm/include/asm/arch-sunxi/spl.h
+@@ -19,8 +19,6 @@
+ #define SUNXI_BOOTED_FROM_MMC0_HIGH	0x10
+ #define SUNXI_BOOTED_FROM_MMC2_HIGH	0x12
+ 
+-#define is_boot0_magic(addr)	(memcmp((void *)(addr), BOOT0_MAGIC, 8) == 0)
+-
+ uint32_t sunxi_get_boot_device(void);
+ 
+ #endif
+diff --git a/arch/arm/mach-sunxi/board.c b/arch/arm/mach-sunxi/board.c
+index 9b84132eda..8147f250f8 100644
+--- a/arch/arm/mach-sunxi/board.c
++++ b/arch/arm/mach-sunxi/board.c
+@@ -237,10 +237,13 @@ void s_init(void)
+ 
+ static int sunxi_get_boot_source(void)
+ {
+-	if (!is_boot0_magic(SPL_ADDR + 4)) /* eGON.BT0 */
+-		return SUNXI_INVALID_BOOT_SOURCE;
++	if (is_egon_image((void *)SPL_ADDR))
++		return ((struct boot_file_head *)SPL_ADDR)->boot_media;
++	if (is_toc0_image((void *)SPL_ADDR))
++		return ((struct toc0_main_info *)SPL_ADDR)->platform[0];
+ 
+-	return readb(SPL_ADDR + 0x28);
++	/* Not a valid BROM image, so we must have been booted via FEL. */
++	return SUNXI_INVALID_BOOT_SOURCE;
+ }
+ 
+ /* The sunxi internal brom will try to loader external bootloader
+@@ -285,13 +288,18 @@ uint32_t sunxi_get_boot_device(void)
+ 	return -1;		/* Never reached */
+ }
+ 
++#define is_toc0_magic(foo) true
++
+ #ifdef CONFIG_SPL_BUILD
+ static u32 sunxi_get_spl_size(void)
+ {
+-	if (!is_boot0_magic(SPL_ADDR + 4)) /* eGON.BT0 */
+-		return 0;
++	if (is_egon_image((void *)SPL_ADDR))
++		return ((struct boot_file_head *)SPL_ADDR)->length;
++	if (is_toc0_image((void *)SPL_ADDR))
++		return ((struct toc0_main_info *)SPL_ADDR)->length;
+ 
+-	return readl(SPL_ADDR + 0x10);
++	/* Unknown size, so fall back to the default offset. */
++	return 0;
+ }
+ 
+ /*
+diff --git a/include/sunxi_image.h b/include/sunxi_image.h
+index bdf80ec0e0..b0424b6b7f 100644
+--- a/include/sunxi_image.h
++++ b/include/sunxi_image.h
+@@ -270,4 +270,18 @@ struct toc0_key_item {
+ 		sizeof(struct toc0_key_item),				  \
+ 	32)
+ 
++static inline bool is_egon_image(void *addr)
++{
++	struct boot_file_head *head = addr;
++
++	return memcmp(head->magic, BOOT0_MAGIC, 8) == 0;
++}
++
++static inline bool is_toc0_image(void *addr)
++{
++	struct toc0_main_info *main = addr;
++
++	return memcmp(main->name, TOC0_MAIN_INFO_NAME, 8) == 0;
++}
++
+ #endif
+-- 
+2.31.1
+

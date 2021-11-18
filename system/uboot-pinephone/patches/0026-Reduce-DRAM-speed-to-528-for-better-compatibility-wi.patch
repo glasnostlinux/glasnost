@@ -1,0 +1,26 @@
+From 880f5035decae44a5be943875f35ed9d9efc011d Mon Sep 17 00:00:00 2001
+From: Dalton Durst <dalton@ubports.com>
+Date: Wed, 10 Mar 2021 11:44:07 -0600
+Subject: [PATCH 26/29] Reduce DRAM speed to 528 for better compatibility with
+ all PinePhones
+
+---
+ configs/pinephone_defconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/configs/pinephone_defconfig b/configs/pinephone_defconfig
+index d8ee930a69..702e2bdc14 100644
+--- a/configs/pinephone_defconfig
++++ b/configs/pinephone_defconfig
+@@ -4,7 +4,7 @@ CONFIG_SPL=y
+ CONFIG_PINEPHONE_LEDS=y
+ CONFIG_MACH_SUN50I=y
+ CONFIG_SUNXI_DRAM_LPDDR3_STOCK=y
+-CONFIG_DRAM_CLK=552
++CONFIG_DRAM_CLK=528
+ CONFIG_DRAM_ZQ=3881949
+ CONFIG_MMC_SUNXI_SLOT_EXTRA=2
+ CONFIG_PINEPHONE_DT_SELECTION=y
+-- 
+2.31.1
+

@@ -1,0 +1,29 @@
+#!/bin/sh -e
+
+if [ "$KISS_XHOST_ARCH" != "aarch64" ]; then
+    echo "This package is for aarch64 only"
+    exit 1
+fi
+
+for patch in *.patch; do
+    echo "PATCHING: $patch"
+    patch -p1 < "$patch"
+done
+
+export CFLAGS=" -fno-stack-protector -Wno-error=attributes "
+export CXXFLAGS=$CFLAGS
+export PATH=.:/usr/gnu/bin:$PATH
+export M0_CROSS_COMPILE="arm-none-eabi-"
+export CROSS_COMPILE="aarch64-linux-musl-"
+unset LDFLAGS
+
+
+mkdir -p $1/usr/share/atf/rk3399 $1/usr/share/atf/sun50i_a64
+
+# Build for rk3399 (Pinebook Pro, RockPro64 etc.)
+make DEBUG=0 PLAT=rk3399 bl31
+install -Dm644 build/rk3399/release/bl31/bl31.elf "$1/usr/share/atf/rk3399"
+
+# Build for Allwinner A64 (pinephone)
+make DEBUG=0 PLAT=sun50i_a64 bl31
+install -Dm644 build/sun50i_a64/release/bl31.bin "$1/usr/share/atf/sun50i_a64"

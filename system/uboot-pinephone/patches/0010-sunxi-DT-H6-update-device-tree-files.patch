@@ -1,0 +1,56 @@
+From 153c7e167201f9c17cee7ea919146a5168daa74e Mon Sep 17 00:00:00 2001
+From: Samuel Holland <samuel@sholland.org>
+Date: Thu, 7 May 2020 18:50:37 -0500
+Subject: [PATCH 10/29] sunxi: DT: H6: update device tree files
+
+Import updated device trees from Linux v5.9.
+
+Signed-off-by: Samuel Holland <samuel@sholland.org>
+---
+ arch/arm/dts/Makefile                       |  1 +
+ arch/arm/dts/sun50i-h6-pine-h64-model-b.dts | 21 +++++++++++++++++++++
+ 2 files changed, 22 insertions(+)
+ create mode 100644 arch/arm/dts/sun50i-h6-pine-h64-model-b.dts
+
+diff --git a/arch/arm/dts/Makefile b/arch/arm/dts/Makefile
+index 9fb38682e6..ec40983df2 100644
+--- a/arch/arm/dts/Makefile
++++ b/arch/arm/dts/Makefile
+@@ -633,6 +633,7 @@ dtb-$(CONFIG_MACH_SUN50I_H6) += \
+ 	sun50i-h6-orangepi-lite2.dtb \
+ 	sun50i-h6-orangepi-one-plus.dtb \
+ 	sun50i-h6-pine-h64.dtb \
++	sun50i-h6-pine-h64-model-b.dtb \
+ 	sun50i-h6-tanix-tx6.dtb
+ dtb-$(CONFIG_MACH_SUN50I_H616) += \
+ 	sun50i-h616-orangepi-zero2.dtb
+diff --git a/arch/arm/dts/sun50i-h6-pine-h64-model-b.dts b/arch/arm/dts/sun50i-h6-pine-h64-model-b.dts
+new file mode 100644
+index 0000000000..f4c8966a64
+--- /dev/null
++++ b/arch/arm/dts/sun50i-h6-pine-h64-model-b.dts
+@@ -0,0 +1,21 @@
++// SPDX-License-Identifier: (GPL-2.0+ or MIT)
++/*
++ * Copyright (C) 2019 Corentin LABBE <clabbe@baylibre.com>
++ */
++
++#include "sun50i-h6-pine-h64.dts"
++
++/ {
++	model = "Pine H64 model B";
++	compatible = "pine64,pine-h64-model-b", "allwinner,sun50i-h6";
++
++	/delete-node/ reg_gmac_3v3;
++};
++
++&hdmi_connector {
++	/delete-property/ ddc-en-gpios;
++};
++
++&emac {
++	phy-supply = <&reg_aldo2>;
++};
+-- 
+2.31.1
+

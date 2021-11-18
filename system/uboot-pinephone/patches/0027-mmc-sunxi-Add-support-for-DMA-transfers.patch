@@ -1,0 +1,354 @@
+From b0950e4696b391578f7428337e41fa8ca14b225d Mon Sep 17 00:00:00 2001
+From: Ondrej Jirman <megous@megous.com>
+Date: Wed, 11 Sep 2019 20:45:28 +0200
+Subject: [PATCH 27/29] mmc: sunxi: Add support for DMA transfers
+
+Allwinner MMC controller supports DMA via internal DMA controller,
+use it.
+
+Signed-off-by: Ondrej Jirman <megous@megous.com>
+---
+ arch/arm/include/asm/arch-sunxi/mmc.h |   7 +
+ drivers/mmc/sunxi_mmc.c               | 204 +++++++++++++++++++++++---
+ 2 files changed, 192 insertions(+), 19 deletions(-)
+
+diff --git a/arch/arm/include/asm/arch-sunxi/mmc.h b/arch/arm/include/asm/arch-sunxi/mmc.h
+index 5daacf10eb..dc8ea6f43a 100644
+--- a/arch/arm/include/asm/arch-sunxi/mmc.h
++++ b/arch/arm/include/asm/arch-sunxi/mmc.h
+@@ -112,6 +112,10 @@ struct sunxi_mmc {
+ 	 SUNXI_MMC_RINT_COMMAND_DONE |		\
+ 	 SUNXI_MMC_RINT_VOLTAGE_CHANGE_DONE)
+ 
++#define SUNXI_MMC_FTRGLEVEL_BURST_SIZE(v)	(((v) & 0x7) << 28)
++#define SUNXI_MMC_FTRGLEVEL_RX_TL(v)		(((v) & 0xfff) << 16)
++#define SUNXI_MMC_FTRGLEVEL_TX_TL(v)		(((v) & 0xffff) << 0)
++
+ #define SUNXI_MMC_STATUS_RXWL_FLAG		(0x1 << 0)
+ #define SUNXI_MMC_STATUS_TXWL_FLAG		(0x1 << 1)
+ #define SUNXI_MMC_STATUS_FIFO_EMPTY		(0x1 << 2)
+@@ -130,6 +134,9 @@ struct sunxi_mmc {
+ #define SUNXI_MMC_IDIE_TXIRQ		(0x1 << 0)
+ #define SUNXI_MMC_IDIE_RXIRQ		(0x1 << 1)
+ 
++#define SUNXI_MMC_IDST_TXIRQ		(0x1 << 0)
++#define SUNXI_MMC_IDST_RXIRQ		(0x1 << 1)
++
+ #define SUNXI_MMC_COMMON_CLK_GATE		(1 << 16)
+ #define SUNXI_MMC_COMMON_RESET			(1 << 18)
+ 
+diff --git a/drivers/mmc/sunxi_mmc.c b/drivers/mmc/sunxi_mmc.c
+index 28af8e6ac5..47c947cdb8 100644
+--- a/drivers/mmc/sunxi_mmc.c
++++ b/drivers/mmc/sunxi_mmc.c
+@@ -9,6 +9,7 @@
+ 
+ #include <common.h>
+ #include <dm.h>
++#include <cpu_func.h>
+ #include <errno.h>
+ #include <log.h>
+ #include <malloc.h>
+@@ -27,6 +28,27 @@
+ #define CCM_MMC_CTRL_MODE_SEL_NEW	0
+ #endif
+ 
++#define DMA_CONFIG_DIC BIT(1)  // flag: disable interrupt after this descriptor's buffer is processed
++#define DMA_CONFIG_LAST BIT(2) // flag: last descriptor
++#define DMA_CONFIG_FIRST BIT(3) // flag: first descriptor
++#define DMA_CONFIG_CHAIN BIT(4) // flag: buf_addr_ptr2 points to next descriptor
++#define DMA_CONFIG_ERROR BIT(30) // flag: out: error happened
++#define DMA_CONFIG_HOLD BIT(31) // flag: desc owned by IDMAC (set to 1)
++
++#if defined(CONFIG_MACH_SUN50I)
++// mmc2 on A64 only allows for 8k
++#define DMA_BUF_MAX_SIZE (1 << 13)
++#else
++#define DMA_BUF_MAX_SIZE (1 << 16)
++#endif
++
++struct sunxi_idma_desc {
++        u32 config;
++        u32 buf_size;
++        u32 buf_addr_ptr1;
++        u32 buf_addr_ptr2;
++};
++
+ struct sunxi_mmc_plat {
+ 	struct mmc_config cfg;
+ 	struct mmc mmc;
+@@ -39,6 +61,8 @@ struct sunxi_mmc_priv {
+ 	struct gpio_desc cd_gpio;	/* Change Detect GPIO */
+ 	struct sunxi_mmc *reg;
+ 	struct mmc_config cfg;
++	unsigned n_dma_descs;
++	struct sunxi_idma_desc* dma_descs;
+ };
+ 
+ #if !CONFIG_IS_ENABLED(DM_MMC)
+@@ -318,7 +342,7 @@ static int mmc_trans_data_by_cpu(struct sunxi_mmc_priv *priv, struct mmc *mmc,
+ 	if (timeout_msecs < 2000)
+ 		timeout_msecs = 2000;
+ 
+-	/* Always read / write data through the CPU */
++	/* Read / write data through the CPU */
+ 	setbits_le32(&priv->reg->gctrl, SUNXI_MMC_GCTRL_ACCESS_BY_AHB);
+ 
+ 	start = get_timer(0);
+@@ -328,7 +352,7 @@ static int mmc_trans_data_by_cpu(struct sunxi_mmc_priv *priv, struct mmc *mmc,
+ 
+ 		while ((status = readl(&priv->reg->status)) & status_bit) {
+ 			if (get_timer(start) > timeout_msecs)
+-				return -1;
++				return -ETIMEDOUT;
+ 		}
+ 
+ 		/*
+@@ -360,21 +384,142 @@ static int mmc_trans_data_by_cpu(struct sunxi_mmc_priv *priv, struct mmc *mmc,
+ 	return 0;
+ }
+ 
++static void flush_cache_auto_align(void* buf, size_t len)
++{
++	uintptr_t mask = ~((uintptr_t)CONFIG_SYS_CACHELINE_SIZE - 1);
++	uintptr_t start = (uintptr_t)buf & mask;
++
++	len = (len + 2 * CONFIG_SYS_CACHELINE_SIZE) & mask;
++
++	flush_cache(start, len);
++}
++
++static int mmc_trans_data_by_dma(struct sunxi_mmc_priv *priv, struct mmc *mmc,
++				 struct mmc_data *data)
++{
++	const int reading = !!(data->flags & MMC_DATA_READ);
++	uint8_t *buff = (uint8_t*)(reading ? data->dest : data->src);
++	unsigned byte_cnt = data->blocksize * data->blocks;
++	unsigned i, n_desc, last_block_size;
++	u32 rval;
++
++	/* data pointer and transfer size needs to be aligned to 4 bytes */
++
++	/* Read / write data through IDMAC */
++	clrbits_le32(&priv->reg->gctrl, SUNXI_MMC_GCTRL_ACCESS_BY_AHB);
++
++	n_desc = byte_cnt / DMA_BUF_MAX_SIZE;
++	last_block_size = byte_cnt % DMA_BUF_MAX_SIZE;
++	if (last_block_size)
++		n_desc++;
++
++	if (n_desc > priv->n_dma_descs)
++		return -ENOMEM;
++
++	memset(priv->dma_descs, 0, sizeof(struct sunxi_idma_desc) * n_desc);
++
++	for (i = 0; i < n_desc; i++) {
++		struct sunxi_idma_desc* desc = &priv->dma_descs[i];
++		bool is_last = i == n_desc - 1;
++		bool is_first = i == 0;
++
++		desc->config = DMA_CONFIG_CHAIN | DMA_CONFIG_HOLD
++			| (is_last ? DMA_CONFIG_LAST : DMA_CONFIG_DIC)
++			| (is_first ? DMA_CONFIG_FIRST : 0);
++
++		if (is_last && last_block_size)
++			desc->buf_size = last_block_size;
++		else
++			desc->buf_size = DMA_BUF_MAX_SIZE;
++
++		desc->buf_addr_ptr1 = (uintptr_t)buff + i * DMA_BUF_MAX_SIZE;
++		if (!is_last)
++			desc->buf_addr_ptr2 = (uintptr_t)(desc + 1);
++	}
++
++	/*
++	 * Make sure everyhting needed for a transfer is in DRAM.
++	 */
++
++	flush_cache_auto_align(buff, byte_cnt);
++	flush_cache_auto_align(priv->dma_descs,
++			       sizeof(struct sunxi_idma_desc) * n_desc);
++
++	dsb();
++	isb();
++
++	/* dma enable */
++	setbits_le32(&priv->reg->gctrl, SUNXI_MMC_GCTRL_DMA_RESET
++		     | SUNXI_MMC_GCTRL_DMA_ENABLE);
++
++	/* idma reset */
++	writel(SUNXI_MMC_IDMAC_RESET, &priv->reg->dmac);
++
++	/* wait idma reset done */
++	while (readl(&priv->reg->dmac) & SUNXI_MMC_IDMAC_RESET);
++
++	/* idma on */
++	writel(SUNXI_MMC_IDMAC_ENABLE | SUNXI_MMC_IDMAC_FIXBURST,
++	       &priv->reg->dmac);
++
++	/* enable interrupt flags */
++	rval = readl(&priv->reg->idie)
++		& ~(SUNXI_MMC_IDIE_RXIRQ | SUNXI_MMC_IDIE_TXIRQ);
++	rval |= reading ? SUNXI_MMC_IDIE_RXIRQ : SUNXI_MMC_IDIE_TXIRQ;
++	writel(rval, &priv->reg->idie);
++
++	/* set address of the first descriptor */
++	writel((uintptr_t)priv->dma_descs, &priv->reg->dlba);
++
++	/* set fifo fill tresholds for issuing dma */
++
++#if defined(CONFIG_MACH_SUN50I) || defined(CONFIG_MACH_SUN50I_H6)
++	if (priv->mmc_no == 2) {
++		// for mmc 2 we need to set this differently
++		writel(SUNXI_MMC_FTRGLEVEL_BURST_SIZE(3) // burst-16
++		       | SUNXI_MMC_FTRGLEVEL_RX_TL(15)
++		       | SUNXI_MMC_FTRGLEVEL_TX_TL(240),
++		       &priv->reg->ftrglevel);
++	} else {
++		writel(SUNXI_MMC_FTRGLEVEL_BURST_SIZE(2) // burst-8
++		       | SUNXI_MMC_FTRGLEVEL_RX_TL(7)
++		       | SUNXI_MMC_FTRGLEVEL_TX_TL(248),
++		       &priv->reg->ftrglevel);
++	}
++#else
++	writel(SUNXI_MMC_FTRGLEVEL_BURST_SIZE(2) // burst-8
++	       | SUNXI_MMC_FTRGLEVEL_RX_TL(7)
++	       | SUNXI_MMC_FTRGLEVEL_TX_TL(8),
++	       &priv->reg->ftrglevel);
++#endif
++
++	writel(0xffffffff, &priv->reg->idst);
++
++	return 0;
++}
++
+ static int mmc_rint_wait(struct sunxi_mmc_priv *priv, struct mmc *mmc,
+-			 uint timeout_msecs, uint done_bit, const char *what)
++			 uint timeout_msecs, uint done_bit, bool wait_dma,
++			 const char *what)
+ {
+ 	unsigned int status;
+ 	unsigned long start = get_timer(0);
++	bool dma_done = true;
+ 
+ 	do {
+ 		status = readl(&priv->reg->rint);
++
+ 		if ((get_timer(start) > timeout_msecs) ||
+ 		    (status & SUNXI_MMC_RINT_INTERRUPT_ERROR_BIT)) {
+ 			debug("%s timeout %x\n", what,
+ 			      status & SUNXI_MMC_RINT_INTERRUPT_ERROR_BIT);
+ 			return -ETIMEDOUT;
+ 		}
+-	} while (!(status & done_bit));
++
++		if (wait_dma)
++			dma_done = readl(&priv->reg->idst)
++				& (SUNXI_MMC_IDST_TXIRQ | SUNXI_MMC_IDST_RXIRQ);
++	} while (!(status & done_bit) || !dma_done);
+ 
+ 	return 0;
+ }
+@@ -388,6 +533,7 @@ static int sunxi_mmc_send_cmd_common(struct sunxi_mmc_priv *priv,
+ 	int error = 0;
+ 	unsigned int status = 0;
+ 	unsigned int bytecnt = 0;
++	bool usedma = false;
+ 
+ 	if (priv->fatal_err)
+ 		return -1;
+@@ -424,42 +570,45 @@ static int sunxi_mmc_send_cmd_common(struct sunxi_mmc_priv *priv,
+ 	      cmd->cmdidx, cmdval | cmd->cmdidx, cmd->cmdarg);
+ 	writel(cmd->cmdarg, &priv->reg->arg);
+ 
+-	if (!data)
+-		writel(cmdval | cmd->cmdidx, &priv->reg->cmd);
+-
+ 	/*
+ 	 * transfer data and check status
+ 	 * STATREG[2] : FIFO empty
+ 	 * STATREG[3] : FIFO full
+ 	 */
+ 	if (data) {
+-		int ret = 0;
+-
+ 		bytecnt = data->blocksize * data->blocks;
+ 		debug("trans data %d bytes\n", bytecnt);
+-		writel(cmdval | cmd->cmdidx, &priv->reg->cmd);
+-		ret = mmc_trans_data_by_cpu(priv, mmc, data);
+-		if (ret) {
+-			error = readl(&priv->reg->rint) &
+-				SUNXI_MMC_RINT_INTERRUPT_ERROR_BIT;
+-			error = -ETIMEDOUT;
+-			goto out;
++
++		if (bytecnt > 64 && !IS_ENABLED(SPL_BUILD)) {
++			debug("  using dma %d\n", bytecnt);
++			error = mmc_trans_data_by_dma(priv, mmc, data);
++			writel(cmdval | cmd->cmdidx, &priv->reg->cmd);
++			usedma = true;
++		} else {
++			debug("  using pio\n");
++			writel(cmdval | cmd->cmdidx, &priv->reg->cmd);
++			error = mmc_trans_data_by_cpu(priv, mmc, data);
+ 		}
++
++		if (error)
++			goto out;
++	} else {
++		writel(cmdval | cmd->cmdidx, &priv->reg->cmd);
+ 	}
+ 
+ 	error = mmc_rint_wait(priv, mmc, 1000, SUNXI_MMC_RINT_COMMAND_DONE,
+-			      "cmd");
++			      false, "cmd");
+ 	if (error)
+ 		goto out;
+ 
+ 	if (data) {
+-		timeout_msecs = 120;
++		timeout_msecs = 10000;
+ 		debug("cacl timeout %x msec\n", timeout_msecs);
+ 		error = mmc_rint_wait(priv, mmc, timeout_msecs,
+ 				      data->blocks > 1 ?
+ 				      SUNXI_MMC_RINT_AUTO_COMMAND_DONE :
+ 				      SUNXI_MMC_RINT_DATA_OVER,
+-				      "data");
++				      usedma, "data");
+ 		if (error)
+ 			goto out;
+ 	}
+@@ -491,6 +640,14 @@ static int sunxi_mmc_send_cmd_common(struct sunxi_mmc_priv *priv,
+ 		debug("mmc resp 0x%08x\n", cmd->response[0]);
+ 	}
+ out:
++	if (data && usedma) {
++		//status = readl(&reg->idst);
++		writel(0, &priv->reg->idie);
++		writel(0xffffffff, &priv->reg->idst);
++		writel(0, &priv->reg->dmac);
++		clrbits_le32(&priv->reg->gctrl, SUNXI_MMC_GCTRL_DMA_ENABLE);
++	}
++
+ 	if (error < 0) {
+ 		writel(SUNXI_MMC_GCTRL_RESET, &priv->reg->gctrl);
+ 		mmc_update_clk(priv);
+@@ -674,6 +831,15 @@ static int sunxi_mmc_probe(struct udevice *dev)
+ 
+ 	priv->reg = dev_read_addr_ptr(dev);
+ 
++	// make sure we have enough space for descritors for BLK_SIZE * b_max
++	priv->n_dma_descs = 512 * 65536 / DMA_BUF_MAX_SIZE;
++	priv->dma_descs = malloc(sizeof(struct sunxi_idma_desc)
++				 * priv->n_dma_descs);
++	if (priv->dma_descs == NULL) {
++		debug("init mmc alloc failed\n");
++		return -ENOMEM;
++	}
++
+ 	/* We don't have a sunxi clock driver so find the clock address here */
+ 	ret = dev_read_phandle_with_args(dev, "clocks", "#clock-cells", 0,
+ 					  1, &args);
+-- 
+2.31.1
+
