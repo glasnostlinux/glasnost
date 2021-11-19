@@ -1,6 +1,0 @@
-http://distcache.freebsd.org/local-distfiles/itetcu/libexecinfo-1.1.tar.bz2
-patches/01-execinfo.patch
-patches/02-makefile.patch
-patches/03-define-gnu-source.patch
-patches/libexecinfo_pc.patch
-patches/make.patch

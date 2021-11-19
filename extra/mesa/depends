@@ -3,7 +3,6 @@ expat
 flex  make
 libdrm
 libelf
-libexecinfo
 libglvnd
 linux-headers make
 llvm

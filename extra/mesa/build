@@ -1,8 +1,5 @@
 #!/bin/sh -e
 
-export CFLAGS="$CFLAGS -Og  -g3 -lexecinfo "
-export CXXFLAGS="$CXXFLAGS -Og -g3 -lexecinfo "
-
 for patch in *.patch; do
     patch -p1 < "$patch"
 done
@@ -38,7 +35,7 @@ export CFLAGS="$CFLAGS -Wno-implicit-fallthrough "
 
 case $KISS_XHOST_ARCH in
    armv7)      GALL=-Dgallium-drivers=swrast                             LLVM=disabled VULK=-Dvulkan-drivers=;;
-   aarch64)    GALL=-Dgallium-drivers=panfrost,kmsro,lima,v3d,vc4,swrast LLVM=enabled  VULK=-Dvulkan-drivers=panfrost;;
+   aarch64)    GALL=-Dgallium-drivers=panfrost,kmsro,lima,etnaviv,v3d,vc4,swrast LLVM=enabled  VULK=-Dvulkan-drivers=panfrost;;
    x86_64) ;; # Auto configured
    powerpc64*) GALL=-Dgallium-drivers=radeonsi,r300,r600 LLVM=enabled VULK=-Dvulkan-drivers=amd;;
    riscv64*)   GALL=-Dgallium-drivers=radeonsi,r300,r600 LLVM=enabled VULK=-Dvulkan-drivers=amd;;
@@ -59,15 +56,13 @@ mv -f _ meson.build
 
 kiss-meson-config > meson.config
 
-# --buildtype=release \
-
 meson \
     --prefix=/usr \
     --cross-file="meson.config" \
     --sysconfdir=/etc \
     --mandir=/usr/share/man \
     --localstatedir=/var \
-    --buildtype=debug \
+    --buildtype=release \
     -Dglx-read-only-text=true \
     -Dplatforms=wayland \
     -Dglx=disabled \
