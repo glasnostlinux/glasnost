@@ -1,0 +1,11 @@
+--- a/Makefile
++++ a/Makefile
+@@ -26,7 +26,7 @@
+ #
+ # Linux Makefile by Matt Smith <mcs@darkregion.net>, 2011/01/04
+ 
+-CC=cc
++CC ?= cc
+ AR=ar
+ EXECINFO_CFLAGS=$(CFLAGS) -std=gnu99 -c
+ EXECINFO_LDFLAGS=$(LDFLAGS)
