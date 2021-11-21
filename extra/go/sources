@@ -1,7 +1,0 @@
-https://golang.org/dl/go1.17.2.src.tar.gz go-current/
-https://dl.google.com/go/go1.4-bootstrap-20171003.tar.gz go1.4-bootstrap/
-file:///home/pokey/temp/go/go-linux-arm64-bootstrap.tbz arm64-bootstrap/
-file:///home/pokey/temp/go/go-linux-ppc64le-bootstrap.tbz ppc64le-bootstrap/
-file:///home/pokey/temp/go/go-linux-ppc64-bootstrap.tbz ppc64-bootstrap/
-file:///home/pokey/temp/go/go-linux-riscv64-bootstrap.tbz riscv64-bootstrap/
-patches/posix-build.patch
