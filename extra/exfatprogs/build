@@ -1,0 +1,12 @@
+#!/bin/sh -e
+
+./configure \
+    --prefix=/usr \
+    --build=$KISS_XBUILD_TRIPLE \
+    --host=$KISS_XHOST_TRIPLE \
+    --bindir=/usr/bin \
+    --sbindir=/usr/bin \
+    --datarootdir=/usr/share
+
+make
+make install

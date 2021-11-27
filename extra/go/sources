@@ -1,4 +1,4 @@
-https://golang.org/dl/go1.17.2.src.tar.gz go-current/
+https://golang.org/dl/goVERSION.src.tar.gz go-current/
 https://dl.google.com/go/go1.4-bootstrap-20171003.tar.gz go1.4-bootstrap/
 https://github.com/glasnostlinux/glasnost/releases/download/1.17.2/go-linux-arm64-bootstrap.tbz arm64-bootstrap/
 https://github.com/glasnostlinux/glasnost/releases/download/1.17.2/go-linux-ppc64le-bootstrap.tbz ppc64le-bootstrap/
