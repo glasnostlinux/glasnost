@@ -3,6 +3,7 @@ curl
 expat
 freetype-harfbuzz
 glib
+gperf   make
 libjpeg-turbo
 libpng
 libwebp
