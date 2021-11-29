@@ -1,0 +1,14 @@
+#!/bin/sh -e
+
+export PKG_CONFIG_SYSROOT_DIR=
+
+# Something up with kiss git checkout?
+git clone https://git.sr.ht/~sircmpwn/visurf ./visurf
+
+rm -Rf netsurf
+rm -Rf libcss
+mv visurf netsurf
+mv libcss-new libcss
+
+make TARGET=visurf PREFIX=/usr LIBDIR=lib INCLUDEDIR=include
+make TARGET=visurf PREFIX=/usr LIBDIR=lib INCLUDEDIR=include DESTDIR="$1" install

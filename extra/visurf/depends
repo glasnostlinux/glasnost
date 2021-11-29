@@ -1,0 +1,13 @@
+cairo
+curl
+expat
+freetype-harfbuzz
+glib
+libjpeg-turbo
+libpng
+libwebp
+libxkbcommon
+openssl
+pango
+wayland
+zlib
