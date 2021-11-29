@@ -9,5 +9,7 @@ libwebp
 libxkbcommon
 openssl
 pango
+perl    make
+pkgconf make
 wayland
 zlib
