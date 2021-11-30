@@ -1,14 +1,24 @@
 #!/bin/sh -e
 
 export PKG_CONFIG_SYSROOT_DIR=
+export HOST_CC=clang
+#export CFLAGS=
+
+patch -p1 < nsgenbind.patch
 
 # Something up with kiss git checkout?
+# Some files, e.g. frontends/visurf/res/Messages
+# are missing.
+(
 git clone https://git.sr.ht/~sircmpwn/visurf ./visurf
+cd visurf
+git checkout 2f549e4d2685013a927403c7500af01bb88553db
+)
 
 rm -Rf netsurf
 rm -Rf libcss
 mv visurf netsurf
 mv libcss-new libcss
 
-make TARGET=visurf PREFIX=/usr LIBDIR=lib INCLUDEDIR=include
-make TARGET=visurf PREFIX=/usr LIBDIR=lib INCLUDEDIR=include DESTDIR="$1" install
+make HOST_CC=clang TARGET=visurf PREFIX=/usr LIBDIR=lib INCLUDEDIR=include BUILD="$KISS_XBUILD_TRIPLE" HOST="$KISS_XHOST_TRIPLE"
+make HOST_CC=clang TARGET=visurf PREFIX=/usr LIBDIR=lib INCLUDEDIR=include BUILD="$KISS_XBUILD_TRIPLE" HOST="$KISS_XHOST_TRIPLE" install

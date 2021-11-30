@@ -1,6 +1,7 @@
 cairo
 curl
 expat
+flex    make
 freetype-harfbuzz
 glib
 gperf   make
