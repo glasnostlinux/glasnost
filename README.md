@@ -45,9 +45,12 @@ If you are cross-building you need to know:
 On your installation of glasnost x86_64:
 1. Fetch the chroot tarball for aarch64
 2. Extract the tarball into a directory which represents your target machine. For example: 
+
 `mkdir glasnost-pinephone`
+
 `tar xf glasnost-chroot-aarch64-2021.10-01.tar.xz -C glasnost-pinephone --strip-components=1`
-3. `KISS_ROOT=glasnost-pinephone kiss b packagename`
+
+3. `KISS_ROOT=glasnost-pinephone kiss b openssh`
 
 ## How to install cross-built packages onto another machine
 1. On your build machine, go to ~/.cache/kiss/bin
