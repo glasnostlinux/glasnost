@@ -3,7 +3,7 @@
 Glasnost Linux is a Linux distribution forked from [KISS Linux](https://kisslinux.org/)
 
 ## Differences between KISS Linux and Glasnost Linux
- - Clang is used as the default compiler
+ - Clang is used as the default compiler instead of gcc
  - LLVM bintuils are used instead of GNU binutils
  - The KISS package manager is modified to support cross-compilation and rudimentary binary package updates
  - Cross compilation of packages is supported wherever possible
@@ -22,9 +22,9 @@ This system allows cross compilation of packages between any of the supported ar
  
 chroot tarballs are provided for each architecture [here](https://github.com/glasnostlinux/glasnost/releases).
 
-Installation should be treated similar to [KISS Linux](https://kisslinux.org/install).
+This distribution is currently intended only for experienced Linux users. Installation should be treated similar to [KISS Linux](https://kisslinux.org/install).
 
-If you don't want to use the tarballs, it may be possible to bootstrap using [this](https://github.com/konimex/kiss-llvm) repo.
+If you don't want to use the tarballs, it may be possible to bootstrap the system using [this](https://github.com/konimex/kiss-llvm) repo.
 
 ## Objectives
 Make building packages for foreign architectures as easy as building native packages on KISS Linux.
@@ -60,7 +60,7 @@ This is not like normal package management on e.g. Arch, where you can install p
 
 In Glasnost, you download and extract a chroot which becomes a binary repo for the target machine.  When you use  `kiss-bup`, _any packages built for that repo are installed on the target machine._
 
-You can maintain multiple binary repos for any supported architecture.
+You can maintain multiple binary repos for any supported architecture. They will each have a directory in ~/.cache/kiss/bin/.
 
 ## Motivation
 I prefer to use hardware which does not use non-free firmware or contain monitoring processors to which I do not have access. I also prefer to build the packages on my system to my own requirements as needed.
