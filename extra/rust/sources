@@ -17,7 +17,8 @@ https://github.com/glasnostlinux/glasnost/releases/download/2021.10-01/glasnost-
 https://github.com/glasnostlinux/glasnost/releases/download/2021.10-01/glasnost-chroot-powerpc64-2021.10-01.tar.xz roots/powerpc64
 https://github.com/glasnostlinux/glasnost/releases/download/2021.10-01/glasnost-chroot-powerpc64le-2021.10-01.tar.xz roots/powerpc64le
 https://github.com/glasnostlinux/glasnost/releases/download/2021.10-01/glasnost-chroot-x86_64-2021.10-01.tar.xz roots/x86_64
-patches/libressl.patch
+patches/openssl.patch
 patches/cross.patch
 files/cc-target
 files/cxx-target
+files/stage0.json

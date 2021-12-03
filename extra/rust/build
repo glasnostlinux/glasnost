@@ -1,6 +1,6 @@
 #!/bin/sh -e
 
-patch -p1 < libressl.patch
+patch -p1 < openssl.patch
 patch -p1 < cross.patch
 
 # Set shared linking as the default.
@@ -20,16 +20,17 @@ sed -i 's/\("files":{\)[^}]*/\1/' \
     vendor/libc/.cargo-checksum.json
 
 # Bootstrap correct version
-sed -i 's/1.55.0/1.56.0/' src/stage0.txt
+cp -f stage0.json src/
 
 build="$KISS_XBUILD_ARCH-unknown-linux-$KISS_XBUILD_ABI"
 target="$KISS_XHOST_ARCH-unknown-linux-$KISS_XHOST_ABI"
+
 
 # This package mimics the download process of rust's 'x.py'
 # bootstrap library to allow for the removal of the internet
 # connection requirement per build.
 {
-    cache_dir="build/cache/2021-09-09"
+    cache_dir="build/cache/2021-11-01"
     mkdir -p $cache_dir
 
     for tarball in *.tar.xz\?no-extract; do
