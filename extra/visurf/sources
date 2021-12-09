@@ -1,3 +1,4 @@
 http://download.netsurf-browser.org/netsurf/releases/source-full/netsurf-all-3.10.tar.gz
 git+https://git.netsurf-browser.org/libcss.git#accad499aed29acb7bc8fb00bea3d9f2b7f43bd1 libcss-new/
+git+https://git.sr.ht/~sircmpwn/visurf#de62e97ba4d97faa9462ebb179113267e23a07b9 visurf/
 patches/nsgenbind.patch

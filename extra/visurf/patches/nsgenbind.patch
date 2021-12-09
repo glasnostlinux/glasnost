@@ -1,3 +1,5 @@
+Build nsbindgen for the build architecture, not the target architecture,
+since CFLAGS will contain flags for the target architecture.
 --- a/nsgenbind/Makefile
 +++ a/nsgenbind/Makefile
 @@ -32,9 +32,12 @@

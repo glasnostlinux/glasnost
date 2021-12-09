@@ -13,6 +13,7 @@ export LDFLAGS="$LDFLAGS -fno-semantic-interposition"
 export AR=ar
 export RANLIB=ranlib
 export READELF=readelf
+export CPPFLAGS="-I$KISS_ROOT/usr/include"
 
 for patch in *.patch; do
     patch -p1 < "$patch"
@@ -25,7 +26,9 @@ if [ $KISS_XHOST_ARCH == "powerpc64" ]; then
     BIG_ENDIAN=yes
 fi
 
-export CPPFLAGS="-I$KISS_ROOT/usr/include"
+# Python has problems determining the build triples
+sed -i "s/-linux-gnu/-linux-musl/g" configure
+sed -i "s/MULTIARCH=\$(.*/MULTIARCH=$KISS_XHOST_TRIPLE/g" configure
 
 ac_cv_file__dev_ptc=no \
 ac_cv_file__dev_ptmx=no \

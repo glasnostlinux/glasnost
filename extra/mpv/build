@@ -19,13 +19,13 @@ export CPATH="$KISS_ROOT/usr/include"
     export PYTHONPATH
 }
 
-#--enable-libmpv-shared
 python waf/waf configure \
     --prefix=/usr \
     --mandir=/usr/share/man \
     --confdir=/etc/mpv \
     --enable-alsa \
     --enable-wayland \
+    --disable-pulse \
     --disable-x11
 
 python waf/waf build
