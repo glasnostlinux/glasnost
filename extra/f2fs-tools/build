@@ -1,14 +1,10 @@
 #!/bin/sh -e
 
-export GL_LIBS=""
-export GL_CFLAGS=""
+./autogen.sh
 
 ./configure \
     --prefix=/usr \
     --build=$KISS_XBUILD_TRIPLE \
     --host=$KISS_XHOST_TRIPLE \
-    --disable-x11 \
-    --enable-wayland
-
 make
 make install
