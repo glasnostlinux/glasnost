@@ -1,0 +1,15 @@
+#!/bin/sh -e
+
+./configure \
+    --prefix=/usr \
+    --build=$KISS_XBUILD_TRIPLE \
+    --host=$KISS_XHOST_TRIPLE \
+    --disable-nls \
+    --disable-metalink \
+    --disable-websocket \
+    --without-libxml2 \
+    --without-libexpat \
+    --without-sqlite3
+
+make
+make install
