@@ -1,1 +1,1 @@
-https://github.com/saitoha/libsixel/releases/download/vVERSION/libsixel-VERSION.tar.gz
+git+https://github.com/libsixel/libsixel.git#bc93c8ce570b35b8f3bb429ea5892ac260e4c8b1
