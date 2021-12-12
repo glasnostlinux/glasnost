@@ -18,7 +18,7 @@ mv -f _ configure
 # Determine arch
 case $KISS_XHOST_ARCH in
    aarch64)     target=arm64-linux-gcc;;
-   armv7)       target=armv7-linux-gcc;;
+   armv7)       target=generic-gnu;; # Problems with arm asm
    i686)        target=x86-linux-gcc;;
    powerpc64)   target=generic-gnu;;
    powerpc64le) target=ppc64le-linux-gcc;;
@@ -28,8 +28,6 @@ case $KISS_XHOST_ARCH in
 esac
 
 export CROSS=" "
-
-#     --disable-static \
 
 sh ./configure \
     --prefix=/usr \
