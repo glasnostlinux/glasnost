@@ -8,7 +8,7 @@ export CXXFLAGS="$CXXFLAGS -fno-lto"
 
 case $KISS_XHOST_ARCH in
    aarch64)     target=aarch64;;
-   arm)         target=arm;;
+   armv7)       target=armv7;;
    i686)        target=i686;;
    powerpc64)   target=ppc64;;
    powerpc64le) target=ppc64;;
