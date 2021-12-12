@@ -34,8 +34,8 @@ export CFLAGS="$CFLAGS -Wno-implicit-fallthrough "
 #sed -i 's/STN_UNDEF/SHN_UNDEF/g' src/amd/common/ac_rtld.c
 
 case $KISS_XHOST_ARCH in
-   armv7)      GALL=-Dgallium-drivers=swrast                             LLVM=disabled VULK=-Dvulkan-drivers=;;
-   aarch64)    GALL=-Dgallium-drivers=panfrost,kmsro,lima,etnaviv,v3d,vc4,swrast LLVM=enabled  VULK=-Dvulkan-drivers=panfrost;;
+   armv7)      GALL=-Dgallium-drivers=panfrost,kmsro,lima,etnaviv,v3d,vc4,swrast LLVM=enabled VULK=-Dvulkan-drivers=panfrost;;
+   aarch64)    GALL=-Dgallium-drivers=panfrost,kmsro,lima,etnaviv,v3d,vc4,swrast LLVM=enabled VULK=-Dvulkan-drivers=panfrost;;
    x86_64) ;; # Auto configured
    powerpc64*) GALL=-Dgallium-drivers=radeonsi,r300,r600 LLVM=enabled VULK=-Dvulkan-drivers=amd;;
    riscv64*)   GALL=-Dgallium-drivers=radeonsi,r300,r600 LLVM=enabled VULK=-Dvulkan-drivers=amd;;
