@@ -43,9 +43,11 @@ mv -f _ Makefile.in
 export PKG_CONFIG_PATH=$PWD/libepoxy/usr/lib/pkgconfig:$PKG_CONFIG_PATH
 export CFLAGS="$CFLAGS -L$PWD/libepoxy/usr/lib -I $KISS_ROOT/usr/include/gdk-pixbuf-2.0  -I $KISS_ROOT/usr/include/atk-1.0"
 export CFLAGS="$CFLAGS -I$PWD/libepoxy/usr/include"
-unset PKG_CONFIG_SYSROOT_DIR
 
+#unset PKG_CONFIG_SYSROOT_DIR
 #export GLIB_COMPILE_RESOURCES=/usr/bin/glib-compile-resources
+
+export GLIB_COMPILE_RESOURCES=/usr/bin/glib-compile-resources
 
 sh ./configure \
     --prefix=/usr \
@@ -66,31 +68,8 @@ sh ./configure \
     --enable-colord=no \
     --enable-gtk-doc-html=no
 
-
-#    --sysconfdir=/etc \
-#    --localstatedir=/var \
-#    --enable-xkb \
-#    --enable-xinerama \
-#    --enable-xrandr \
-#    --enable-xfixes \
-#    --enable-xcomposite \
-#    --enable-xdamage \
-#    --disable-x11-backend \
-#    --enable-wayland-backend \
-#    --disable-schemas-compile \
-#    --disable-cups \
-#    --disable-papi \
-#    --disable-cloudprint \
-#    --disable-glibtest \
-#    --disable-nls \
-#    --disable-installed-tests \
-#    --enable-introspection=no \
-#    --enable-colord=no \
-#    --enable-gtk-doc-html=no
-
 make
 make install
-
 
 
 # GTK+3 on Wayland requires gsettings-desktop-schemas for gsettings to work
@@ -119,33 +98,3 @@ for f in "$1/usr/lib/pkgconfig/"*.pc; do
     sed 's/epoxy >= 1.4//' "$f" > _
     mv -f _ "$f"
 done
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# We don't compile with librsvg which leads to this
-# utility solely causing compiler errors for some
-# packages. It has no use at all.
-#rm -f "$1/usr/bin/gtk-encode-symbolic-svg"
-
-
-
-
-
-
-
-
-

@@ -1,1 +1,14 @@
-../../modules/repo/extra/gtk+3/depends
+atk
+cairo
+fontconfig
+freetype-harfbuzz
+gdk-pixbuf
+glib    make
+glib
+libxkbcommon
+mesa
+meson   make
+pango
+pkgconf make
+python  make
+wayland
