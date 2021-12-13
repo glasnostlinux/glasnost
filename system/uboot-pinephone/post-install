@@ -1,0 +1,8 @@
+#!/bin/sh
+
+echo ""
+echo "Run this to flash u-boot (replacing 'sdX' with the correct device):"
+echo "dd if=/boot/u-boot-sunxi-with-spl-pinephone.bin of=/dev/sdX bs=8k seek=1"
+echo ""
+echo "You should also customize /boot/extlinux/extlinux.conf"
+echo ""

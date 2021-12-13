@@ -1,10 +1,2 @@
-https://github.com/ARM-software/arm-trusted-firmware/archive/v2.5.tar.gz
-patches/0001-bl_common-Import-BL_NOBITS_-BASE-END-when-defined.patch
-patches/0002-allwinner-Rename-static-mmap-region-constant.patch
-patches/0003-allwinner-Map-SRAM-as-device-memory-by-default.patch
-patches/0004-allwinner-Do-not-map-BL32-DRAM-at-EL3.patch
-patches/0005-allwinner-Clean-up-some-platform-definitions.patch
-patches/0006-allwinner-Choose-PSCI-states-to-avoid-translation.patch
-patches/0007-allwinner-Simplify-CPU_SUSPEND-power-state-encoding.patch
+https://github.com/ARM-software/arm-trusted-firmware/archive/vVERSION.tar.gz
 patches/rk3399-baudrate.patch
-patches/jd.patch

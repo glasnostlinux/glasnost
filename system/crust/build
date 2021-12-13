@@ -1,6 +1,4 @@
-#!/bin/sh
-
-patch -p1 < 0289a01c9ee211195728e14b4f26dd2e5226561a.patch
+#!/bin/sh -e
 
 export PATH="/usr/gnu/bin:$PATH"
 export CROSS_COMPILE="or1k-elf-"
@@ -9,16 +7,11 @@ unset CFLAGS
 unset CXXFLAGS
 unset LDFLAGS
 
-#sed -i 's/\-fvar-tracking-assignments//g' Makefile
-
-export LIBRARY_PATH=$(pwd):/usr/lib
-touch libgcc.so
-
-#make HOSTCC=powerpc64le-linux-musl-gcc pinephone_defconfig
-
+# Clang does not support -fvar-tracking-assignments
 sed -i 's/-fvar-tracking-assignments//g' Makefile
+
 make HOSTCC=clang pinephone_defconfig
 make build/scp/scp.bin
 
-mkdir -p $1/usr/share/atf/a64
-cp build/scp/scp.bin $1/usr/share/atf/a64
+mkdir -p $1/usr/share/atf/sun50i_a64
+cp build/scp/scp.bin $1/usr/share/atf/sun50i_a64
