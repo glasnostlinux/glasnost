@@ -1,1 +1,2 @@
-git+https://github.com/proycon/wvkbd.git#ca6cb14caa51e6b9233734a2085e24c71c140ca1
+https://github.com/jjsullivan5196/wvkbd/archive/refs/tags/vVERSION.tar.gz
+patches/mobile.patch

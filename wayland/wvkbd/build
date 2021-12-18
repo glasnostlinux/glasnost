@@ -1,6 +1,8 @@
 #!/bin/sh -e
 
-git submodule update --init --recursive
+#git submodule update --init --recursive
+
+patch -p1 < mobile.patch
 
 make
 

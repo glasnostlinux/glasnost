@@ -1,4 +1,6 @@
 #!/bin/sh -e
 
+sed -i "s/ || printf 'nogit'//" GNUmakefile
+
 make clients wayland PREFIX=/usr
 make PREFIX=/usr DESTDIR="$1" install

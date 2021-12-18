@@ -1,0 +1,11 @@
+--- a/layout.mobintl.h.orig
++++ a/layout.mobintl.h
+@@ -308,7 +308,7 @@
+   {"p", "P", 1.0, Code, KEY_P, &layouts[ComposeP]},
+   {"", "", 0.0, EndRow},
+ 
+-  {"Cmp", "Cmp", 1.0, Compose, .scheme = 1},
++  {"Sup", "Sup", 1.0, Mod, Super, .scheme = 1},
+   {"a", "A", 1.0, Code, KEY_A, &layouts[ComposeA]},
+   {"s", "S", 1.0, Code, KEY_S, &layouts[ComposeS]},
+   {"d", "D", 1.0, Code, KEY_D, &layouts[ComposeD]},
