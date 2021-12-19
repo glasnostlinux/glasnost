@@ -13,4 +13,4 @@ autoreconf -f -i -v
     --localstatedir=/var
 
 make
-make DESTDIR="$1" install
+make install
