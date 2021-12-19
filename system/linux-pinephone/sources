@@ -1,4 +1,4 @@
 https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-VERSION.tar.xz
+git+https://megous.com/git/linux-firmware#6e8e591e17e207644dfe747e51026967bb1edab5 firmware/
 patches/all.patch
-https://xff.cz/git/linux-firmware/plain/anx7688-fw.bin
 files/.config

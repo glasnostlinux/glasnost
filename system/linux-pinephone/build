@@ -6,7 +6,12 @@ patch -p1 < all.patch
 mkdir -p $1/boot
 mkdir -p $1/usr/lib/firmware
 
-export ARCH=arm64 CROSS_COMPILE=aarch64-linux-musl- LLVM=1 LLVM_IAS=1
+export ARCH=arm64
+export CROSS_COMPILE=aarch64-linux-musl-
+export LLVM=1
+export LLVM_IAS=1
+export NM=nm
+export MAKE=make
 export PKG_CONFIG_SYSROOT_DIR=
 
 # Build and install
@@ -15,10 +20,7 @@ make INSTALL_PATH=$1/boot install
 make INSTALL_PATH=$1/boot dtbs_install
 make INSTALL_MOD_PATH=$1/usr modules_install
 
-# Copy firmware
-cp anx7688-fw.bin $1/usr/lib/firmware
-
 # Use generic name for the kernel
 cd $1/boot
-mv vmlinux-5.15.1-GLASNOST vmlinux
-cp dtbs/5.15.1-GLASNOST/allwinner/sun50i-a64-pinephone-1.2.dtb pinephone.dtb
+mv vmlinux-5.15.6-megi vmlinux
+cp dtbs/5.15.6-megi/allwinner/sun50i-a64-pinephone-1.2.dtb pinephone.dtb
