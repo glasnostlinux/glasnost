@@ -1,0 +1,8 @@
+#!/bin/sh -e
+
+sed -i "s/gcc/clang/g" Makefile
+
+make
+
+mkdir -p $1/usr/bin
+cp picocom $1/usr/bin

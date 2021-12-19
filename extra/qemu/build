@@ -1,0 +1,55 @@
+#!/bin/sh -e
+
+patch -p1 < qemu62.patch
+
+# Remove bash dependency
+sed -i 's/bash -o pipefail/sh /g' Makefile
+
+sed -i 's/__u64/uint64_t/g' linux-user/host/aarch64/hostdep.h
+
+export LDFLAGS="$LDFLAGS -lc++abi -lc++"
+
+# Build qemu-system* binaries dynamically linked
+./configure \
+    --prefix=/usr \
+    --cross-prefix="" \
+    --localstatedir=/var \
+    --sysconfdir=/etc \
+    --cc="$CC" \
+    --cxx="$CXX" \
+    --host-cc=clang \
+    --disable-debug-info \
+    --enable-gtk \
+    --disable-docs \
+    --enable-sdl \
+    --enable-kvm \
+    --enable-pie \
+    --enable-curses \
+    --cross-prefix="" \
+    --disable-user \
+    --disable-linux-user \
+    --enable-system
+
+make
+make DESTDIR="$1" PREFIX=/usr install
+make clean
+
+# Build qemu Linux user binaries statically linked.
+./configure \
+    --prefix=/usr \
+    --cross-prefix="" \
+    --localstatedir=/var \
+    --sysconfdir=/etc \
+    --cc="$CC" \
+    --cxx="$CXX" \
+    --host-cc=clang \
+    --disable-debug-info \
+    --enable-gtk \
+    --disable-docs \
+    --disable-user \
+    --enable-linux-user \
+    --disable-system \
+    --static
+
+make
+make DESTDIR="$1" PREFIX=/usr install

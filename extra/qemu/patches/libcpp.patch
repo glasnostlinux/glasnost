@@ -1,0 +1,31 @@
+--- a/meson/mesonbuild/compilers/cpp.py.orig
++++ a/meson/mesonbuild/compilers/cpp.py
+@@ -247,7 +247,7 @@
+         return []
+ 
+     def language_stdlib_only_link_flags(self) -> T.List[str]:
+-        return ['-lstdc++']
++        return ['-lc++']
+ 
+ 
+ class AppleClangCPPCompiler(ClangCPPCompiler):
+@@ -397,7 +397,7 @@
+         return ['-fpch-preprocess', '-include', os.path.basename(header)]
+ 
+     def language_stdlib_only_link_flags(self) -> T.List[str]:
+-        return ['-lstdc++']
++        return ['-lc++']
+ 
+ 
+ class PGICPPCompiler(PGICompiler, CPPCompiler):
+--- a/linux-user/host/ppc/host-signal.h.orig
++++ a/linux-user/host/ppc/host-signal.h
+@@ -11,6 +11,8 @@
+ #ifndef PPC_HOST_SIGNAL_H
+ #define PPC_HOST_SIGNAL_H
+ 
++#include <asm/ptrace.h>
++
+ static inline uintptr_t host_signal_pc(ucontext_t *uc)
+ {
+     return uc->uc_mcontext.regs->nip;
