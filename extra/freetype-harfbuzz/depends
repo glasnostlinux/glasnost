@@ -1,1 +1,3 @@
-../../modules/repo/extra/freetype-harfbuzz/depends
+libpng
+meson   make
+pkgconf make
