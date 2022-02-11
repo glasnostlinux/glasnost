@@ -1,1 +1,2 @@
-../../modules/repo/wayland/wayland-protocols/depends
+meson make
+wayland make
