@@ -11,6 +11,7 @@ export BUILD="$KISS_XBUILD_TRIPLE"
 export HOST="$KISS_XHOST_TRIPLE"
 
 patch -p1 < nsgenbind.patch
+patch -p1 < testament.patch
 
 rm -Rf netsurf
 rm -Rf libcss

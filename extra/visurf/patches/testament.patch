@@ -1,0 +1,11 @@
+--- a/visurf/tools/git-testament.pl.orig
++++ a/visurf/tools/git-testament.pl
+@@ -144,7 +144,7 @@
+    $testament .= "#define CI_BUILD \"$cibuild\"\n";
+ }
+ 
+-$testament .= "#define WT_BRANCHPATH \"$gitinfo{branch}\"\n";
++$testament .= "#define WT_BRANCHPATH \"release/3.10\"\n";
+ 
+ if ($gitinfo{branch} =~ m@^master$@) {
+    $testament .= "#define WT_BRANCHISMASTER 1\n";
