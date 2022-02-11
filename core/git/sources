@@ -1,1 +1,2 @@
-../../modules/repo/core/git/sources
+https://mirrors.edge.kernel.org/pub/software/scm/git/git-VERSION.tar.xz
+https://mirrors.edge.kernel.org/pub/software/scm/git/git-manpages-VERSION.tar.xz man
