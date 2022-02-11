@@ -1,1 +1,13 @@
-../../modules/repo/wayland/wlroots/depends
+flex make
+libdrm
+libglvnd
+libinput
+libseat
+libudev-zero
+libxkbcommon
+linux-headers make
+mesa
+meson make
+pixman
+wayland
+wayland-protocols make
