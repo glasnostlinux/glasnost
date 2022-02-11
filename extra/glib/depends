@@ -1,1 +1,5 @@
-../../modules/repo/extra/glib/depends
+libffi
+meson   make
+pcre
+pkgconf make
+zlib
