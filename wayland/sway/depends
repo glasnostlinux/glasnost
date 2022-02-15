@@ -1,1 +1,16 @@
-../../modules/repo/wayland/sway/depends
+cairo
+flex make
+json-c
+libinput
+libseat
+libxkbcommon
+linux-headers make
+mesa
+meson make
+pango
+pcre
+pixman
+pkgconf make
+wayland
+wayland-protocols make
+wlroots

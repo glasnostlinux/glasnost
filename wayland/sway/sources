@@ -1,1 +1,2 @@
-../../modules/repo/wayland/sway/sources
+https://github.com/swaywm/sway/releases/download/VERSION/sway-VERSION.tar.gz
+patches/no-evdev.patch

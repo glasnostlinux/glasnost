@@ -1,7 +1,6 @@
 #!/bin/sh -e
 
 patch -p1 < no-evdev.patch
-patch -p1 < llvm-13.patch
 
 export CFLAGS="$CFLAGS"
 export PKG_CONFIG_SYSROOT_DIR=
