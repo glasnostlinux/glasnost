@@ -1,1 +1,2 @@
-../../modules/repo/extra/openssh/depends
+openssl
+zlib
