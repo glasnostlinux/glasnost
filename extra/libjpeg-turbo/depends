@@ -1,1 +1,2 @@
-../../modules/repo/extra/libjpeg-turbo/depends
+cmake make
+nasm  make

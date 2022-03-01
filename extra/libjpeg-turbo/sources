@@ -1,1 +1,2 @@
-../../modules/repo/extra/libjpeg-turbo/sources
+https://github.com/libjpeg-turbo/libjpeg-turbo/archive/VERSION.tar.gz
+patches/no-docs.patch
