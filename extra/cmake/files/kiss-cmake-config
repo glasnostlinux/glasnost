@@ -5,11 +5,13 @@
 case $KISS_XHOST_ARCH in
     armv7)       cpu="arm7l";;
     aarch64)     cpu="aarch64";;
+    aarch64_be)  cpu="aarch64_be";;
     i686)        cpu="x86";;
     x86_64)      cpu="x86_64";;
     powerpc64le) cpu="ppc64le";;
     powerpc64)   cpu="ppc64";;
     powerpcle)   cpu="ppcle";;
+    powerpc)     cpu="ppc";;
     riscv64)     cpu="riscv64";;
     *) echo "Unsupported platform: $KISS_XHOST_ARCH"; exit 1;;
 esac
