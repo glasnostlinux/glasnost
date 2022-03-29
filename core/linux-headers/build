@@ -3,10 +3,13 @@
 # Determine arch
 case $KISS_XHOST_ARCH in
     aarch64)     arch=arm64;;
+    aarch64_be)  arch=arm64;;
     armv7)       arch=arm;;
     x86_64)      arch=x86_64;;
     powerpc64le) arch=powerpc;;
     powerpc64)   arch=powerpc;;
+    powerpcle)   arch=powerpc;;
+    powerpc)     arch=powerpc;;
     riscv64)     arch=riscv;;
     riscv32)     arch=riscv;;
     i686)        arch=i386;;
@@ -14,7 +17,7 @@ case $KISS_XHOST_ARCH in
 esac
 
 # Always use the host compiler here
-make LLVM=1 LLVM_IAS=1 ARCH=$arch HOSTCC="clang" headers
+make LLVM=1 LLVM_IAS=1 ARCH=$arch CROSS_COMPILE=$KISS_XHOST_ARCH HOSTCC="clang" headers
 
 # The headers require rsync for installation, this command
 # simply does the equivalent using find, mkdir and cp.
