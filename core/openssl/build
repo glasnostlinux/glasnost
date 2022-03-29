@@ -3,9 +3,12 @@
 # Determine arch
 case $KISS_XHOST_ARCH in
    aarch64)     target=linux-aarch64;;
+   aarch64_be)  target=linux-aarch64;;
    armv7)       target=linux-generic32;;
    x86_64)      target=linux-x86_64-clang;;
    i686)        target=linux-x86-clang;;
+   powerpc)     target=linux-ppc;;
+   powerpcle)   target=linux-generic32;;
    powerpc64le) target=linux-ppc64le;;
    powerpc64)   target=linux-ppc64;;
    riscv64)     target=linux64-riscv64;;
