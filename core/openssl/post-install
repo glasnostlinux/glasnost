@@ -1,5 +1,3 @@
 #!/bin/sh
 
-echo ""
-echo "    You should run /etc/ssl/update-certdata.sh"
-echo ""
+$KISS_ROOT/etc/ssl/update-certdata.sh
