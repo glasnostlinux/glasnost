@@ -2,6 +2,8 @@
 
 export CFLAGS="$CFLAGS -fPIC"
 
+patch -p1 < cross.patch
+
 ./configure \
     --prefix=/usr \
     --archs="-arch $KISS_XHOST_ARCH"
