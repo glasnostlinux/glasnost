@@ -1,8 +1,5 @@
 #!/bin/sh -e
 
-# Determine what version of compiler-rt is installed
-export CLANGVER=$(cat $KISS_ROOT/var/db/kiss/installed/llvm/version | cut -d " " -f 1)
-
 # Determine the name of the compiler-rt library
 case $KISS_XHOST_ARCH in
    armv7) ABI="armhf";;
@@ -25,7 +22,7 @@ export CFLAGS="$CFLAGS -fno-lto"
     --build=$KISS_XBUILD_TRIPLE \
     --host=$KISS_XHOST_TRIPLE
 
-make CROSS_COMPILE="" LIBCC="${KISS_ROOT}/usr/lib/clang/$CLANGVER/lib/linux/libclang_rt.builtins-$ABI.a"
+make CROSS_COMPILE=""
 make DESTDIR="$1" install
 
 # Create ldd link
