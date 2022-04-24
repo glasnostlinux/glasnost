@@ -15,6 +15,7 @@ build_freetype() (
 
     # Fix linking on cross build
     sed -i "s| /usr/lib/libharfbuzz.so| $DESTDIR/usr/lib/libharfbuzz.so|g" output/build.ninja
+#    sed -i "s|a|b|g" output/build.ninja
 
     ninja -C output
     ninja -C output install
@@ -47,6 +48,7 @@ build_harfbuzz() (
 
     # Fix linking on cross build
     sed -i "s| /usr/lib/libfreetype.so| $DESTDIR/usr/lib/libfreetype.so|g" output/build.ninja
+    sed -i "s|-L/usr/lib|-L${KISS_ROOT}/usr/lib|g" output/build.ninja
 
     ninja -C output
     ninja -C output install
@@ -55,12 +57,12 @@ build_harfbuzz() (
 
 # Point Freetype to the Harfbuzz files.
 export CFLAGS="$CFLAGS -I$DESTDIR/usr/include/harfbuzz"
-export CFLAGS="$CFLAGS -L$DESTDIR/usr/lib "
+export CFLAGS="-L$DESTDIR/usr/lib -L$KISS_ROOT/usr/lib $CFLAGS"
 export PKG_CONFIG_PATH=$DESTDIR/usr/lib/pkgconfig
 
 # Point Harfbuzz to the Freetype files.
 export CXXFLAGS="$CXXFLAGS -I$DESTDIR/usr/include/freetype2"
-export CXXFLAGS="$CXXFLAGS -L$DESTDIR/usr/lib"
+export CXXFLAGS="-L$DESTDIR/usr/lib -L$KISS_ROOT/usr/lib $CXXFLAGS"
 
 build_freetype -Dharfbuzz=disabled
 build_harfbuzz
