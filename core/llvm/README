@@ -1,1 +1,46 @@
-../../modules/repo/extra/llvm/README
+llvm
+________________________________________________________________________________
+
+LLVM is a set of compiler and toolchain technologies, which can be used to
+develop a front end for any programming language and a back end for any
+instruction set architecture. LLVM is designed around a language-independent
+intermediate representation (IR) that serves as a portable, high-level assembly
+language that can be optimized with a variety of transformations over multiple
+passes. [0]
+
+Upstream: https://llvm.org/
+
+
+[000] Index
+________________________________________________________________________________
+
+* Installation ........................................................... [001]
+* Usage .................................................................. [002]
+* References ............................................................. [003]
+
+
+[001] Installation
+________________________________________________________________________________
+
++------------------------------------------------------------------------------+
+|                                                                              |
+|  $ kiss b llvm                                                               |
+|                                                                              |
++------------------------------------------------------------------------------+
+
+Note that a 2 stage build is used if a difference in compiler version is
+detected.
+
+
+[002] Usage
+________________________________________________________________________________
+
+Refer to the command help output. No manuals are (yet) provided with alongside
+this package.
+
+
+[003] References
+________________________________________________________________________________
+
+[0] https://en.wikipedia.org/wiki/LLVM
+

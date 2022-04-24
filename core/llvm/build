@@ -1,96 +1,116 @@
 #!/bin/sh -e
 
-for patch in *.patch; do
-    patch -p1 < "$patch"
-done
+export CF="$CFLAGS"
+export CXXF="$CXXFLAGS"
+unset CFLAGS
+unset CXXFLAGS
+unset LDFLAGS
 
-# Disable sanitizer
-sed -i 's/!defined(_GCC_MAX_ALIGN_T)/& \&\& !defined(__DEFINED_max_align_t)/' libcxx/include/stddef.h
-sed -i 's/set(COMPILER_RT_HAS_SANITIZER_COMMON TRUE)/set(COMPILER_RT_HAS_SANITIZER_COMMON FALSE)/' compiler-rt/cmake/config-ix.cmake
+# Don't set the compiler here, interferes with 2-stage build
+kiss-cmake-config | sed '/CMAKE_C_COMPILER/d;' | sed '/CMAKE_CXX_COMPILER/d;' > cmake.config
 
-# Do not link to libexecinfo if it is present
-sed -i 's/set(HAVE_BACKTRACE ${Backtrace_FOUND})/set(HAVE_BACKTRACE 0)/g' llvm/cmake/config-ix.cmake
+patch -p1 < glasnost.patch
 
-# Prevent linking to ncurses if it is present
-sed -i "s/LLVM_ENABLE_TERMINFO 1/LLVM_ENABLE_TERMINFO 0/g" llvm/cmake/config-ix.cmake
+# What version of llvm is currently installed?
+llvm_ver="$(cat ${KISS_ROOT}/var/db/kiss/installed/llvm/version | cut -d " " -f 1)"
 
-# Determine llvm version installed in root
-export CLANGVER=$(cat $KISS_ROOT/var/db/kiss/installed/llvm/version | cut -d " " -f 1)
+# Bootstrap only if version is different it's not a crossbuild
+if [ $llvm_ver != $2 ] && [ -z $KISS_ROOT ]; then
+    bootstrap="1"
+fi
+
+# If this is a cross, use a toolchain file
+if [ ! -z $KISS_ROOT ];  then
+    toolchain="-DCMAKE_TOOLCHAIN_FILE=$(realpath cmake.config)"
+    bstoolchain="-DBOOTSTRAP_CMAKE_TOOLCHAIN_FILE=$(realpath cmake.config)"
+fi
+
+# Default set of runtimes
+runtimes="compiler-rt;libcxx;libcxxabi;libunwind"
 
 # Determine targets for architecture
 case $KISS_XHOST_ARCH in
-   aarch64)     TARGET_ARCH="AArch64" libname="aarch64";;
-   armv7)       TARGET_ARCH="ARMv7"   libname="armhf"  EXTRAFLAGS="-L$KISS_ROOT/usr/lib/clang/$CLANGVER/lib/linux -lclang_rt.builtins-armhf -Wno-unused-command-line-argument";;
-   i686)        TARGET_ARCH="X86"     libname="i386" EXTRAFLAGS="-L$KISS_ROOT/usr/lib/clang/$CLANGVER/lib/linux -lclang_rt.builtins-i386 -Wno-unused-command-line-argument";;
-   powerpc64)   TARGET_ARCH="PowerPC" libname="powerpc64";;
-   powerpc64le) TARGET_ARCH="PowerPC" libname="powerpc64le";;
+   aarch64_be)  TARGET_ARCH="AArch64" libname="aarch64_be";;
+   aarch64)     TARGET_ARCH="AArch64" libname="aarch64"     runtimes="${runtimes};openmp";;
+   armv7)       TARGET_ARCH="ARMv7"   libname="armhf";;
+   i686)        TARGET_ARCH="X86"     libname="i386";;
+   powerpc64)   TARGET_ARCH="PowerPC" libname="powerpc64"   runtimes="${runtimes};openmp";;
+   powerpc64le) TARGET_ARCH="PowerPC" libname="powerpc64le" runtimes="${runtimes};openmp";;
+   powerpcle)   TARGET_ARCH="PowerPC" libname="powerpcle";;
+   powerpc)     TARGET_ARCH="PowerPC" libname="powerpc";;
    riscv64)     TARGET_ARCH="RISCV64" libname="riscv64";;
-   x86_64)      TARGET_ARCH="X86"     libname="x86_64";;
+   x86_64)      TARGET_ARCH="X86"     libname="x86_64"      runtimes="${runtimes};openmp";;
    *) echo "Unsupported platform: $KISS_XHOST_ARCH"; exit 1;;
 esac
 
-kiss-cmake-config > toolchain.cmake
+echo "Building for: $TARGET_ARCH"
+echo "Building runtimes: $runtimes"
 
-cmake -G "Ninja" \
-    -B build \
-    -DCLANG_DEFAULT_CXX_STDLIB=libc++ \
-    -DCLANG_DEFAULT_RTLIB=compiler-rt \
-    -DCLANG_DEFAULT_UNWINDLIB=libunwind \
-    -DCLANG_VENDOR="glasnost"\
-    -DCMAKE_BUILD_TYPE=Release \
+if [ "$bootstrap" == "1" ]; then
+    echo "Building stage 1 and stage 2..."
+
+    cmake -B build \
+    -G Ninja \
+    -C Distribution.cmake \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DBOOTSTRAP_CMAKE_ASM_FLAGS="$CF" \
+    -DBOOTSTRAP_CMAKE_CXX_FLAGS="$CXXF" \
+    -DBOOTSTRAP_CMAKE_C_FLAGS="$CF" \
+    -DBOOTSTRAP_KISS_ROOT=$KISS_ROOT \
+    -DBOOTSTRAP_LLVM_DEFAULT_TARGET_TRIPLE=$KISS_XHOST_TRIPLE \
+    -DBOOTSTRAP_LLVM_ENABLE_LTO=OFF \
+    -DBOOTSTRAP_LLVM_ENABLE_RUNTIMES="$runtimes" \
+    -DBOOTSTRAP_LLVM_HOST_TRIPLE=$KISS_XHOST_TRIPLE \
+    -DBOOTSTRAP_LLVM_TARGET_ARCH=$TARGET_ARCH \
+    $bstoolchain \
+    -DCLANG_ENABLE_BOOTSTRAP=ON \
+    -DCMAKE_ASM_FLAGS="$CF" \
+    -DCMAKE_CXX_COMPILER=clang++ \
+    -DCMAKE_CXX_FLAGS="-fPIC -O3 -gline-tables-only -DNDEBUG" \
+    -DCMAKE_C_COMPILER=clang \
+    -DCMAKE_C_FLAGS="-fPIC -O3 -gline-tables-only -DNDEBUG" \
+    -DKISS_ROOT="/" \
+    -DLLVM_HOST_TRIPLE="$KISS_XBUILD_TRIPLE" \
+    -DLLVM_TARGET_ARCH="host" \
+    llvm
+
+    ninja -C build stage2-install-distribution
+
+    # Clang: clang-tblgen, required for crossbuilding.
+    cp build/tools/clang/stage2-bins/bin/clang-tblgen  $1/usr/bin/clang-tblgen
+    cp build/tools/clang/stage2-bins/lib/libPollyISL.a $1/usr/lib/libPollyISL.a
+
+else
+    echo "Building stage 2 only..."
+
+    cmake -B build \
+    -G Ninja \
+    -C Distribution-stage2.cmake \
+    -DCMAKE_ASM_FLAGS="$CF" \
     -DCMAKE_INSTALL_PREFIX=/usr \
     -DCMAKE_CXX_COMPILER=clang++ \
-    -DCMAKE_ASM_FLAGS="$CFLAGS " \
+    -DCMAKE_CXX_FLAGS="$CXXF" \
     -DCMAKE_C_COMPILER=clang \
-    -DCMAKE_C_FLAGS="$CFLAGS $EXTRAFLAGS" \
-    -DCMAKE_CXX_FLAGS="$CXXFLAGS $EXTRAFLAGS" \
-    -DCOMPILER_RT_BUILD_CRT=ON \
-    -DCOMPILER_RT_EXCLUDE_ATOMIC_BUILTIN=OFF \
-    -DCOMPILER_RT_USE_BUILTINS_LIBRARY=ON \
-    -DCXX_SUPPORTS_CUSTOM_LINKER=ON \
-    -DLIBCXXABI_USE_COMPILER_RT=ON \
-    -DLIBCXXABI_USE_LLVM_UNWINDER=ON \
-    -DLIBCXX_CXX_ABI=libcxxabi \
-    -DLIBCXX_HAS_MUSL_LIBC=ON \
-    -DLIBCXX_USE_COMPILER_RT=ON \
-    -DLIBUNWIND_SUPPORTS_FNO_EXCEPTIONS_FLAG=ON \
-    -DLIBUNWIND_SUPPORTS_FNO_RTTI_FLAG=ON \
-    -DLIBUNWIND_SUPPORTS_NODEFAULTLIBS_FLAG=ON \
-    -DLIBUNWIND_USE_COMPILER_RT=ON \
-    -DLIBUNWIND_ENABLE_CROSS_UNWINDING=ON \
-    -DLIBUNWIND_SYSROOT="${KISS_ROOT:-/}" \
-    -DLIBUNWIND_TARGET_TRIPLE="$KISS_XHOST_TRIPLE" \
-    -DLLVM_BUILD_DOCS=OFF \
-    -DLLVM_BUILD_EXAMPLES=OFF \
-    -DLLVM_BUILD_LLVM_DYLIB=ON \
-    -DLLVM_BUILD_TESTS=OFF \
-    -DLLVM_ENABLE_EH=ON \
-    -DLLVM_ENABLE_LIBCXX=ON \
-    -DLLVM_ENABLE_LIBEDIT=OFF \
-    -DLLVM_ENABLE_LIBXML2=OFF \
-    -DLLVM_ENABLE_LLD=ON \
+    -DCMAKE_C_FLAGS="$CF" \
+    $toolchain \
+    -DKISS_ROOT=$KISS_ROOT \
+    -DLIBUNWIND_SYSROOT=$KISS_ROOT \
     -DLLVM_ENABLE_LTO=OFF \
-    -DLLVM_ENABLE_PROJECTS="clang;compiler-rt;libunwind;libcxxabi;libcxx;lld;clang-tools-extra" \
-    -DLLVM_ENABLE_RTTI=ON \
-    -DLLVM_ENABLE_TERMINFO=0 \
-    -DLLVM_HOST_TRIPLE="$KISS_XHOST_TRIPLE" \
-    -DLLVM_INSTALL_BINUTILS_SYMLINKS=ON \
-    -DLLVM_INSTALL_CCTOOLS_SYMLINKS=ON \
-    -DLLVM_INSTALL_UTILS=ON \
-    -DLLVM_LINK_LLVM_DYLIB=ON \
-    -DLLVM_TARGETS_TO_BUILD="ARM;AArch64;AMDGPU;PowerPC;RISCV;X86" \
-    -DLLVM_TARGET_ARCH="$TARGET_ARCH" \
-    -DCMAKE_TOOLCHAIN_FILE="$(realpath toolchain.cmake)" \
-    -DLLVM_TABLEGEN="/usr/bin/llvm-tblgen" \
-    -DCLANG_TABLEGEN="/usr/bin/clang-tblgen" \
-    -Wno-dev llvm
+    -DLLVM_DEFAULT_TARGET_TRIPLE=$KISS_XHOST_TRIPLE \
+    -DLLVM_ENABLE_RUNTIMES="$runtimes" \
+    -DLLVM_HOST_TRIPLE=$KISS_XHOST_TRIPLE \
+    -DLLVM_LINK_LLVM_DYLIB=OFF \
+    -DLLVM_TARGET_ARCH=$TARGET_ARCH \
+    llvm
 
-ninja -C build
-ninja -C build install
+    ninja -C build install-distribution
 
-# libc++abi header files
-mkdir -p "$1/usr"
-cp -r libcxxabi/include "$1/usr"
+    # Clang: clang-tblgen, required for crossbuilding.
+    cp build/bin/clang-tblgen  $1/usr/bin/clang-tblgen
+    cp build/lib/libPollyISL.a $1/usr/lib/libPollyISL.a
+
+fi
+
 
 # LLD: Replace GNU binutils
 ln -s ld.lld "$1/usr/bin/ld"
@@ -105,26 +125,26 @@ ln -s clang++ "$1/usr/bin/c++"
 ln -s clang-cpp "$1/usr/bin/cpp"
 
 # Clang: POSIX compliance
-install -m755 c99 "$1/usr/bin/c99"
-
-# Clang: clang-tblgen, required for crossbuilding.
-install -Dm755 build/bin/clang-tblgen "$1/usr/bin/clang-tblgen"
+cp c99 $1/usr/bin
 
 # For GCC compatibility
 cd $1/usr/bin/
-ln -s -f llvm-ranlib  ranlib
-ln -s -f llvm-readobj readelf
-ln -s -f llvm-strip   strip
-ln -s -f llvm-nm      nm
-ln -s -f llvm-objcopy objcopy
-ln -s -f llvm-objdump objdump
-ln -s -f llvm-strings strings
-ln -s -f llvm-objcopy otool
+ln -s -f llvm-readobj  readelf
+ln -s -f llvm-objcopy  strip
+ln -s -f llvm-ar       ar
+ln -s -f llvm-nm       nm
+ln -s -f llvm-objcopy  objcopy
+ln -s -f llvm-objdump  objdump
+ln -s -f llvm-strings  strings
+ln -s -f llvm-objcopy  otool
+ln -s -f llvm-ranlib   ranlib
+ln -s -f llvm-as       as
 
-# symlinks to crtbegin/crtend files
-# This is mainly done for Rust.
-cd $1/usr/lib/clang/$2/lib/linux
-install -Dm755 clang_rt.crtbegin-$libname.o $1/usr/lib/crtbegin.o
-install -Dm755 clang_rt.crtend-$libname.o   $1/usr/lib/crtend.o
-touch $1/usr/lib/crtbeginS.o
-touch $1/usr/lib/crtendS.o
+# This makes things like Rust easier:
+cd $1/usr/lib/clang
+ln -s $2 system
+cd $1/usr/lib
+ln -s clang/system/lib/linux/clang_rt.crtbegin-$libname.o   crtbegin.o
+ln -s clang/system/lib/linux/clang_rt.crtbegin-$libname.o   crtbeginS.o
+ln -s clang/system/lib/linux/clang_rt.crtend-$libname.o     crtend.o
+ln -s clang/system/lib/linux/clang_rt.crtend-$libname.o     crtendS.o

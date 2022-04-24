@@ -1,5 +1,4 @@
 cmake    make
 python   make
 samurai  make
-xz
 zlib

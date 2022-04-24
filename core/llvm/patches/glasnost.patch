@@ -1,0 +1,606 @@
+diff --git a/clang/lib/Basic/Targets/PPC.h b/clang/lib/Basic/Targets/PPC.h
+index ac52eb219..8cf7f8f77 100644
+--- a/clang/lib/Basic/Targets/PPC.h
++++ b/clang/lib/Basic/Targets/PPC.h
+@@ -424,11 +424,10 @@ public:
+       LongDoubleFormat = &llvm::APFloat::IEEEdouble();
+     } else if ((Triple.getArch() == llvm::Triple::ppc64le)) {
+       DataLayout = "e-m:e-i64:64-n32:64";
+-      ABI = "elfv2";
+     } else {
+       DataLayout = "E-m:e-i64:64-n32:64";
+-      ABI = "elfv1";
+     }
++    ABI = "elfv2";
+ 
+     if (Triple.isOSFreeBSD() || Triple.isOSOpenBSD() || Triple.isMusl()) {
+       LongDoubleWidth = LongDoubleAlign = 64;
+diff --git a/clang/lib/CodeGen/TargetInfo.cpp b/clang/lib/CodeGen/TargetInfo.cpp
+index 9af3004eb..2b71c282c 100644
+--- a/clang/lib/CodeGen/TargetInfo.cpp
++++ b/clang/lib/CodeGen/TargetInfo.cpp
+@@ -11342,9 +11342,9 @@ const TargetCodeGenInfo &CodeGenModule::getTargetCodeGenInfo() {
+       return SetCGInfo(new AIXTargetCodeGenInfo(Types, /*Is64Bit*/ true));
+ 
+     if (Triple.isOSBinFormatELF()) {
+-      PPC64_SVR4_ABIInfo::ABIKind Kind = PPC64_SVR4_ABIInfo::ELFv1;
+-      if (getTarget().getABI() == "elfv2")
+-        Kind = PPC64_SVR4_ABIInfo::ELFv2;
++      PPC64_SVR4_ABIInfo::ABIKind Kind = PPC64_SVR4_ABIInfo::ELFv2;
++      if (getTarget().getABI() == "elfv1")
++        Kind = PPC64_SVR4_ABIInfo::ELFv1;
+       bool IsSoftFloat = CodeGenOpts.FloatABI == "soft";
+ 
+       return SetCGInfo(
+diff --git a/clang/lib/Driver/ToolChains/Clang.cpp b/clang/lib/Driver/ToolChains/Clang.cpp
+index f2f18e901..be72fe4de 100644
+--- a/clang/lib/Driver/ToolChains/Clang.cpp
++++ b/clang/lib/Driver/ToolChains/Clang.cpp
+@@ -2050,14 +2050,7 @@ void Clang::AddPPCTargetArgs(const ArgList &Args,
+   const llvm::Triple &T = getToolChain().getTriple();
+   if (T.isOSBinFormatELF()) {
+     switch (getToolChain().getArch()) {
+-    case llvm::Triple::ppc64: {
+-      if ((T.isOSFreeBSD() && T.getOSMajorVersion() >= 13) ||
+-          T.isOSOpenBSD() || T.isMusl())
+-        ABIName = "elfv2";
+-      else
+-        ABIName = "elfv1";
+-      break;
+-    }
++    case llvm::Triple::ppc64:
+     case llvm::Triple::ppc64le:
+       ABIName = "elfv2";
+       break;
+diff --git a/compiler-rt/cmake/Modules/AllSupportedArchDefs.cmake b/compiler-rt/cmake/Modules/AllSupportedArchDefs.cmake
+index 3e86cf63c..0b3f17d50 100644
+--- a/compiler-rt/cmake/Modules/AllSupportedArchDefs.cmake
++++ b/compiler-rt/cmake/Modules/AllSupportedArchDefs.cmake
+@@ -1,11 +1,11 @@
+-set(ARM64 aarch64)
+-set(ARM32 arm armhf)
++set(ARM64 aarch64 aarch64_be)
++set(ARM32 arm armhf armv6m)
+ set(HEXAGON hexagon)
+ set(X86 i386)
+ set(X86_64 x86_64)
+ set(MIPS32 mips mipsel)
+ set(MIPS64 mips64 mips64el)
+-set(PPC32 powerpc powerpcspe)
++set(PPC32 powerpc powerpcspe powerpcle)
+ set(PPC64 powerpc64 powerpc64le)
+ set(RISCV32 riscv32)
+ set(RISCV64 riscv64)
+@@ -74,7 +74,7 @@ if(APPLE)
+ set(ALL_XRAY_SUPPORTED_ARCH ${X86_64})
+ else()
+ set(ALL_XRAY_SUPPORTED_ARCH ${X86_64} ${ARM32} ${ARM64} ${MIPS32} ${MIPS64}
+-		powerpc64le ${HEXAGON})
++		${PPC64} ${HEXAGON})
+ endif()
+ set(ALL_SHADOWCALLSTACK_SUPPORTED_ARCH ${ARM64})
+ 
+diff --git a/compiler-rt/cmake/Modules/CompilerRTUtils.cmake b/compiler-rt/cmake/Modules/CompilerRTUtils.cmake
+index 052095801..62bad4ff8 100644
+--- a/compiler-rt/cmake/Modules/CompilerRTUtils.cmake
++++ b/compiler-rt/cmake/Modules/CompilerRTUtils.cmake
+@@ -171,7 +171,11 @@ macro(detect_target_arch)
+   if(__ARM)
+     add_default_target_arch(arm)
+   elseif(__AARCH64)
+-    add_default_target_arch(aarch64)
++    if(__AARCH_BIG_ENDIAN)
++        add_default_target_arch(aarch64_be)
++    else()
++        add_default_target_arch(aarch64)
++    endif()
+   elseif(__X86_64)
+     if(CMAKE_SIZEOF_VOID_P EQUAL "4")
+       add_default_target_arch(x32)
+diff --git a/compiler-rt/cmake/base-config-ix.cmake b/compiler-rt/cmake/base-config-ix.cmake
+index d7b0124f3..12f08923f 100644
+--- a/compiler-rt/cmake/base-config-ix.cmake
++++ b/compiler-rt/cmake/base-config-ix.cmake
+@@ -200,9 +200,12 @@ macro(test_targets)
+       endif()
+     elseif("${COMPILER_RT_DEFAULT_TARGET_ARCH}" MATCHES "powerpc64le|ppc64le")
+       test_target_arch(powerpc64le "" "-m64")
++    elseif("${COMPILER_RT_DEFAULT_TARGET_ARCH}" MATCHES "powerpc64")
++      test_target_arch(powerpc64 "" "-m64")
+     elseif("${COMPILER_RT_DEFAULT_TARGET_ARCH}" MATCHES "powerpc")
+       test_target_arch(powerpc "" "-m32")
+-      test_target_arch(powerpc64 "" "-m64")
++    elseif("${COMPILER_RT_DEFAULT_TARGET_ARCH}" MATCHES "powerpcle|ppcle")
++      test_target_arch(powerpcle "" "-m32" "-mlittle-endian" )
+     elseif("${COMPILER_RT_DEFAULT_TARGET_ARCH}" MATCHES "s390x")
+       test_target_arch(s390x "" "")
+     elseif("${COMPILER_RT_DEFAULT_TARGET_ARCH}" MATCHES "sparc")
+@@ -231,10 +234,12 @@ macro(test_targets)
+       test_target_arch(aarch32 "" "-march=armv8-a")
+     elseif("${COMPILER_RT_DEFAULT_TARGET_ARCH}" MATCHES "aarch64")
+       test_target_arch(aarch64 "" "-march=armv8-a")
++    elseif("${COMPILER_RT_DEFAULT_TARGET_ARCH}" MATCHES "aarch64_be")
++      test_target_arch(aarch64_be "" "-march=armv8-a" "-mbig-endian" )
+     elseif("${COMPILER_RT_DEFAULT_TARGET_ARCH}" MATCHES "riscv32")
+-      test_target_arch(riscv32 "" "")
++      test_target_arch(riscv32 "" "-mno-relax")
+     elseif("${COMPILER_RT_DEFAULT_TARGET_ARCH}" MATCHES "riscv64")
+-      test_target_arch(riscv64 "" "")
++      test_target_arch(riscv64 "" "-mno-relax")
+     elseif("${COMPILER_RT_DEFAULT_TARGET_ARCH}" MATCHES "wasm32")
+       test_target_arch(wasm32 "" "--target=wasm32-unknown-unknown")
+     elseif("${COMPILER_RT_DEFAULT_TARGET_ARCH}" MATCHES "wasm64")
+diff --git a/compiler-rt/cmake/builtin-config-ix.cmake b/compiler-rt/cmake/builtin-config-ix.cmake
+index c422ad45e..8aa50fc19 100644
+--- a/compiler-rt/cmake/builtin-config-ix.cmake
++++ b/compiler-rt/cmake/builtin-config-ix.cmake
+@@ -36,14 +36,14 @@ asm(\".arch armv8-a+lse\");
+ asm(\"cas w0, w1, [x2]\");
+ ")
+ 
+-set(ARM64 aarch64)
++set(ARM64 aarch64 aarch64_be)
+ set(ARM32 arm armhf armv6m armv7m armv7em armv7 armv7s armv7k armv8m.main armv8.1m.main)
+ set(HEXAGON hexagon)
+ set(X86 i386)
+ set(X86_64 x86_64)
+ set(MIPS32 mips mipsel)
+ set(MIPS64 mips64 mips64el)
+-set(PPC32 powerpc powerpcspe)
++set(PPC32 powerpc powerpcspe powerpcle)
+ set(PPC64 powerpc64 powerpc64le)
+ set(RISCV32 riscv32)
+ set(RISCV64 riscv64)
+diff --git a/compiler-rt/cmake/config-ix.cmake b/compiler-rt/cmake/config-ix.cmake
+index fc62d5ecc..3f46d08a9 100644
+--- a/compiler-rt/cmake/config-ix.cmake
++++ b/compiler-rt/cmake/config-ix.cmake
+@@ -141,7 +141,7 @@ check_library_exists(dl dlopen "" COMPILER_RT_HAS_LIBDL)
+ check_library_exists(rt shm_open "" COMPILER_RT_HAS_LIBRT)
+ check_library_exists(m pow "" COMPILER_RT_HAS_LIBM)
+ check_library_exists(pthread pthread_create "" COMPILER_RT_HAS_LIBPTHREAD)
+-check_library_exists(execinfo backtrace "" COMPILER_RT_HAS_LIBEXECINFO)
++# check_library_exists(execinfo backtrace "" COMPILER_RT_HAS_LIBEXECINFO)
+ 
+ # Look for terminfo library, used in unittests that depend on LLVMSupport.
+ if(LLVM_ENABLE_TERMINFO STREQUAL FORCE_ON)
+@@ -671,7 +671,7 @@ if (SANITIZER_COMMON_SUPPORTED_ARCH AND NOT LLVM_USE_SANITIZER AND
+     (OS_NAME MATCHES "Android|Darwin|Linux|FreeBSD|NetBSD|Fuchsia|SunOS" OR
+     (OS_NAME MATCHES "Windows" AND NOT CYGWIN AND
+         (NOT MINGW OR CMAKE_CXX_COMPILER_ID MATCHES "Clang"))))
+-  set(COMPILER_RT_HAS_SANITIZER_COMMON TRUE)
++  set(COMPILER_RT_HAS_SANITIZER_COMMON FALSE)
+ else()
+   set(COMPILER_RT_HAS_SANITIZER_COMMON FALSE)
+ endif()
+@@ -696,11 +696,7 @@ endif()
+ 
+ # TODO: Add builtins support.
+ 
+-if (CRT_SUPPORTED_ARCH AND OS_NAME MATCHES "Linux" AND NOT LLVM_USE_SANITIZER)
+-  set(COMPILER_RT_HAS_CRT TRUE)
+-else()
+-  set(COMPILER_RT_HAS_CRT FALSE)
+-endif()
++set(COMPILER_RT_HAS_CRT TRUE)
+ 
+ if (COMPILER_RT_HAS_SANITIZER_COMMON AND DFSAN_SUPPORTED_ARCH AND
+     OS_NAME MATCHES "Linux")
+diff --git a/compiler-rt/lib/CMakeLists.txt b/compiler-rt/lib/CMakeLists.txt
+index 1437e37b8..6cf957e48 100644
+--- a/compiler-rt/lib/CMakeLists.txt
++++ b/compiler-rt/lib/CMakeLists.txt
+@@ -17,9 +17,9 @@ if(COMPILER_RT_BUILD_BUILTINS)
+   add_subdirectory(builtins)
+ endif()
+ 
+-if(COMPILER_RT_BUILD_CRT AND COMPILER_RT_HAS_CRT)
++#if(COMPILER_RT_BUILD_CRT AND COMPILER_RT_HAS_CRT)
+   add_subdirectory(crt)
+-endif()
++#endif()
+ 
+ function(compiler_rt_build_runtime runtime)
+   string(TOUPPER ${runtime} runtime_uppercase)
+diff --git a/compiler-rt/lib/builtins/CMakeLists.txt b/compiler-rt/lib/builtins/CMakeLists.txt
+index ea5ad9cdb..886ff1afd 100644
+--- a/compiler-rt/lib/builtins/CMakeLists.txt
++++ b/compiler-rt/lib/builtins/CMakeLists.txt
+@@ -214,7 +214,7 @@ set(GENERIC_TF_SOURCES
+ 
+ option(COMPILER_RT_EXCLUDE_ATOMIC_BUILTIN
+   "Skip the atomic builtin (these should normally be provided by a shared library)"
+-  On)
++  OFF)
+ 
+ if(NOT FUCHSIA AND NOT COMPILER_RT_BAREMETAL_BUILD)
+   set(GENERIC_SOURCES
+@@ -559,6 +559,7 @@ set(armv7k_SOURCES ${arm_SOURCES})
+ set(arm64_SOURCES ${aarch64_SOURCES})
+ set(arm64e_SOURCES ${aarch64_SOURCES})
+ set(arm64_32_SOURCES ${aarch64_SOURCES})
++set(aarch64_be_SOURCES ${aarch64_SOURCES})
+ 
+ # macho_embedded archs
+ set(armv6m_SOURCES ${thumb1_SOURCES})
+@@ -607,6 +608,7 @@ set(mips64_SOURCES ${GENERIC_TF_SOURCES}
+ set(mips64el_SOURCES ${GENERIC_TF_SOURCES}
+                      ${mips_SOURCES})
+ 
++set(powerpcle_SOURCES ${GENERIC_SOURCES})
+ set(powerpc_SOURCES ${GENERIC_SOURCES})
+ 
+ set(powerpcspe_SOURCES ${GENERIC_SOURCES})
+@@ -756,6 +758,16 @@ else ()
+         set(deps_aarch64 lse_builtin_symlinks)
+       endif()
+ 
++      if(arch STREQUAL "aarch64_be")
++        add_custom_target(
++          lse_builtin_symlinks
++          BYPRODUCTS ${lse_builtins}
++          ${arm64_lse_commands}
++        )
++
++        set(deps_aarch64_be lse_builtin_symlinks)
++      endif()
++
+       add_compiler_rt_runtime(clang_rt.builtins
+                               STATIC
+                               ARCHS ${arch}
+diff --git a/compiler-rt/lib/builtins/clear_cache.c b/compiler-rt/lib/builtins/clear_cache.c
+index da0715914..6bdf82c95 100644
+--- a/compiler-rt/lib/builtins/clear_cache.c
++++ b/compiler-rt/lib/builtins/clear_cache.c
+@@ -161,7 +161,7 @@ void __clear_cache(void *start, void *end) {
+   const register void *end_reg __asm("a1") = end;
+   // "0" means that we clear cache for all threads (SYS_RISCV_FLUSH_ICACHE_ALL)
+   const register long flags __asm("a2") = 0;
+-  const register long syscall_nr __asm("a7") = __NR_riscv_flush_icache;
++  const register long syscall_nr __asm("a7") = 259; //JD
+   __asm __volatile("ecall"
+                    : "=r"(start_reg)
+                    : "r"(start_reg), "r"(end_reg), "r"(flags), "r"(syscall_nr));
+diff --git a/compiler-rt/lib/sanitizer_common/sanitizer_linux.cpp b/compiler-rt/lib/sanitizer_common/sanitizer_linux.cpp
+index 2e4d57d87..094ba7a73 100644
+--- a/compiler-rt/lib/sanitizer_common/sanitizer_linux.cpp
++++ b/compiler-rt/lib/sanitizer_common/sanitizer_linux.cpp
+@@ -74,6 +74,10 @@
+ #include <sys/utsname.h>
+ #endif
+ 
++#if SANITIZER_LINUX && defined(__powerpc__)
++#include <asm/ptrace.h>
++#endif
++
+ #if SANITIZER_LINUX && !SANITIZER_ANDROID
+ #include <sys/personality.h>
+ #endif
+diff --git a/compiler-rt/lib/sanitizer_common/sanitizer_platform_limits_posix.cpp b/compiler-rt/lib/sanitizer_common/sanitizer_platform_limits_posix.cpp
+index 32b8f47ed..e56d1c877 100644
+--- a/compiler-rt/lib/sanitizer_common/sanitizer_platform_limits_posix.cpp
++++ b/compiler-rt/lib/sanitizer_common/sanitizer_platform_limits_posix.cpp
+@@ -92,7 +92,7 @@
+ # include <utime.h>
+ # include <sys/ptrace.h>
+ #    if defined(__mips64) || defined(__aarch64__) || defined(__arm__) || \
+-        defined(__hexagon__) || SANITIZER_RISCV64
++        defined(__hexagon__) || defined(__powerpc__) || SANITIZER_RISCV64
+ #      include <asm/ptrace.h>
+ #      ifdef __arm__
+ typedef struct user_fpregs elf_fpregset_t;
+diff --git a/compiler-rt/lib/sanitizer_common/sanitizer_stoptheworld_linux_libcdep.cpp b/compiler-rt/lib/sanitizer_common/sanitizer_stoptheworld_linux_libcdep.cpp
+index 403bda117..b8f454e2f 100644
+--- a/compiler-rt/lib/sanitizer_common/sanitizer_stoptheworld_linux_libcdep.cpp
++++ b/compiler-rt/lib/sanitizer_common/sanitizer_stoptheworld_linux_libcdep.cpp
+@@ -31,7 +31,7 @@
+ #include <sys/types.h> // for pid_t
+ #include <sys/uio.h> // for iovec
+ #include <elf.h> // for NT_PRSTATUS
+-#if (defined(__aarch64__) || SANITIZER_RISCV64) && !SANITIZER_ANDROID
++#if (defined(__aarch64__) || defined(__powerpc__) || SANITIZER_RISCV64) && !SANITIZER_ANDROID
+ // GLIBC 2.20+ sys/user does not include asm/ptrace.h
+ # include <asm/ptrace.h>
+ #endif
+diff --git a/compiler-rt/lib/xray/xray_powerpc64.inc b/compiler-rt/lib/xray/xray_powerpc64.inc
+index e4e16d5b2..c9590e1fe 100644
+--- a/compiler-rt/lib/xray/xray_powerpc64.inc
++++ b/compiler-rt/lib/xray/xray_powerpc64.inc
+@@ -12,7 +12,13 @@
+ 
+ #include <cstdint>
+ #include <mutex>
++#ifdef __GLIBC__
+ #include <sys/platform/ppc.h>
++#else
++#include <cctype>
++#include <cstring>
++#include <cstdlib>
++#endif
+ 
+ #include "xray_defs.h"
+ 
+@@ -20,13 +26,45 @@ namespace __xray {
+ 
+ ALWAYS_INLINE uint64_t readTSC(uint8_t &CPU) XRAY_NEVER_INSTRUMENT {
+   CPU = 0;
++#ifdef __GLIBC__
+   return __ppc_get_timebase();
++#else
++  return __builtin_ppc_get_timebase();
++#endif
+ }
+ 
+ inline uint64_t getTSCFrequency() XRAY_NEVER_INSTRUMENT {
+   static std::mutex M;
+   std::lock_guard<std::mutex> Guard(M);
++#ifdef __GLIBC__
+   return __ppc_get_timebase_freq();
++#else
++  /* FIXME: a less dirty implementation? */
++  static uint64_t base;
++  if (!base) {
++    FILE *f = fopen("/proc/cpuinfo", "rb");
++    if (f) {
++      ssize_t nr;
++      /* virtually always big enough to hold the line */
++      char buf[512];
++      while (fgets(buf, sizeof(buf), f)) {
++        char *ret = strstr(buf, "timebase");
++        if (!ret) {
++          continue;
++        }
++        ret += sizeof("timebase") - 1;
++        ret = strchr(ret, ':');
++        if (!ret) {
++          continue;
++        }
++        base = strtoul(ret + 1, nullptr, 10);
++        break;
++      }
++      fclose(f);
++    }
++  }
++  return base;
++#endif
+ }
+ 
+ inline bool probeRequiredCPUFeatures() XRAY_NEVER_INSTRUMENT {
+diff --git a/libcxx/include/limits b/libcxx/include/limits
+index 245c84eea..9fbbffb72 100644
+--- a/libcxx/include/limits
++++ b/libcxx/include/limits
+@@ -426,8 +426,14 @@ protected:
+     _LIBCPP_INLINE_VISIBILITY static _LIBCPP_CONSTEXPR type signaling_NaN() _NOEXCEPT {return __builtin_nansl("");}
+     _LIBCPP_INLINE_VISIBILITY static _LIBCPP_CONSTEXPR type denorm_min() _NOEXCEPT {return __LDBL_DENORM_MIN__;}
+ 
+-#if (defined(__ppc__) || defined(__ppc64__))
++#if defined(__powerpc__) || defined(__powerpc64__)
++#if (__LDBL_MAX_EXP__ > __DBL_MAX_EXP__) || (__LDBL_MANT_DIG__ == __DBL_MANT_DIG__)
++    /* IEEE 754 quadruple or double precision */
++    static _LIBCPP_CONSTEXPR const bool is_iec559 = true;
++#else
++    /* 128-bit IBM double-double */
+     static _LIBCPP_CONSTEXPR const bool is_iec559 = false;
++#endif
+ #else
+     static _LIBCPP_CONSTEXPR const bool is_iec559 = true;
+ #endif
+diff --git a/libcxx/include/locale b/libcxx/include/locale
+index 7c2d2361f..1d6811b6f 100644
+--- a/libcxx/include/locale
++++ b/libcxx/include/locale
+@@ -9,7 +9,6 @@
+ 
+ #ifndef _LIBCPP_LOCALE
+ #define _LIBCPP_LOCALE
+-
+ /*
+     locale synopsis
+ 
+@@ -749,7 +748,7 @@ __num_get_signed_integral(const char* __a, const char* __a_end,
+         typename remove_reference<decltype(errno)>::type __save_errno = errno;
+         errno = 0;
+         char *__p2;
+-        long long __ll = strtoll_l(__a, &__p2, __base, _LIBCPP_GET_C_LOCALE);
++        long long __ll = strtoll(__a, &__p2, __base);
+         typename remove_reference<decltype(errno)>::type __current_errno = errno;
+         if (__current_errno == 0)
+             errno = __save_errno;
+@@ -789,7 +788,7 @@ __num_get_unsigned_integral(const char* __a, const char* __a_end,
+         typename remove_reference<decltype(errno)>::type __save_errno = errno;
+         errno = 0;
+         char *__p2;
+-        unsigned long long __ll = strtoull_l(__a, &__p2, __base, _LIBCPP_GET_C_LOCALE);
++        unsigned long long __ll = strtoull(__a, &__p2, __base);
+         typename remove_reference<decltype(errno)>::type __current_errno = errno;
+         if (__current_errno == 0)
+             errno = __save_errno;
+diff --git a/libunwind/CMakeLists.txt b/libunwind/CMakeLists.txt
+index 660bbadb2..82d9f02f2 100644
+--- a/libunwind/CMakeLists.txt
++++ b/libunwind/CMakeLists.txt
+@@ -182,7 +182,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${LIBUNWIND_LIBRARY_DIR})
+ 
+ set(LIBUNWIND_C_FLAGS "")
+ set(LIBUNWIND_CXX_FLAGS "")
+-set(LIBUNWIND_COMPILE_FLAGS "")
++set(LIBUNWIND_COMPILE_FLAGS "$ENV{KISS_LIBUNWIND_FLAGS}")
+ set(LIBUNWIND_LINK_FLAGS "")
+ 
+ # Include macros for adding and removing libunwind flags.
+diff --git a/llvm/CMakeLists.txt b/llvm/CMakeLists.txt
+index f8a253549..cf2a9acb9 100644
+--- a/llvm/CMakeLists.txt
++++ b/llvm/CMakeLists.txt
+@@ -720,7 +720,7 @@ endif()
+ set(LLVM_TARGET_TRIPLE_ENV CACHE STRING "The name of environment variable to override default target. Disabled by blank.")
+ mark_as_advanced(LLVM_TARGET_TRIPLE_ENV)
+ 
+-set(LLVM_ENABLE_PER_TARGET_RUNTIME_DIR OFF CACHE BOOL
++set(LLVM_ENABLE_PER_TARGET_RUNTIME_DIR ON CACHE BOOL
+   "Enable per-target runtimes directory")
+ 
+ set(LLVM_PROFDATA_FILE "" CACHE FILEPATH
+diff --git a/llvm/cmake/modules/LLVMExternalProjectUtils.cmake b/llvm/cmake/modules/LLVMExternalProjectUtils.cmake
+index f99a50df2..08438f03a 100644
+--- a/llvm/cmake/modules/LLVMExternalProjectUtils.cmake
++++ b/llvm/cmake/modules/LLVMExternalProjectUtils.cmake
+@@ -257,7 +257,7 @@ function(llvm_ExternalProject_Add name source_dir)
+     if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+       string(REGEX MATCH "[0-9]+\\.[0-9]+(\\.[0-9]+)?" CLANG_VERSION
+              ${PACKAGE_VERSION})
+-      set(resource_dir "${LLVM_LIBRARY_DIR}/clang/${CLANG_VERSION}")
++      set(resource_dir "${LLVM_LIBRARY_DIR}/clang/${CLANG_VERSION}/${target}")
+       set(flag_types ASM C CXX MODULE_LINKER SHARED_LINKER EXE_LINKER)
+       foreach(type ${flag_types})
+         set(${type}_flag -DCMAKE_${type}_FLAGS=-resource-dir=${resource_dir})
+diff --git a/llvm/lib/Target/PowerPC/PPCTargetMachine.cpp b/llvm/lib/Target/PowerPC/PPCTargetMachine.cpp
+index 3eff00fc3..3b901970a 100644
+--- a/llvm/lib/Target/PowerPC/PPCTargetMachine.cpp
++++ b/llvm/lib/Target/PowerPC/PPCTargetMachine.cpp
+@@ -226,9 +226,8 @@ static PPCTargetMachine::PPCABI computeTargetABI(const Triple &TT,
+ 
+   switch (TT.getArch()) {
+   case Triple::ppc64le:
+-    return PPCTargetMachine::PPC_ABI_ELFv2;
+   case Triple::ppc64:
+-    return PPCTargetMachine::PPC_ABI_ELFv1;
++    return PPCTargetMachine::PPC_ABI_ELFv2;
+   default:
+     return PPCTargetMachine::PPC_ABI_UNKNOWN;
+   }
+diff --git a/llvm/runtimes/CMakeLists.txt b/llvm/runtimes/CMakeLists.txt
+index 05567b523..e9fbe5e8d 100644
+--- a/llvm/runtimes/CMakeLists.txt
++++ b/llvm/runtimes/CMakeLists.txt
+@@ -73,7 +73,7 @@ endfunction()
+ function(builtin_default_target compiler_rt_path)
+   cmake_parse_arguments(ARG "" "" "DEPENDS" ${ARGN})
+ 
+-  set(LLVM_ENABLE_PER_TARGET_RUNTIME_DIR_default ON)
++  set(LLVM_ENABLE_PER_TARGET_RUNTIME_DIR_default OFF)
+   # AIX should fold 32-bit & 64-bit arch libraries into a single archive.
+   if (TARGET_TRIPLE MATCHES "aix")
+     set(LLVM_ENABLE_PER_TARGET_RUNTIME_DIR_default OFF)
+@@ -115,14 +115,27 @@ function(builtin_register_target compiler_rt_path target)
+   endforeach()
+ 
+   llvm_ExternalProject_Add(builtins-${target}
+-                           ${compiler_rt_path}/lib/builtins
++                           ${compiler_rt_path}
+                            DEPENDS ${ARG_DEPENDS}
+                            CMAKE_ARGS -DLLVM_LIBRARY_OUTPUT_INTDIR=${LLVM_LIBRARY_DIR}
+                                       -DLLVM_RUNTIME_OUTPUT_INTDIR=${LLVM_TOOLS_BINARY_DIR}
+                                       -DLLVM_DEFAULT_TARGET_TRIPLE=${target}
+-                                      -DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=ON
++                                      -DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=OFF
+                                       -DCMAKE_C_COMPILER_WORKS=ON
+                                       -DCMAKE_ASM_COMPILER_WORKS=ON
++                                      -DCMAKE_CXX_COMPILER_WORKS=ON
++        -DCMAKE_C_FLAGS=-nostdlib
++        -DCMAKE_CXX_FLAGS=-nostdlib
++        -DCOMPILER_RT_BUILD_CRT=ON
++        -DCOMPILER_RT_BUILD_BUILTINS=ON
++        -DCOMPILER_RT_BUILD_LIBFUZZER=OFF
++        -DCOMPILER_RT_BUILD_ORC=OFF
++        -DCOMPILER_RT_BUILD_PROFILE=OFF
++        -DCOMPILER_RT_BUILD_SANITIZERS=OFF
++        -DCOMPILER_RT_BUILD_GWP_ASAN=OFF
++        -DCOMPILER_RT_BUILD_XRAY=OFF
++        -DCOMPILER_RT_EXCLUDE_ATOMIC_BUILTIN=OFF
++        -DCOMPILER_RT_BUILD_STANDALONE_LIBATOMIC=OFF
+                                       -DCOMPILER_RT_DEFAULT_TARGET_ONLY=ON
+                                       ${COMMON_CMAKE_ARGS}
+                                       ${${target}_extra_args}
+@@ -223,12 +236,16 @@ function(runtime_default_target)
+     list(APPEND test_targets runtimes-test-depends check-runtimes)
+   endif()
+ 
+-  set(LLVM_ENABLE_PER_TARGET_RUNTIME_DIR_default ON)
++  set(LLVM_ENABLE_PER_TARGET_RUNTIME_DIR_default OFF)
+   # AIX should fold 32-bit & 64-bit arch libraries into a single archive.
+   if (TARGET_TRIPLE MATCHES "aix")
+     set(LLVM_ENABLE_PER_TARGET_RUNTIME_DIR_default OFF)
+   endif()
+ 
++  set(RT_C_FLAGS "${CMAKE_C_FLAGS} --sysroot=${KISS_ROOT}")
++  set(RT_CXX_FLAGS "${CMAKE_CXX_FLAGS} --sysroot=${KISS_ROOT}")
++  set(RT_ASM_FLAGS "${CMAKE_ASM_FLAGS} --sysroot=${KISS_ROOT}")
++
+   llvm_ExternalProject_Add(runtimes
+                            ${CMAKE_CURRENT_SOURCE_DIR}/../../runtimes
+                            DEPENDS ${ARG_DEPENDS}
+@@ -242,11 +259,15 @@ function(runtime_default_target)
+                                       -DCMAKE_C_COMPILER_WORKS=ON
+                                       -DCMAKE_CXX_COMPILER_WORKS=ON
+                                       -DCMAKE_ASM_COMPILER_WORKS=ON
++                                      -DCMAKE_C_FLAGS=${RT_C_FLAGS}
++                                      -DCMAKE_CXX_FLAGS=${RT_CXX_FLAGS}
++                                      -DCMAKE_ASM_FLAGS=${RT_ASM_FLAGS}
+                                       ${COMMON_CMAKE_ARGS}
+                                       ${RUNTIMES_CMAKE_ARGS}
+                            PASSTHROUGH_PREFIXES CMAKE_OSX
+                                                 LLVM_ENABLE_RUNTIMES
+                                                 LLVM_USE_LINKER
++                                                KISS_ROOT
+                                                 ${ARG_PREFIXES}
+                            EXTRA_TARGETS ${extra_targets}
+                                          ${test_targets}
+@@ -342,7 +363,7 @@ function(runtime_register_target name target)
+                                       -DLLVM_INCLUDE_TESTS=${LLVM_INCLUDE_TESTS}
+                                       -DLLVM_DEFAULT_TARGET_TRIPLE=${target}
+                                       -DLLVM_ENABLE_PROJECTS_USED=${LLVM_ENABLE_PROJECTS_USED}
+-                                      -DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=ON
++                                      -DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=OFF
+                                       -DCMAKE_C_COMPILER_WORKS=ON
+                                       -DCMAKE_CXX_COMPILER_WORKS=ON
+                                       -DCMAKE_ASM_COMPILER_WORKS=ON
+diff --git a/llvm/test/CodeGen/PowerPC/ppc64-elf-abi.ll b/llvm/test/CodeGen/PowerPC/ppc64-elf-abi.ll
+index 8b1cf6b58..296a2afa6 100644
+--- a/llvm/test/CodeGen/PowerPC/ppc64-elf-abi.ll
++++ b/llvm/test/CodeGen/PowerPC/ppc64-elf-abi.ll
+@@ -1,4 +1,5 @@
+-; RUN: llc -verify-machineinstrs -mtriple=powerpc64-unknown-linux-gnu < %s | FileCheck %s -check-prefix=CHECK-ELFv1
++; RUN: llc -verify-machineinstrs -mtriple=powerpc64-unknown-linux-gnu < %s | FileCheck %s -check-prefix=CHECK-ELFv2
++; RUN: llc -verify-machineinstrs -mtriple=powerpc64-unknown-linux-musl < %s | FileCheck %s -check-prefix=CHECK-ELFv2
+ ; RUN: llc -verify-machineinstrs -mtriple=powerpc64-unknown-linux-gnu -target-abi elfv1 < %s | FileCheck %s -check-prefix=CHECK-ELFv1
+ ; RUN: llc -verify-machineinstrs -mtriple=powerpc64-unknown-linux-gnu -target-abi elfv2 < %s | FileCheck %s -check-prefix=CHECK-ELFv2
+ ; RUN: llc -verify-machineinstrs -mtriple=powerpc64le-unknown-linux-gnu < %s | FileCheck %s -check-prefix=CHECK-ELFv2
+diff --git a/runtimes/CMakeLists.txt b/runtimes/CMakeLists.txt
+index 1400233b7..0a7b38737 100644
+--- a/runtimes/CMakeLists.txt
++++ b/runtimes/CMakeLists.txt
+@@ -110,14 +110,15 @@ endif()
+ # Check for -nostdlib++ first; if there's no C++ standard library yet,
+ # all check_cxx_compiler_flag commands will fail until we add -nostdlib++
+ # (or -nodefaultlibs).
+-llvm_check_compiler_linker_flag(C "-nostdlib++" LLVM_RUNTIMES_SUPPORT_NOSTDLIBXX_FLAG)
+-if (LLVM_RUNTIMES_SUPPORT_NOSTDLIBXX_FLAG)
++#llvm_check_compiler_linker_flag(C "-nostdlib++" LLVM_RUNTIMES_SUPPORT_NOSTDLIBXX_FLAG)
++#if (LLVM_RUNTIMES_SUPPORT_NOSTDLIBXX_FLAG)
+   set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -nostdlib++")
+-endif()
+-check_cxx_compiler_flag(-nostdinc++ LLVM_RUNTIMES_SUPPORT_NOSTDINCXX_FLAG)
+-if (LLVM_RUNTIMES_SUPPORT_NOSTDINCXX_FLAG)
++#endif()
++#check_cxx_compiler_flag(-nostdinc++ LLVM_RUNTIMES_SUPPORT_NOSTDINCXX_FLAG)
++#if (LLVM_RUNTIMES_SUPPORT_NOSTDINCXX_FLAG)
+   set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -nostdinc++")
+-endif()
++#endif()
++set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} --sysroot=${KISS_ROOT}")
+ 
+ # Avoid checking whether the compiler is working.
+ set(LLVM_COMPILER_CHECKED ON)
+@@ -134,8 +135,8 @@ get_host_triple(LLVM_HOST_TRIPLE)
+ set(LLVM_DEFAULT_TARGET_TRIPLE "${LLVM_HOST_TRIPLE}" CACHE STRING
+   "Default target for which the runtimes will be built.")
+ 
+-option(LLVM_INCLUDE_TESTS "Generate build targets for the runtimes unit tests." ON)
+-option(LLVM_INCLUDE_DOCS "Generate build targets for the runtimes documentation." ON)
++option(LLVM_INCLUDE_TESTS "Generate build targets for the runtimes unit tests." OFF)
++option(LLVM_INCLUDE_DOCS "Generate build targets for the runtimes documentation." OFF)
+ option(LLVM_ENABLE_SPHINX "Use Sphinx to generate the runtimes documentation." OFF)
+ 
+ # Use libtool instead of ar if you are both on an Apple host, and targeting Apple.
