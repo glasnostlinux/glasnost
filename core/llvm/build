@@ -144,7 +144,8 @@ ln -s -f llvm-as       as
 cd $1/usr/lib/clang
 ln -s $2 system
 cd $1/usr/lib
-ln -s clang/system/lib/linux/clang_rt.crtbegin-$libname.o   crtbegin.o
-ln -s clang/system/lib/linux/clang_rt.crtbegin-$libname.o   crtbeginS.o
-ln -s clang/system/lib/linux/clang_rt.crtend-$libname.o     crtend.o
-ln -s clang/system/lib/linux/clang_rt.crtend-$libname.o     crtendS.o
+ln -s clang/system/lib/linux/clang_rt.crtbegin-$libname.o    crtbegin.o
+ln -s clang/system/lib/linux/clang_rt.crtbegin-$libname.o    crtbeginS.o
+ln -s clang/system/lib/linux/clang_rt.crtend-$libname.o      crtend.o
+ln -s clang/system/lib/linux/clang_rt.crtend-$libname.o      crtendS.o
+ln -s clang/system/lib/linux/libclang_rt.builtins-$libname.a libatomic.a
