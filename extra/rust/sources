@@ -1,24 +1,17 @@
 https://static.rust-lang.org/dist/rustc-VERSION-src.tar.xz
-https://github.com/glasnostlinux/glasnost/releases/download/1.56.0/cargo-1.56.0-aarch64-unknown-linux-musl.tar.xz?no-extract
-https://github.com/glasnostlinux/glasnost/releases/download/1.56.0/cargo-1.56.0-powerpc64-unknown-linux-musl.tar.xz?no-extract
-https://github.com/glasnostlinux/glasnost/releases/download/1.56.0/cargo-1.56.0-powerpc64le-unknown-linux-musl.tar.xz?no-extract
-https://github.com/glasnostlinux/glasnost/releases/download/1.56.0/cargo-1.56.0-x86_64-unknown-linux-musl.tar.xz?no-extract
-https://github.com/glasnostlinux/glasnost/releases/download/1.56.0/rust-std-1.56.0-aarch64-unknown-linux-musl.tar.xz?no-extract
-https://github.com/glasnostlinux/glasnost/releases/download/1.56.0/rust-std-1.56.0-armv7-unknown-linux-musleabihf.tar.xz?no-extract
-https://github.com/glasnostlinux/glasnost/releases/download/1.56.0/rust-std-1.56.0-powerpc64-unknown-linux-musl.tar.xz?no-extract
-https://github.com/glasnostlinux/glasnost/releases/download/1.56.0/rust-std-1.56.0-powerpc64le-unknown-linux-musl.tar.xz?no-extract
-https://github.com/glasnostlinux/glasnost/releases/download/1.56.0/rust-std-1.56.0-x86_64-unknown-linux-musl.tar.xz?no-extract
-https://github.com/glasnostlinux/glasnost/releases/download/1.56.0/rustc-1.56.0-aarch64-unknown-linux-musl.tar.xz?no-extract
-https://github.com/glasnostlinux/glasnost/releases/download/1.56.0/rustc-1.56.0-powerpc64-unknown-linux-musl.tar.xz?no-extract
-https://github.com/glasnostlinux/glasnost/releases/download/1.56.0/rustc-1.56.0-powerpc64le-unknown-linux-musl.tar.xz?no-extract
-https://github.com/glasnostlinux/glasnost/releases/download/1.56.0/rustc-1.56.0-x86_64-unknown-linux-musl.tar.xz?no-extract
-https://github.com/glasnostlinux/glasnost/releases/download/2021.10-01/glasnost-chroot-aarch64-2021.10-01.tar.xz roots/aarch64
-https://github.com/glasnostlinux/glasnost/releases/download/2021.10-01/glasnost-chroot-armv7-2021.10-01.tar.xz roots/armv7
-https://github.com/glasnostlinux/glasnost/releases/download/2021.10-01/glasnost-chroot-powerpc64-2021.10-01.tar.xz roots/powerpc64
-https://github.com/glasnostlinux/glasnost/releases/download/2021.10-01/glasnost-chroot-powerpc64le-2021.10-01.tar.xz roots/powerpc64le
-https://github.com/glasnostlinux/glasnost/releases/download/2021.10-01/glasnost-chroot-x86_64-2021.10-01.tar.xz roots/x86_64
+https://www.musl-libc.org/releases/musl-1.2.3.tar.gz musl/
+https://github.com/glasnostlinux/glasnost/releases/download/1.60.0/cargo-1.60.0-aarch64-unknown-linux-musl.tar.xz?no-extract
+https://github.com/glasnostlinux/glasnost/releases/download/1.60.0/cargo-1.60.0-powerpc64-unknown-linux-musl.tar.xz?no-extract
+https://github.com/glasnostlinux/glasnost/releases/download/1.60.0/cargo-1.60.0-powerpc64le-unknown-linux-musl.tar.xz?no-extract
+https://github.com/glasnostlinux/glasnost/releases/download/1.60.0/cargo-1.60.0-x86_64-unknown-linux-musl.tar.xz?no-extract
+https://github.com/glasnostlinux/glasnost/releases/download/1.60.0/rust-std-1.60.0-aarch64-unknown-linux-musl.tar.xz?no-extract
+https://github.com/glasnostlinux/glasnost/releases/download/1.60.0/rust-std-1.60.0-powerpc64-unknown-linux-musl.tar.xz?no-extract
+https://github.com/glasnostlinux/glasnost/releases/download/1.60.0/rust-std-1.60.0-powerpc64le-unknown-linux-musl.tar.xz?no-extract
+https://github.com/glasnostlinux/glasnost/releases/download/1.60.0/rust-std-1.60.0-x86_64-unknown-linux-musl.tar.xz?no-extract
+https://github.com/glasnostlinux/glasnost/releases/download/1.60.0/rustc-1.60.0-aarch64-unknown-linux-musl.tar.xz?no-extract
+https://github.com/glasnostlinux/glasnost/releases/download/1.60.0/rustc-1.60.0-powerpc64-unknown-linux-musl.tar.xz?no-extract
+https://github.com/glasnostlinux/glasnost/releases/download/1.60.0/rustc-1.60.0-powerpc64le-unknown-linux-musl.tar.xz?no-extract
+https://github.com/glasnostlinux/glasnost/releases/download/1.60.0/rustc-1.60.0-x86_64-unknown-linux-musl.tar.xz?no-extract
 patches/openssl.patch
-patches/cross.patch
-files/cc-target
-files/cxx-target
+patches/glasnost.patch
 files/stage0.json
