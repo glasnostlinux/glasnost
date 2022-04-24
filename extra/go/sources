@@ -4,4 +4,3 @@ https://github.com/glasnostlinux/glasnost/releases/download/1.17.2/go-linux-arm6
 https://github.com/glasnostlinux/glasnost/releases/download/1.17.2/go-linux-ppc64le-bootstrap.tbz ppc64le-bootstrap/
 https://github.com/glasnostlinux/glasnost/releases/download/1.17.2/go-linux-ppc64-bootstrap.tbz ppc64-bootstrap/
 https://github.com/glasnostlinux/glasnost/releases/download/1.17.2/go-linux-riscv64-bootstrap.tbz riscv64-bootstrap/
-patches/posix-build.patch

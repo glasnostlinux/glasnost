@@ -3,17 +3,18 @@
 get_arch(){
     case "$1" in
 	aarch64)     echo "arm64" ;;
+        aarch64_be)  echo "arm64" ;;
 	armv7)       echo "arm" ;;
 	i686)        echo "386" ;;
 	x86_64)      echo "amd64" ;;
 	powerpc64le) echo "ppc64le" ;;
 	powerpc64)   echo "ppc64" ;;
+        powerpcle)   echo "ppcle" ;;
+        powerpc)     echo "ppc" ;;
         riscv64)     echo "riscv64" ;;
 	*) echo "Unsupported architecture $1"; exit 1;;
     esac
 }
-
-patch -p1 < posix-build.patch
 
 # Disable stripping of binaries.
 # This breaks Go.
