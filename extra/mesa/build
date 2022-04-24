@@ -28,17 +28,24 @@ done
 }
 
 export PYTHONPATH
-export CFLAGS="$CFLAGS -Wno-implicit-fallthrough "
+export CFLAGS="$CFLAGS -Wno-implicit-fallthrough -Wno-constant-conversion -Wno-deprecated-declarations -Wno-implicit-const-int-float-conversion -Wno-c99-designator"
 
-# Fix build:
-#sed -i 's/STN_UNDEF/SHN_UNDEF/g' src/amd/common/ac_rtld.c
+# Link in the required llvm libs
+llvmLibs=""
+for x in RISCV AArch64 ARM PowerPC X86; do
+    for y in Disassembler Info CodeGen Desc; do
+        llvmLibs="$llvmLibs -lLLVM$x$y"
+    done
+done
+
+LDFLAGS="$LDFLAGS $llvmLibs -lLLVMCFGuard -lLLVMAArch64Utils"
 
 case $KISS_XHOST_ARCH in
-   armv7)      GALL=-Dgallium-drivers=panfrost,kmsro,lima,etnaviv,v3d,vc4,swrast LLVM=enabled VULK=-Dvulkan-drivers=panfrost;;
-   aarch64)    GALL=-Dgallium-drivers=panfrost,kmsro,lima,etnaviv,v3d,vc4,swrast LLVM=enabled VULK=-Dvulkan-drivers=panfrost;;
+   armv7)      GALL=-Dgallium-drivers=panfrost,kmsro,lima,etnaviv,v3d,vc4,swrast LLVM=-Dllvm=enabled VULK=-Dvulkan-drivers=panfrost;;
+   aarch64)    GALL=-Dgallium-drivers=panfrost,kmsro,lima,etnaviv,v3d,vc4,swrast LLVM=-Dllvm=enabled VULK=-Dvulkan-drivers=panfrost;;
    x86_64) ;; # Auto configured
-   powerpc64*) GALL=-Dgallium-drivers=radeonsi,r300,r600 LLVM=enabled VULK=-Dvulkan-drivers=amd;;
-   riscv64*)   GALL=-Dgallium-drivers=radeonsi,r300,r600 LLVM=enabled VULK=-Dvulkan-drivers=amd;;
+   powerpc64*) GALL=-Dgallium-drivers=radeonsi,r300,r600 LLVM=-Dllvm=enabled VULK=-Dvulkan-drivers=amd;;
+   riscv64*)   GALL=-Dgallium-drivers=radeonsi,r300,r600 LLVM=-Dllvm=enabled VULK=-Dvulkan-drivers=amd;;
    *) echo "Unsupported platform: $(cc -dumpmachine)"; exit;;
 esac
 
@@ -67,16 +74,17 @@ meson \
     -Dplatforms=wayland \
     -Dglx=disabled \
     -Degl=enabled \
-    -Dgles1=true \
-    -Dgles2=true \
+    -Dgles1=enabled \
+    -Dgles2=enabled \
     -Degl-native-platform=wayland \
     -Dvalgrind=false \
-    -Dzstd=false \
+    -Dzstd=disabled \
     -Dglvnd="${glvnd_enabled:-false}" \
     -Ddri-drivers= \
     $VULK \
     $GALL \
-    -Dllvm=$LLVM \
+    $LLVM \
+    -Dshared-llvm=disabled \
     . output
 
 # Why does meson ignore sysroot etc?
