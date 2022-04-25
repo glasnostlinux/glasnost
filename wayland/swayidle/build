@@ -1,0 +1,15 @@
+#!/bin/sh -e
+
+kiss-meson-config > meson.config
+
+meson \
+        --prefix=/usr \
+        --cross-file="meson.config" \
+        . build
+
+ninja -C build
+ninja -C build install
+
+rm -rf "$1/usr/share/zsh/"
+rm -rf "$1/usr/share/fish/"
+rm -rf "$1/usr/share/bash-completion/"

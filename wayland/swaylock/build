@@ -1,0 +1,20 @@
+#!/bin/sh -e
+
+kiss-meson-config > meson.config
+
+meson \
+    --prefix=/usr \
+    --cross-file="/home/pokey/.cache/kiss/proc/79437/build/swaylock/meson.config" \
+    . build
+
+sed -i "s|$KISS_ROOT/usr/bin/wayland-scanner|/usr/bin/wayland-scanner|g" build/build.ninja
+
+ninja -C build
+ninja -C build install
+
+chmod a+s "$1/usr/bin/swaylock"
+
+rm -rf "$1/usr/share/zsh/"
+rm -rf "$1/usr/share/fish/"
+rm -rf "$1/usr/share/bash-completion/"
+rm -rf "$1/etc/pam.d/"

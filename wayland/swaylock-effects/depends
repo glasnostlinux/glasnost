@@ -1,0 +1,7 @@
+cairo
+gdk-pixbuf
+glib
+libxkbcommon
+llvm
+wayland
+wayland make
