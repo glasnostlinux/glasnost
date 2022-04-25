@@ -1,1 +1,2 @@
-../../modules/repo/extra/util-linux/depends
+linux-headers make
+zlib

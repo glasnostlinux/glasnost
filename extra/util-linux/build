@@ -1,13 +1,19 @@
 #!/bin/sh -e
 
+export CFLAGS="$CFLAGS -static"
+export SUID_CFLAGS="-static"
+export SUID_LDFLAGS="-static"
+export CPPFLAGS="-static"
+export LDFLAGS="$LDFLAGS -static"
+
 ./configure \
     --prefix=/usr \
+    --bindir=/usr/bin \
+    --sbindir=/usr/sbin \
     --build=$KISS_XBUILD_TRIPLE \
     --host=$KISS_XHOST_TRIPLE \
     --localstatedir=/var \
-    --bindir=/usr/bin \
-    --sbindir=/usr/bin \
-    --libdir=/usr/lib \
+    --disable-shared \
     --enable-libuuid \
     --enable-libblkid \
     --enable-fsck \
@@ -17,8 +23,8 @@
     --without-python \
     --without-systemd
 
-make
-make install
+make LDFLAGS="$LDFLAGS --static"
+make DESTDIR="$1" install
 
 # Fix broken --sbindir.
 mv -f "$1/usr/sbin/"* "$1/usr/bin"
