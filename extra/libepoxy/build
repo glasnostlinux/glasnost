@@ -2,12 +2,15 @@
 
 kiss-meson-config > meson.config
 
+# -Dhas-dlvsym=false \
+
 meson \
     --prefix=/usr \
     --cross-file="meson.config" \
     --sysconfdir=/etc \
     --mandir=/usr/share/man \
-    -Dhas-dlvsym=false \
+    -Dglx=no \
+    -Dx11=false \
     . output
 
 ninja -C output
