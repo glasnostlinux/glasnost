@@ -23,22 +23,13 @@ sed -i "s#= g[c+][c+]#= ${CC:=cc}#g" Makefile
 sed -i "s#\(\$(CROSS_COMPILE)\)gcc#\1${CC}#g" Makefile
 sed -i 's|CONFIG_SYSROOT=\"\"|CONFIG_SYSROOT=\"'$KISS_ROOT'\"|' .config
 
-#sed -i 's/\-fpic//' Makefile.flags
-#sed -i 's/\-fpie//' Makefile.flags
-#sed -i 's/\-pie//' Makefile.flags
-
-# Ensure that busybox's build system is aware that 'cc' may point
-# to clang rather than GCC. This is the case in non-GCC systems.
-#case $("$CC" --version) in (*clang*)
-#    sed -i "s&\(\$(CC),\)clang&\1${CC}&g" Makefile.flags
-#esac
-
 # Disable cflags which cause issues
 export CFLAGS="$CFLAGS -O0 -fno-lto -Wno-ignored-attributes -mno-stackrealign -Wno-unused-command-line-argument"
 export CROSS_COMPILE=" "
 export LD="clang $CFLAGS -fno-pic"
 
-# As of clang 12.0.1, the ssl module cannot be compiled for 32-bit x86.
+# The ssl module cannot be compiled for 32-bit x86.
+# error: inline assembly requires more registers than available
 if [ "$KISS_XHOST_ARCH" = "i686" ]; then
     sed -i 's/CONFIG_SSL_CLIENT=y/CONFIG_SSL_CLIENT=n/g' .config
 fi
