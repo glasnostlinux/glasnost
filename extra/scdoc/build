@@ -1,6 +1,8 @@
 #!/bin/sh -e
 
-sed -i -e "s|^HOST_SCDOC=.*|HOST_SCDOC=/usr/bin/scdoc|g" Makefile
+if [ ! -z "$KISS_ROOT" ]; then
+    sed -i -e "s|^HOST_SCDOC=.*|HOST_SCDOC=/usr/bin/scdoc|g" Makefile
+fi
 
 make PREFIX=/usr
 make PREFIX=/usr install
