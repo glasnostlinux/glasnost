@@ -1,0 +1,5 @@
+binutils-armv7
+binutils-armv7 make
+bison          make
+flex           make
+zlib
