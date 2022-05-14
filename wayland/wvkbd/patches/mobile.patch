@@ -1,6 +1,8 @@
---- a/layout.mobintl.h.orig
-+++ a/layout.mobintl.h
-@@ -308,7 +308,7 @@
+kdiff --git a/layout.mobintl.h b/layout.mobintl.h
+index 98a453d..7824cdf 100644
+--- a/layout.mobintl.h
++++ b/layout.mobintl.h
+@@ -311,7 +311,7 @@ static struct key keys_simple[] = {
    {"p", "P", 1.0, Code, KEY_P, &layouts[ComposeP]},
    {"", "", 0.0, EndRow},
  
@@ -9,3 +11,4 @@
    {"a", "A", 1.0, Code, KEY_A, &layouts[ComposeA]},
    {"s", "S", 1.0, Code, KEY_S, &layouts[ComposeS]},
    {"d", "D", 1.0, Code, KEY_D, &layouts[ComposeD]},
+
