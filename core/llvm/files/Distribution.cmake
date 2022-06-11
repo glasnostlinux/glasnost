@@ -1,5 +1,5 @@
 #Enable LLVM projects and runtimes
-set(LLVM_ENABLE_PROJECTS "llvm;clang;lld;polly;clang-tools-extra" CACHE STRING "")
+set(LLVM_ENABLE_PROJECTS "llvm;clang;lld;clang-tools-extra" CACHE STRING "")
 set(LLVM_ENABLE_RUNTIMES "compiler-rt;libcxx;libcxxabi;libunwind" CACHE STRING "")
 
 set(LLVM_CCACHE_BUILD "OFF" CACHE STRING "")
@@ -52,9 +52,10 @@ set(LLVM_BUILD_COMPILER_RT "ON" CACHE STRING "")
 set(LLVM_BUILD_DOCS "OFF" CACHE STRING "")
 set(LLVM_BUILD_EXAMPLES "OFF" CACHE STRING "")
 set(LLVM_BUILD_LLVM_DYLIB "ON" CACHE STRING "")
+set(LLVM_LINK_LLVM_DYLIB OFF CACHE STRING "")
 set(LLVM_BUILD_TESTS "OFF" CACHE STRING "")
 set(PPC_LINUX_DEFAULT_IEEELONGDOUBLE ON CACHE STRING "")
-set(LLVM_ENABLE_ZLIB OFF CACHE STRING "")
+set(LLVM_ENABLE_ZLIB ON CACHE STRING "")
 set(BOOTSTRAP_LLVM_ENABLE_LLD ON CACHE BOOL "")
 
 # Expose stage2 targets through the stage1 build configuration.

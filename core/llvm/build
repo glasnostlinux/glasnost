@@ -66,9 +66,9 @@ if [ "$bootstrap" == "1" ]; then
     -DCLANG_ENABLE_BOOTSTRAP=ON \
     -DCMAKE_ASM_FLAGS="$CF" \
     -DCMAKE_CXX_COMPILER=clang++ \
-    -DCMAKE_CXX_FLAGS="-fPIC -O3 -gline-tables-only -DNDEBUG" \
+    -DCMAKE_CXX_FLAGS="" \
     -DCMAKE_C_COMPILER=clang \
-    -DCMAKE_C_FLAGS="-fPIC -O3 -gline-tables-only -DNDEBUG" \
+    -DCMAKE_C_FLAGS="" \
     -DKISS_ROOT="/" \
     -DLLVM_HOST_TRIPLE="$KISS_XBUILD_TRIPLE" \
     -DLLVM_TARGET_ARCH="host" \
@@ -78,8 +78,6 @@ if [ "$bootstrap" == "1" ]; then
 
     # Clang: clang-tblgen, required for crossbuilding.
     cp build/tools/clang/stage2-bins/bin/clang-tblgen  $1/usr/bin/clang-tblgen
-    cp build/tools/clang/stage2-bins/lib/libPollyISL.a $1/usr/lib/libPollyISL.a
-
 else
     echo "Building stage 2 only..."
 
@@ -107,8 +105,6 @@ else
 
     # Clang: clang-tblgen, required for crossbuilding.
     cp build/bin/clang-tblgen  $1/usr/bin/clang-tblgen
-    cp build/lib/libPollyISL.a $1/usr/lib/libPollyISL.a
-
 fi
 
 
