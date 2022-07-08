@@ -1,10 +1,13 @@
 #!/bin/sh -e
 
+export CFLAGS="$CFLAGS -L$KISS_ROOT/usr/lib"
+
 ./autogen.sh
 
 ./configure \
     --prefix=/usr \
     --build=$KISS_XBUILD_TRIPLE \
     --host=$KISS_XHOST_TRIPLE \
+
 make
 make install
