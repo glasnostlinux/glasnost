@@ -1,5 +1,7 @@
 #!/bin/sh -e
 
+patch -p1 < musl.patch
+
 # Remove 'libelf' dependency.
 sed 's/HAVE_LIBELF/HAVE_KISS/' gio/meson.build > _
 mv -f _ gio/meson.build
@@ -23,7 +25,6 @@ meson \
     -Dinstalled_tests=false \
     -Ddefault_library=both \
     -Dman=false \
-    -Dfam=false \
     . build
 
 ninja -C build
