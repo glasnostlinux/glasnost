@@ -7,7 +7,7 @@ libvorbis
 libvpx
 libwebp
 linux-headers make
-nasm          make
+nasm make
 openssl
 opus
 pkgconf make
