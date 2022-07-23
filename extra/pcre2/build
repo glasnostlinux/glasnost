@@ -1,6 +1,10 @@
 #!/bin/sh -e
 
+export LDFLAGS="$LDFLAGS -L$KISS_ROOT/usr/lib"
+
 ./configure \
+    --build=$KISS_XBUILD_TRIPLE \
+    --host=$KISS_XHOST_TRIPLE \
     --prefix=/usr \
     --enable-pcre2-16 \
     --enable-pcre2-32 \
