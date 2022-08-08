@@ -1,2 +1,4 @@
-https://alpine.global.ssl.fastly.net/alpine/edge/main/x86_64/xkeyboard-config-VERSION-r0.apk
-https://alpine.global.ssl.fastly.net/alpine/edge/main/x86_64/libx11-1.7.2-r0.apk
+https://x.org/releases/individual/data/xkeyboard-config/xkeyboard-config-VERSION.tar.xz
+https://x.org/releases/individual/lib/libX11-1.8.1.tar.xz libX11
+files/xml2lst rules
+patches/compose-only.patch

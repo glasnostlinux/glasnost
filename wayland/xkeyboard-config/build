@@ -1,8 +1,39 @@
 #!/bin/sh -e
 
-cd "$1"
+(
+    cd libX11
 
-tar xf "$OLDPWD/xkeyboard-config-"*.apk
-tar xf "$OLDPWD/libx11-"*.apk
+    patch -p1 < ../compose-only.patch
 
-rm -rf usr/lib .PKGINFO .*.pub
+     xorg_cv_malloc0_returns_null=y \
+    ./configure \
+        --prefix=/usr \
+        --build=$KISS_XBUILD_TRIPLE \
+        --host=$KISS_XHOST_TRIPLE \
+        --disable-specs \
+        --disable-xkb \
+        --without-fop \
+        --without-xmlto
+
+    make -C nls
+    make -C nls install
+)
+
+# Swap to shell script instead of perl script
+# for conversion of rules files. See files/xml2lst.
+sed 's/xml2lst\.pl/xml2lst/' rules/meson.build > _
+mv -f _ rules/meson.build
+
+# Remove po/ dir.
+sed "/subdir('po')/d" meson.build > _
+mv -f _ meson.build
+
+kiss-meson-config > meson.config
+
+meson setup \
+    -Dprefix=/usr \
+    --cross-file=meson.config \
+    output
+
+ninja -C output
+ninja -C output install
