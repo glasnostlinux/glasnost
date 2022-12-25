@@ -8,7 +8,7 @@ set(LLVM_CCACHE_BUILD "OFF" CACHE STRING "")
 set(LLVM_TARGETS_TO_BUILD ARM;AArch64;PowerPC;RISCV;X86 CACHE STRING "")
 
 # Optimize the stage1 compiler, but don't LTO it because that wastes time.
-set(CMAKE_BUILD_TYPE Release CACHE STRING "")
+#set(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "")
 
 # Setup vendor-specific settings.
 set(PACKAGE_VENDOR glasnost CACHE STRING "")
@@ -26,13 +26,13 @@ set(LLDB_ENABLE_LIBEDIT 0 CACHE STRING "")
 set(LLDB_ENABLE_CURSES 0 CACHE STRING "")
 set(LLVM_ENABLE_TERMINFO 0 CACHE STRING "")
 set(COMPILER_RT_BUILD_BUILTINS "ON" CACHE STRING "")
-set(LLVM_BUILTIN_TARGETS "default;aarch64-linux-musl;powerpc64-linux-musl;powerpc64le-linux-musl;powerpc-linux-musl;powerpcle-linux-musl;i686-linux-musl;x86_64-linux-musl;riscv32-linux-musl;riscv64-linux-musl;armv7-linux-musleabihf;aarch64_be-linux-musl;armv6m-linux-musleabi" CACHE STRING "")
+set(LLVM_BUILTIN_TARGETS "default;aarch64-linux-musl;powerpc64-linux-musl;powerpc64le-linux-musl;powerpc-linux-musl;powerpcle-linux-musl;i686-linux-musl;x86_64-linux-musl;riscv32-linux-musl;riscv64-linux-musl;armv7-linux-musleabihf;aarch64_be-linux-musl" CACHE STRING "")
 set(COMPILER_RT_BUILD_CRT "ON" CACHE STRING "")
-set(COMPILER_RT_BUILD_LIBFUZZER "ON" CACHE STRING "")
-set(COMPILER_RT_BUILD_ORC "ON" CACHE STRING "")
-set(COMPILER_RT_BUILD_PROFILE "ON" CACHE STRING "")
-set(COMPILER_RT_BUILD_SANITIZERS "ON" CACHE STRING "")
-set(COMPILER_RT_BUILD_XRAY "ON" CACHE STRING "")
+set(COMPILER_RT_BUILD_LIBFUZZER "OFF" CACHE STRING "")
+set(COMPILER_RT_BUILD_ORC "OFF" CACHE STRING "")
+set(COMPILER_RT_BUILD_PROFILE "OFF" CACHE STRING "")
+set(COMPILER_RT_BUILD_SANITIZERS "OFF" CACHE STRING "")
+set(COMPILER_RT_BUILD_XRAY "OFF" CACHE STRING "")
 set(COMPILER_RT_BUILD_GWP_ASAN "OFF" CACHE STRING "")
 set(CXX_SUPPORTS_CUSTOM_LINKER "ON" CACHE STRING "")
 set(LIBCXXABI_USE_COMPILER_RT "ON" CACHE STRING "")
@@ -57,6 +57,7 @@ set(LLVM_BUILD_TESTS "OFF" CACHE STRING "")
 set(PPC_LINUX_DEFAULT_IEEELONGDOUBLE ON CACHE STRING "")
 set(LLVM_ENABLE_ZLIB ON CACHE STRING "")
 set(BOOTSTRAP_LLVM_ENABLE_LLD ON CACHE BOOL "")
+set(LLVM_ENABLE_ZSTD "OFF" CACHE STRING "")
 
 # Expose stage2 targets through the stage1 build configuration.
 set(CLANG_BOOTSTRAP_TARGETS

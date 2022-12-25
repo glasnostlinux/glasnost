@@ -3,8 +3,9 @@ set(CMAKE_SYSTEM_NAME Linux CACHE STRING "")
 set(LLVM_ENABLE_PROJECTS "llvm;clang;lld;clang-tools-extra" CACHE STRING "")
 set(LLVM_TARGETS_TO_BUILD ARM;AArch64;AMDGPU;PowerPC;RISCV;X86 CACHE STRING "")
 
+set(PACKAGE_VENDOR glasnost CACHE STRING "")
 set(LLVM_CCACHE_BUILD "OFF" CACHE STRING "")
-set(CMAKE_BUILD_TYPE Release CACHE STRING "")
+#set(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "")
 set(CLANG_DEFAULT_CXX_STDLIB "libc++" CACHE STRING "")
 set(CLANG_DEFAULT_LINKER "ld.lld" CACHE STRING "")
 set(CLANG_DEFAULT_RTLIB "compiler-rt" CACHE STRING "")
@@ -12,10 +13,10 @@ set(CLANG_DEFAULT_UNWINDLIB "libunwind" CACHE STRING "")
 set(COMPILER_RT_BUILD_BUILTINS "ON" CACHE STRING "")
 set(COMPILER_RT_BUILD_CRT "ON" CACHE STRING "")
 set(COMPILER_RT_BUILD_GWP_ASAN "OFF" CACHE STRING "")
-set(COMPILER_RT_BUILD_LIBFUZZER "ON" CACHE STRING "")
+set(COMPILER_RT_BUILD_LIBFUZZER "OFF" CACHE STRING "")
 set(COMPILER_RT_BUILD_ORC "ON" CACHE STRING "")
 set(COMPILER_RT_BUILD_PROFILE "ON" CACHE STRING "")
-set(COMPILER_RT_BUILD_SANITIZERS "ON" CACHE STRING "")
+set(COMPILER_RT_BUILD_SANITIZERS "OFF" CACHE STRING "")
 set(COMPILER_RT_BUILD_XRAY "ON" CACHE STRING "")
 set(COMPILER_RT_DEFAULT_TARGET_ONLY "ON" CACHE STRING "")
 set(CXX_SUPPORTS_CUSTOM_LINKER "ON" CACHE STRING "")
@@ -48,13 +49,10 @@ set(PPC_LINUX_DEFAULT_IEEELONGDOUBLE ON CACHE STRING "")
 set(OPENMP_ENABLE_LIBOMPTARGET OFF CACHE STRING "")
 set(OPENMP_ENABLE_LIBOMPTARGET_PROFILING OFF CACHE STRING "")
 set(OPENMP_ENABLE_OMPT_TOOLS OFF CACHE STRING "")
-set(LLVM_LINK_LLVM_DYLIB OFF CACHE STRING "")
 set(LLVM_ENABLE_ZLIB "ON" CACHE STRING "")
-
-SET(CMAKE_C_COMPILER   clang)
-SET(CMAKE_CXX_COMPILER clang++)
-
-set(LLVM_BUILTIN_TARGETS "default;powerpc64-linux-musl;powerpc-linux-musl;powerpc64le-linux-musl;powerpcle-linux-musl;armv7-linux-musleabihf;armv6m-linux-musleabi;aarch64-linux-musl;aarch64_be-linux-musl;riscv64-linux-musl;riscv32-linux-musl;i386-linux-musl;x86_64-linux-musl" CACHE STRING "")
+set(LLVM_ENABLE_LIBXML2 "OFF" STRING "")
+set(LLVM_ENABLE_ZSTD "OFF" STRING "")
+set(LLVM_BUILTIN_TARGETS "default;powerpc64-linux-musl;powerpc-linux-musl;powerpc64le-linux-musl;powerpcle-linux-musl;armv7-linux-musleabihf;aarch64-linux-musl;aarch64_be-linux-musl;riscv64-linux-musl;riscv32-linux-musl;i386-linux-musl;x86_64-linux-musl" CACHE STRING "")
 
 # setup toolchain
 set(LLVM_INSTALL_TOOLCHAIN_ONLY OFF CACHE BOOL "")
@@ -106,6 +104,7 @@ set(LLVM_DISTRIBUTION_COMPONENTS
   clang
   libclang
   libclang-headers
+  clang-libraries
   clang-cpp
   lld
   clangd

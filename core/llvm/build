@@ -1,10 +1,16 @@
 #!/bin/sh -e
 
-export CF="$CFLAGS"
-export CXXF="$CXXFLAGS"
+export CF="$CFLAGS -lz -Wno-unused-command-line-argument -O2"
+export CXXF="$CXXFLAGS -lz -Wno-unused-command-line-argument -O2"
+unset CC
+unset CXX
 unset CFLAGS
 unset CXXFLAGS
 unset LDFLAGS
+
+unset PKG_CONFIG_LIBDIR
+unset PKG_CONFIG_SYSROOT_DIR
+unset PKG_CONFIG_PATH
 
 # Don't set the compiler here, interferes with 2-stage build
 kiss-cmake-config | sed '/CMAKE_C_COMPILER/d;' | sed '/CMAKE_CXX_COMPILER/d;' > cmake.config
@@ -26,7 +32,10 @@ if [ ! -z $KISS_ROOT ];  then
 fi
 
 # Default set of runtimes
-runtimes="compiler-rt;libcxx;libcxxabi;libunwind"
+runtimes="compiler-rt;libcxx;libcxxabi;libunwind;polly;bolt"
+
+# Release type
+export CMAKE_BUILD_TYPE="Release"
 
 # Determine targets for architecture
 case $KISS_XHOST_ARCH in
@@ -53,22 +62,25 @@ if [ "$bootstrap" == "1" ]; then
     -G Ninja \
     -C Distribution.cmake \
     -DCMAKE_INSTALL_PREFIX=/usr \
+    -DBOOTSTRAP_CMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE \
     -DBOOTSTRAP_CMAKE_ASM_FLAGS="$CF" \
     -DBOOTSTRAP_CMAKE_CXX_FLAGS="$CXXF" \
     -DBOOTSTRAP_CMAKE_C_FLAGS="$CF" \
     -DBOOTSTRAP_KISS_ROOT=$KISS_ROOT \
     -DBOOTSTRAP_LLVM_DEFAULT_TARGET_TRIPLE=$KISS_XHOST_TRIPLE \
-    -DBOOTSTRAP_LLVM_ENABLE_LTO=OFF \
+    -DBOOTSTRAP_LLVM_ENABLE_LTO=Thin \
     -DBOOTSTRAP_LLVM_ENABLE_RUNTIMES="$runtimes" \
     -DBOOTSTRAP_LLVM_HOST_TRIPLE=$KISS_XHOST_TRIPLE \
     -DBOOTSTRAP_LLVM_TARGET_ARCH=$TARGET_ARCH \
+    -DBOOTSTRAP_LLVM_LINK_LLVM_DYLIB=ON \
     $bstoolchain \
     -DCLANG_ENABLE_BOOTSTRAP=ON \
-    -DCMAKE_ASM_FLAGS="$CF" \
+    -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE \
+    -DCMAKE_ASM_FLAGS="-lz -w" \
     -DCMAKE_CXX_COMPILER=clang++ \
-    -DCMAKE_CXX_FLAGS="" \
+    -DCMAKE_CXX_FLAGS="-lz -w" \
     -DCMAKE_C_COMPILER=clang \
-    -DCMAKE_C_FLAGS="" \
+    -DCMAKE_C_FLAGS="-lz -w" \
     -DKISS_ROOT="/" \
     -DLLVM_HOST_TRIPLE="$KISS_XBUILD_TRIPLE" \
     -DLLVM_TARGET_ARCH="host" \
@@ -84,12 +96,16 @@ else
     cmake -B build \
     -G Ninja \
     -C Distribution-stage2.cmake \
+    -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE \
     -DCMAKE_ASM_FLAGS="$CF" \
     -DCMAKE_INSTALL_PREFIX=/usr \
     -DCMAKE_CXX_COMPILER=clang++ \
     -DCMAKE_CXX_FLAGS="$CXXF" \
     -DCMAKE_C_COMPILER=clang \
     -DCMAKE_C_FLAGS="$CF" \
+    -DCMAKE_C_FLAGS_RELEASE="$CF" \
+    -DCMAKE_CXX_FLAGS_RELEASE="$CXXF" \
+    -DCMAKE_ASM_FLAGS_RELEASE="$CF" \
     $toolchain \
     -DKISS_ROOT=$KISS_ROOT \
     -DLIBUNWIND_SYSROOT=$KISS_ROOT \
@@ -97,11 +113,14 @@ else
     -DLLVM_DEFAULT_TARGET_TRIPLE=$KISS_XHOST_TRIPLE \
     -DLLVM_ENABLE_RUNTIMES="$runtimes" \
     -DLLVM_HOST_TRIPLE=$KISS_XHOST_TRIPLE \
-    -DLLVM_LINK_LLVM_DYLIB=OFF \
+    -DLLVM_LINK_LLVM_DYLIB=ON \
     -DLLVM_TARGET_ARCH=$TARGET_ARCH \
+    -DLLVM_TABLEGEN=/usr/bin/llvm-tblgen \
+    -DCLANG_TABLEGEN=/usr/bin/clang-tblgen \
     llvm
 
     ninja -C build install-distribution
+    ninja -C build clang-tblgen
 
     # Clang: clang-tblgen, required for crossbuilding.
     cp build/bin/clang-tblgen  $1/usr/bin/clang-tblgen
