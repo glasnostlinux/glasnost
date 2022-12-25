@@ -1,4 +1,1 @@
 https://www.openssl.org/source/openssl-VERSION.tar.gz
-https://causal.agency/libretls/libretls-3.5.2.tar.gz libretls
-files/update-certdata.sh
-patches/ppcle.patch

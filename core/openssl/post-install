@@ -1,3 +1,0 @@
-#!/bin/sh
-
-$KISS_ROOT/etc/ssl/update-certdata.sh
