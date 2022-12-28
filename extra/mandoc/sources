@@ -1,1 +1,2 @@
-../../modules/repo/extra/mandoc/sources
+https://mandoc.bsd.lv/snapshots/mandoc-VERSION.tar.gz
+patches/mandoc-no-warn.patch

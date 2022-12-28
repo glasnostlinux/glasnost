@@ -1,1 +1,2 @@
-../../modules/repo/extra/x265/depends
+cmake make
+nasm  make

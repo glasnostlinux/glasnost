@@ -11,9 +11,6 @@ patch -p1 < fix-theoraenc.patch
     --disable-examples \
     --disable-vorbistest
 
-#make
-#make install
-
 make
 make -C lib     install
 make -C include install

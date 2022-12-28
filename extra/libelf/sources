@@ -1,1 +1,2 @@
-../../modules/repo/extra/libelf/sources
+https://sourceware.org/elfutils/ftp/VERSION/elfutils-VERSION.tar.bz2
+patches/musl.patch

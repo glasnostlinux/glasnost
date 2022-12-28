@@ -1,1 +1,2 @@
-../../modules/repo/extra/dhcpcd/sources
+https://github.com/rsmarples/dhcpcd/archive/dhcpcd-VERSION.tar.gz
+files/dhcpcd.run

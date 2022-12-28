@@ -1,1 +1,2 @@
-../../modules/repo/extra/libelf/depends
+pkgconf make
+zlib

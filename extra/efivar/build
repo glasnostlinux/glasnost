@@ -1,6 +1,6 @@
 #!/bin/sh -e
 
-patch -p1 < no-add-needed.patch
+#patch -p1 < no-add-needed.patch
 
 #CCLD="clang"
 export CFLAGS="$CFLAGS -Wno-unused-command-line-argument"

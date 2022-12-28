@@ -1,1 +1,2 @@
-../../modules/repo/extra/alsa-utils/depends
+alsa-lib
+ncurses

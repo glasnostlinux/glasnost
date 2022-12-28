@@ -1,5 +1,7 @@
 #!/bin/sh -e
 
+patch -p1 < clang.patch
+
 if [ ! -z "$KISS_ROOT" ]; then
     sed -i -e "s|^HOST_SCDOC=.*|HOST_SCDOC=/usr/bin/scdoc|g" Makefile
 fi

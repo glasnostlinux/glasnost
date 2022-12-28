@@ -1,1 +1,2 @@
-../../modules/repo/extra/pango/sources
+https://github.com/GNOME/pango/archive/VERSION.tar.gz
+patches/no-fribidi.patch

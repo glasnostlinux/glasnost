@@ -1,1 +1,2 @@
-../../modules/repo/extra/json-c/sources
+https://s3.amazonaws.com/json-c_releases/releases/json-c-VERSION.tar.gz
+patches/clang.patch

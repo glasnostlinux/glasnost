@@ -11,6 +11,8 @@ fi
     --host=$KISS_XHOST_TRIPLE \
     --disable-gtk \
     --disable-arm-simd \
+    --disable-gcc-inline-asm \
+    --disable-arm-a64-neon \
     $opts
 
 make

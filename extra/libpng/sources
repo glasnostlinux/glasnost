@@ -1,1 +1,2 @@
-../../modules/repo/extra/libpng/sources
+https://github.com/glennrp/libpng/archive/vVERSION.tar.gz
+patches/apng.patch

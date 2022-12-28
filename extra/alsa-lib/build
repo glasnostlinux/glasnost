@@ -1,5 +1,9 @@
 #!/bin/sh -e
 
+# Is the patch required?
+
+export LDFLAGS="$LDFLAGS -L$KISS_ROOT/usr/lib"
+
 ./configure \
     --without-debug \
     --prefix=/usr \

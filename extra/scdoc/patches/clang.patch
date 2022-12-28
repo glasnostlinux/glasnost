@@ -1,0 +1,26 @@
+diff --git a/include/str.h b/include/str.h
+index ab7ba69..c796b78 100644
+--- a/include/str.h
++++ b/include/str.h
+@@ -7,7 +7,7 @@ struct str {
+ 	size_t len, size;
+ };
+ 
+-struct str *str_create();
++struct str *str_create(void);
+ void str_free(struct str *str);
+ void str_reset(struct str *str);
+ int str_append_ch(struct str *str, uint32_t ch);
+diff --git a/src/string.c b/src/string.c
+index 2fbacbe..da605ce 100644
+--- a/src/string.c
++++ b/src/string.c
+@@ -12,7 +12,7 @@ static void ensure_capacity(struct str *str, size_t len) {
+ 	}
+ }
+ 
+-struct str *str_create() {
++struct str *str_create(void) {
+ 	struct str *str = xcalloc(1, sizeof(struct str));
+ 	str->str = xcalloc(16, 1);
+ 	str->size = 16;

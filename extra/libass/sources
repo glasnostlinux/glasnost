@@ -1,1 +1,2 @@
-../../modules/repo/extra/libass/sources
+https://github.com/libass/libass/releases/download/VERSION/libass-VERSION.tar.xz
+patches/no-fribidi.patch

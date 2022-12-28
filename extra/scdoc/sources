@@ -1,1 +1,2 @@
-../../modules/repo/extra/scdoc/sources
+https://git.sr.ht/~sircmpwn/scdoc/archive/VERSION.tar.gz
+patches/clang.patch

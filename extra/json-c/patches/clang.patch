@@ -1,0 +1,13 @@
+diff --git a/json_util.c b/json_util.c
+index 3e6a6c6..f16d708 100644
+--- a/json_util.c
++++ b/json_util.c
+@@ -60,7 +60,7 @@ static int _json_object_to_fd(int fd, struct json_object *obj, int flags, const
+ 
+ static char _last_err[256] = "";
+ 
+-const char *json_util_get_last_err()
++const char *json_util_get_last_err(void)
+ {
+ 	if (_last_err[0] == '\0')
+ 		return NULL;
