@@ -1,10 +1,10 @@
-# [Glasnost Linux](https://www.glasnost.org) Main Repo
+# [Glasnost Linux](https://www.glasnost.org) Main Repository
 
 Glasnost Linux is a Linux distribution forked from [KISS Linux](https://kisslinux.org/)
 
 ## Differences between KISS Linux and Glasnost Linux
  - Clang is used as the default compiler instead of gcc
- - LLVM bintuils are used instead of GNU binutils
+ - LLVM binutils are used instead of GNU binutils
  - The KISS package manager is modified to support cross-compilation and rudimentary binary package updates
  - Cross compilation of packages is supported wherever possible
  - Built packages are located in: ~/.cache/kiss/bin/_arch_
@@ -68,7 +68,7 @@ You can maintain multiple binary repos for any supported architecture. They will
 ## Motivation
 I prefer to use hardware which does not use non-free firmware or contain monitoring processors to which I do not have access. I also prefer to build the packages on my system to my own requirements as needed.
 
-There are now several machines available capable of running Linux which do not have [Intel ME](https://en.wikipedia.org/wiki/Intel_Management_Engine), [AMD PSP](https://en.wikipedia.org/wiki/AMD_Platform_Security_Processor) or similar technologies. Some like the [Talos II](https://www.raptorcs.com/TALOSII/) have many cores and are capable of building large packges like Firefox in a relatively short time.
+There are now several machines available capable of running Linux which do not have [Intel ME](https://en.wikipedia.org/wiki/Intel_Management_Engine), [AMD PSP](https://en.wikipedia.org/wiki/AMD_Platform_Security_Processor) or similar technologies. Some like the [Talos II](https://www.raptorcs.com/TALOSII/) have many cores and are capable of building large packages like Firefox in a relatively short time.
 
 Others for example the [PineBook Pro](https://www.pine64.org/pinebook-pro/) or [PinePhone](https://www.pine64.org/pinephone/) have relatively open hardware but are slower and may take many hours to compile larger packages.
 
