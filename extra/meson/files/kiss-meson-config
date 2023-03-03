@@ -7,11 +7,15 @@ cpufam() {
     case $1 in
         armv7)       printf "arm";;
         aarch64)     printf "aarch64";;
+        aarch64_be)  printf "aarch64";;
         i686)        printf "x86";;
         x86_64)      printf "x86_64";;
         powerpc64le) printf "ppc64";;
         powerpc64)   printf "ppc64";;
+        powerpcle)   printf "ppc";;
+        powerpc)     printf "ppc";;
         riscv64)     printf "riscv64";;
+        riscv32)     printf "riscv32";;
         *)
     esac
 }
@@ -20,11 +24,15 @@ cpu() {
     case $1 in
         armv7)       printf "armv7";;
         aarch64)     printf "aarch64";;
+        aarch64_be)  printf "aarch64_be";;
         i686)        printf "x86";;
         x86_64)      printf "x86_64";;
         powerpc64le) printf "ppc64le";;
         powerpc64)   printf "ppc64";;
+        powerpcle)   printf "ppcle";;
+        powerpc)     printf "ppc";;
         riscv64)     printf "riscv64";;
+        riscv32)     printf "riscv32";;
         *)
     esac
 }
@@ -32,6 +40,7 @@ cpu() {
 endian() {
     case $1 in
         powerpc64)   printf "big";;
+        aarch64_be)  printf "big";;
         *)           printf "little"
     esac
 }
