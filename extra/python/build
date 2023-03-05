@@ -26,6 +26,10 @@ if [ $KISS_XHOST_ARCH == "powerpc64" ]; then
     BIG_ENDIAN=yes
 fi
 
+if [ ! -z "$KISS_ROOT" ]; then
+    opts="--with-build-python=/usr/bin/python"
+fi
+
 # Python has problems determining the build triples
 sed -i "s/-linux-gnu$/-linux-$KISS_XHOST_ABI/g" configure
 sed -i "s/arm-linux-gnueabihf$/armv7-linux-musleabihf/g" configure
@@ -43,7 +47,8 @@ ax_cv_c_float_words_bigendian="${BIG_ENDIAN:-no}" \
     --with-system-ffi \
     --with-ensurepip=yes \
     --without-doc-strings \
-    --disable-ipv6
+    --disable-ipv6 \
+    $opts
 
 make EXTRA_CFLAGS="$CFLAGS -DTHREAD_STACK_SIZE=0x100000"
 make install

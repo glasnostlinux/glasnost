@@ -1,1 +1,6 @@
-../../modules/repo/extra/python/depends
+bzip2
+expat
+libffi
+openssl
+sqlite
+zlib
