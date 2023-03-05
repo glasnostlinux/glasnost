@@ -1,10 +1,10 @@
-atk
 cairo
 fontconfig
 freetype-harfbuzz
 gdk-pixbuf
 glib    make
 glib
+libepoxy
 libxkbcommon
 mesa
 meson   make
@@ -12,3 +12,4 @@ pango
 pkgconf make
 python  make
 wayland
+wayland-protocols make

@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# You need this on the host for it to run
-if [ -f /usr/bin/glib-compile-schemas ]; then
-    glib-compile-schemas $KISS_ROOT/usr/share/glib-2.0/schemas/
+# Don't run for a chroot
+if [ -z $KISS_ROOT ]; then
+    glib-compile-schemas /usr/share/glib-2.0/schemas/
 fi
