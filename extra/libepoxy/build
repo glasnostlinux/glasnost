@@ -2,16 +2,14 @@
 
 kiss-meson-config > meson.config
 
-# -Dhas-dlvsym=false \
-
-meson \
-    --prefix=/usr \
+meson setup \
+    -Dprefix=/usr \
     --cross-file="meson.config" \
-    --sysconfdir=/etc \
-    --mandir=/usr/share/man \
+    -Degl=yes \
+    -Dtests=false \
     -Dglx=no \
     -Dx11=false \
-    . output
+    output
 
 ninja -C output
-ninja -C output install
+meson install -C output
