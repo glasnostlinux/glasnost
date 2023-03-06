@@ -1,5 +1,7 @@
 #!/bin/sh -e
 
+export LDFLAGS="$LDFLAGS -Wl,--undefined-version"
+
 # Disable HTML documentation.
 sed 's/html man/man/' doc/Makefile.in > _
 mv -f _ doc/Makefile.in
