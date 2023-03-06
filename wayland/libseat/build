@@ -10,6 +10,7 @@ meson \
     --prefix=/usr \
     --cross-file="meson.config" \
     -Ddefault_library=both \
+    -Dman-pages=disabled \
     . build
 
 ninja -C build
