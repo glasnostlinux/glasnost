@@ -3,7 +3,7 @@
 patch -p1 < musl.patch
 
 # Build sometimes forces -Werror.
-export CFLAGS="$CFLAGS -Wno-error"
+export CFLAGS="$CFLAGS -Wno-unused-command-line-argument -Wl,--undefined-version"
 
 sh ./configure \
     --prefix=/usr \
