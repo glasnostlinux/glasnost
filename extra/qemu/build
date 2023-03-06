@@ -1,13 +1,10 @@
 #!/bin/sh -e
 
-patch -p1 < qemu62.patch
-
 # Remove bash dependency
 sed -i 's/bash -o pipefail/sh /g' Makefile
 
-sed -i 's/__u64/uint64_t/g' linux-user/host/aarch64/hostdep.h
-
-export LDFLAGS="$LDFLAGS -lc++abi -lc++"
+patch -p1 < musl-ppc.patch
+patch -p1 < ppc-revert.patch
 
 # Build qemu-system* binaries dynamically linked
 ./configure \
@@ -19,15 +16,18 @@ export LDFLAGS="$LDFLAGS -lc++abi -lc++"
     --cxx="$CXX" \
     --host-cc=clang \
     --disable-debug-info \
-    --enable-gtk \
     --disable-docs \
     --enable-sdl \
     --enable-kvm \
     --enable-pie \
     --enable-curses \
     --cross-prefix="" \
+    --disable-gnutls \
     --disable-user \
     --disable-linux-user \
+    --enable-vnc \
+    --enable-vnc-jpeg \
+    --enable-slirp \
     --enable-system
 
 make
@@ -44,8 +44,8 @@ make clean
     --cxx="$CXX" \
     --host-cc=clang \
     --disable-debug-info \
-    --enable-gtk \
     --disable-docs \
+    --disable-gnutls \
     --disable-user \
     --enable-linux-user \
     --disable-system \

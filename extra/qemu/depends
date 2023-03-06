@@ -1,8 +1,15 @@
+bzip2
+curl
 glib
 libffi
+libslirp
+libudev-zero
+libxkbcommon
 ncurses
+nettle
 perl make
 pixman
 pkgconf make
 python
 sdl2
+zlib

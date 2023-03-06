@@ -1,2 +1,3 @@
 https://download.qemu.org/qemu-VERSION.tar.xz
-patches/libcpp.patch
+patches/musl-ppc.patch
+patches/ppc-revert.patch
