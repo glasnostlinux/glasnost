@@ -1,8 +1,10 @@
 #!/bin/sh -e
 
-# Is the patch required?
+patch -p1 < clang16.patch
 
-export LDFLAGS="$LDFLAGS -L$KISS_ROOT/usr/lib"
+#export LDFLAGS="$LDFLAGS -Wl,--undefined-version -L$KISS_ROOT/usr/lib -w"
+
+export CFLAGS="$CFLAGS -Wl,--undefined-version -w -L$KISS_ROOT/usr/lib -w"
 
 ./configure \
     --without-debug \

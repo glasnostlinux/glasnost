@@ -1,0 +1,13 @@
+diff --git a/configure b/configure
+index 00c608e..e9c438e 100755
+--- a/configure
++++ b/configure
+@@ -12368,7 +12368,7 @@ eval ac_res=\$`$as_echo "cc_cv_ldflags_$possible_flags" | $as_tr_sh`
+ $as_echo "$ac_res" >&6; }
+ 
+   if eval test x$`$as_echo "cc_cv_ldflags_$possible_flags" | $as_tr_sh` = xyes; then :
+-  LDFLAGS_NOUNDEFINED="$possible_flags"
++  LDFLAGS_NOUNDEFINED="-Wl,--undefined-version"
+ fi
+ 
+ 	  if test "x$LDFLAGS_NOUNDEFINED" = "x"; then break; fi
