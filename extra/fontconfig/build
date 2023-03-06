@@ -1,9 +1,14 @@
 #!/bin/sh -e
 
-export CFLAGS="$CFLAGS -I$KISS_ROOT/usr/include/freetype2"
+#export CFLAGS="$CFLAGS -I$KISS_ROOT/usr/include/freetype2"
+
+# Make the build system run /bin/true to generate
+# a dummy file so our pre-generated one is used.
+sed 's/fcobjshash\.h/fcjunk.h/' src/Makefile.in > _
+mv -f _ src/Makefile.in
 
 ./configure \
-    AUTOMAKE=/bin/true \
+    GPERF=/bin/true \
     --prefix=/usr \
     --build=$KISS_XBUILD_TRIPLE \
     --host=$KISS_XHOST_TRIPLE \

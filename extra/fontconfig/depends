@@ -1,6 +1,3 @@
-automake make
 expat
 freetype-harfbuzz
-gperf   make
-json-c
 pkgconf make
