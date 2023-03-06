@@ -40,6 +40,7 @@ cpu() {
 endian() {
     case $1 in
         powerpc64)   printf "big";;
+        powerpc)     printf "big";;
         aarch64_be)  printf "big";;
         *)           printf "little"
     esac

@@ -1,8 +1,5 @@
 #!/bin/sh -e
 
-# Don't link to libexecinfo if it is present
-# patch -p1 < cmake-no-execinfo.patch
-
 # Check for cmake on the build machine
 if [ -d "/var/db/kiss/installed/cmake" ]; then
 

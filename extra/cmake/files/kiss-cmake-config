@@ -18,6 +18,7 @@ esac
 
 case $KISS_XHOST_ARCH in
     powerpc64)  endian="BIG_ENDIAN";;
+    powerpc)    endian="BIG_ENDIAN";;
     aarch64_be) endian="BIG_ENDIAN";;
     *)          endian="LITTLE_ENDIAN";;
 esac
