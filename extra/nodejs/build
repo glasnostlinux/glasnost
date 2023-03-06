@@ -10,10 +10,10 @@ fi
 # Fix build when libatomic.so does not exist in the system.
 # This may be provided by compiler-rt which requires no additional
 # linker flags to be used.
-[ -r "$KISS_ROOT/usr/lib/libatomic.so" ] || {
-    sed 's/-latomic//' node.gyp > _
-    mv -f _ node.gyp
-}
+#[ -r "$KISS_ROOT/usr/lib/libatomic.so" ] || {
+#    sed 's/-latomic//' node.gyp > _
+#    mv -f _ node.gyp
+#}
 
 sed -i "s/, '-mminimal-toc'//g" common.gypi
 
@@ -35,9 +35,7 @@ export LD="$CXX"
 ./configure \
     --shared-zlib \
     --shared-openssl \
-    --with-intl=none \
-    --without-etw \
-    --without-dtrace \
+    --with-intl=small-icu \
     --without-report \
     --without-node-snapshot \
     --without-node-code-cache \
