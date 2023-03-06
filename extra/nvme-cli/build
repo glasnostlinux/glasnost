@@ -3,11 +3,18 @@
 # Makefile uses a flag which is incompatible with busybox.
 sed -i 's/644 -T/644 /g' Makefile
 
-# Fix MAX_PATH build issue
-patch -p1 < maxpath.patch
+kiss-meson-config > meson.config
 
-make
-make PREFIX=/usr SBINDIR=/usr/bin DESTDIR="$1" install
+meson setup \
+    --prefix=/usr \
+    --cross-file="meson.config" \
+    --sysconfdir=/etc \
+    --mandir=/usr/share/man \
+    -Dversion-tag="$2" \
+    . output
+
+ninja -C output
+ninja -C output install
 
 # Remove systemd, dracut and autocompletion files
 rm -rf "$1/usr/lib"
