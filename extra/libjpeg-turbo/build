@@ -4,7 +4,6 @@ patch -p1 < no-docs.patch
 
 kiss-cmake-config > cmake.config
 
-# -DWITH_SIMD=False \
 cmake -B build \
     -DCMAKE_INSTALL_PREFIX=/usr \
     -DCMAKE_TOOLCHAIN_FILE="$(realpath cmake.config)" \
