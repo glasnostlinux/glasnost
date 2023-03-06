@@ -1,7 +1,5 @@
 #!/bin/sh -e
 
-export CFLAGS="$CFLAGS -Wno-error=cast-qual -Wcast-qual"
-
 kiss-meson-config > meson.config
 
 meson \
