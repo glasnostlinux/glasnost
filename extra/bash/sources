@@ -1,6 +1,1 @@
-https://ftp.gnu.org/gnu/bash/bash-5.1.tar.gz
-https://ftp.gnu.org/gnu/bash/bash-5.1-patches/bash51-001
-https://ftp.gnu.org/gnu/bash/bash-5.1-patches/bash51-002
-https://ftp.gnu.org/gnu/bash/bash-5.1-patches/bash51-003
-https://ftp.gnu.org/gnu/bash/bash-5.1-patches/bash51-004
-patches/bash-5.1-parallel_make.patch
+https://git.savannah.gnu.org/cgit/bash.git/snapshot/bash-ec8113b9861375e4e17b3307372569d429dec814.tar.gz
