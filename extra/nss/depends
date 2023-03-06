@@ -1,0 +1,6 @@
+git make
+linux-headers make
+nspr
+nspr make
+sqlite
+zlib

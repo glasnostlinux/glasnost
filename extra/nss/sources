@@ -1,0 +1,5 @@
+https://ftp.mozilla.org/pub/security/nss/releases/NSS_3_88_1_RTM/src/nss-3.88.1.tar.gz
+files/certdata.sh nss/lib/ckfw/builtins
+files/generated.hash
+patches/no-perl.patch
+patches/native-nsinstall-cflags.patch
