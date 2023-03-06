@@ -1,11 +1,13 @@
---- a/meson.build.orig
-+++ a/meson.build
-@@ -1816,7 +1816,7 @@
+diff --git a/meson.build b/meson.build
+index e32338b..fb5578f 100644
+--- a/meson.build
++++ b/meson.build
+@@ -2061,7 +2061,7 @@ endif
  
  if with_platform_wayland
    dep_wl_scanner = dependency('wayland-scanner', native: true)
--  prog_wl_scanner = find_program(dep_wl_scanner.get_pkgconfig_variable('wayland_scanner'))
-+  prog_wl_scanner = find_program('wayland-scanner', native: true)
+-  prog_wl_scanner = find_program(dep_wl_scanner.get_variable(pkgconfig : 'wayland_scanner'))
++  prog_wl_scanner = find_program('wayland-scanner')
    if dep_wl_scanner.version().version_compare('>= 1.15')
      wl_scanner_arg = 'private-code'
    else

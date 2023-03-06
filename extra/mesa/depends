@@ -6,6 +6,7 @@ libelf
 libglvnd
 linux-headers make
 llvm
+llvm-runtimes
 m4 make
 meson make
 pkgconf make
