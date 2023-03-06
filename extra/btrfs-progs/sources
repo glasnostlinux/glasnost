@@ -1,1 +1,2 @@
 https://www.kernel.org/pub/linux/kernel/people/kdave/btrfs-progs/btrfs-progs-vVERSION.tar.xz
+patches/clang.patch

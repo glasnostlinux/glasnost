@@ -1,8 +1,6 @@
 #!/bin/sh -e
 
-export CFLAGS="$CFLAGS -Wno-format -Wno-implicit-fallthrough"
-
-sed -i 's,#include <sys/sysinfo.h>,,g' common/utils.c
+patch -p1 < clang.patch
 
 ./configure \
     --prefix=/usr \
@@ -12,9 +10,9 @@ sed -i 's,#include <sys/sysinfo.h>,,g' common/utils.c
     --disable-python \
     --disable-documentation \
     --disable-backtrace \
+    --disable-libudev \
+    --disable-static \
     --disable-zstd
-
-$CC kernel-lib/mktables.c -o mktables
 
 make
 make install

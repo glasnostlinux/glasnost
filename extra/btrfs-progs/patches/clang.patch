@@ -1,0 +1,56 @@
+diff --git a/crypto/blake2b-ref.c b/crypto/blake2b-ref.c
+index eac4cf0..9ef23eb 100644
+--- a/crypto/blake2b-ref.c
++++ b/crypto/blake2b-ref.c
+@@ -220,29 +220,15 @@ static void blake2b_compress_ref( blake2b_state *S, const uint8_t block[BLAKE2B_
+ #undef G
+ #undef ROUND
+ 
+-void blake2b_compress_sse2( blake2b_state *S, const uint8_t block[BLAKE2B_BLOCKBYTES] );
+-void blake2b_compress_sse41( blake2b_state *S, const uint8_t block[BLAKE2B_BLOCKBYTES] );
+-void blake2b_compress_avx2( blake2b_state *S, const uint8_t block[BLAKE2B_BLOCKBYTES] );
++//void blake2b_compress_sse2( blake2b_state *S, const uint8_t block[BLAKE2B_BLOCKBYTES] );
++//void blake2b_compress_sse41( blake2b_state *S, const uint8_t block[BLAKE2B_BLOCKBYTES] );
++//void blake2b_compress_avx2( blake2b_state *S, const uint8_t block[BLAKE2B_BLOCKBYTES] );
+ 
+ static void (*blake2b_compress)( blake2b_state *S, const uint8_t block[BLAKE2B_BLOCKBYTES] ) = blake2b_compress_ref;
+ 
+ void blake2_init_accel(void)
+ {
+-	if (0);
+-#if HAVE_CFLAG_mavx2 == 1
+-	else if (cpu_has_feature(CPU_FLAG_AVX2))
+-		blake2b_compress = blake2b_compress_avx2;
+-#endif
+-#if HAVE_CFLAG_msse41 == 1
+-	else if (cpu_has_feature(CPU_FLAG_SSE41))
+-		blake2b_compress = blake2b_compress_sse41;
+-#endif
+-#if HAVE_CFLAG_msse2 == 1
+-	else if (cpu_has_feature(CPU_FLAG_SSE2))
+-		blake2b_compress = blake2b_compress_sse2;
+-#endif
+-	else
+-		blake2b_compress = blake2b_compress_ref;
++	blake2b_compress = blake2b_compress_ref;
+ }
+ 
+ int blake2b_update( blake2b_state *S, const void *pin, size_t inlen )
+diff --git a/crypto/sha224-256.c b/crypto/sha224-256.c
+index 5b15a5c..673cdbb 100644
+--- a/crypto/sha224-256.c
++++ b/crypto/sha224-256.c
+@@ -110,12 +110,7 @@ static void sha256_process_x86_dispatch(SHA256Context *context)
+ 
+ void sha256_init_accel(void)
+ {
+-#if HAVE_CFLAG_msha == 1
+-	if (cpu_has_feature(CPU_FLAG_SHA))
+-		sha256_process_message_block = sha256_process_x86_dispatch;
+-	else
+-#endif
+-		sha256_process_message_block = SHA224_256ProcessMessageBlock;
++	sha256_process_message_block = SHA224_256ProcessMessageBlock;
+ }
+ 
+ /*
