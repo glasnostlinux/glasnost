@@ -1,6 +1,6 @@
 #!/bin/sh -e
 
-patch -p1 < wayland.patch
+patch -p1 < undef.patch
 
 kiss-meson-config > meson.config
 

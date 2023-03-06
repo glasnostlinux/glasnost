@@ -1,0 +1,13 @@
+diff --git a/va/meson.build b/va/meson.build
+index 9e6236b..9aa7ea0 100644
+--- a/va/meson.build
++++ b/va/meson.build
+@@ -56,7 +56,7 @@ libva_headers_priv = [
+ ]
+ 
+ libva_sym = 'libva.syms'
+-libva_sym_arg = '-Wl,-version-script,' + '@0@/@1@'.format(meson.current_source_dir(), libva_sym)
++libva_sym_arg = '-Wl,--undefined-version,-version-script,' + '@0@/@1@'.format(meson.current_source_dir(), libva_sym)
+ 
+ libva_link_args = []
+ libva_link_depends = []

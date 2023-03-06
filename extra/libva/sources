@@ -1,2 +1,2 @@
 https://github.com/intel/libva/archive/VERSION.tar.gz
-patches/wayland.patch
+patches/undef.patch
