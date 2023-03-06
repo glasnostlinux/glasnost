@@ -4,10 +4,12 @@ kiss-meson-config > meson.config
 
 meson \
     --prefix=/usr \
-    --cross-file="/home/pokey/.cache/kiss/proc/79437/build/swaylock/meson.config" \
+    --cross-file="meson.config" \
+    -Dpam=disabled \
+    -Dbash-completions=false \
+    -Dfish-completions=false \
+    -Dzsh-completions=false \
     . build
-
-sed -i "s|$KISS_ROOT/usr/bin/wayland-scanner|/usr/bin/wayland-scanner|g" build/build.ninja
 
 ninja -C build
 ninja -C build install

@@ -1,1 +1,11 @@
-../../modules/repo/wayland/foot/depends
+fcft
+fontconfig
+libxkbcommon
+meson   make
+ncurses make
+pixman
+pkgconf make
+python  make
+tllist  make
+wayland
+wayland-protocols make

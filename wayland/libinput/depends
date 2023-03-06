@@ -1,1 +1,6 @@
-../../modules/repo/wayland/libinput/depends
+libevdev
+libudev-zero
+linux-headers make
+meson         make
+mtdev
+pkgconf       make

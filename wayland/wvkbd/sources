@@ -1,2 +1,2 @@
-https://github.com/jjsullivan5196/wvkbd/archive/refs/tags/vVERSION.tar.gz
-patches/mobile.patch
+git+https://github.com/jjsullivan5196/wvkbd.git#a2b5b78051c5da30045af756aef8f52ff309fc43
+patches/ppp.patch

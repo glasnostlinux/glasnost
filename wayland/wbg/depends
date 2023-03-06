@@ -1,1 +1,7 @@
-../../modules/repo/wayland/wbg/depends
+libjpeg-turbo
+libpng
+meson make
+pixman
+tllist make
+wayland
+wayland-protocols make

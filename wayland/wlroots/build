@@ -1,8 +1,5 @@
 #!/bin/sh -e
 
-export CFLAGS="-Wno-unused-but-set-variable"
-export PKG_CONFIG_SYSROOT_DIR=
-
 kiss-meson-config > meson.config
 
 meson \
