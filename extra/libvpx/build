@@ -1,5 +1,10 @@
 #!/bin/sh -e
 
+# Remove the perl requirement from configure.
+# Also fix issue with non-GNU diff.
+sed 's/perl/:/g;s/diff --version/command -v diff/' configure > _
+mv -f _ configure
+
 export CFLAGS="$CFLAGS -fno-lto"
 export CXXFLAGS="$CXXFLAGS -fno-lto"
 
@@ -8,12 +13,6 @@ rm vp9_rtcd.h
 rm vp8_rtcd.h
 rm vpx_scale_rtcd.h
 rm vpx_dsp_rtcd.h
-
-
-# Remove the perl requirement from configure.
-# Also fix issue with non-GNU diff.
-sed 's/perl/:/g;s/diff --version/command -v diff/' configure > _
-mv -f _ configure
 
 # Determine arch
 case $KISS_XHOST_ARCH in
