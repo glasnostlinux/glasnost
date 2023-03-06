@@ -1,6 +1,6 @@
 #!/bin/sh -e
 
-export LDFLAGS="$LDFLAGS -L$KISS_ROOT/usr/lib"
+#export LDFLAGS="$LDFLAGS -L$KISS_ROOT/usr/lib"
 
 ./configure \
     --prefix=/usr \
