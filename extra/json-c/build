@@ -4,6 +4,9 @@ kiss-cmake-config > cmake.config
 
 patch -p1 < clang.patch
 
+export CFLAGS="$CFLAGS -Wl,--undefined-version -Wno-unused-command-line-argument"
+export CXXFLAGS="$CXXFLAGS -Wl,--undefined-version -Wno-unused-command-line-argument"
+
 cmake -B build \
     -DCMAKE_INSTALL_PREFIX=/usr \
     -DCMAKE_TOOLCHAIN_FILE="$(realpath cmake.config)" \
