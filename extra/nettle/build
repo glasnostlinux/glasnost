@@ -11,5 +11,4 @@
     --disable-documentation
 
 make
-sed -i -e 's/ \#.*//' ./*.pc
 make install
