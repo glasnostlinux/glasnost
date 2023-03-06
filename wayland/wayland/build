@@ -1,5 +1,7 @@
 #!/bin/sh -e
 
+patch -p1 < cross.patch
+
 if [ "$KISS_ROOT" ]; then
     if [ ! -d /var/db/kiss/installed/wayland ]; then
         echo "Error: to cross-build wayland, you need to have it on your build machine first."
@@ -11,10 +13,10 @@ fi
 kiss-meson-config > meson.config
 
 # It tries to use the target wayland-scanner. Use host instead.
-sed -i "s/scanner_dep =/#scanner_dep =/g" src/meson.build
-sed -i "s/find_program(scanner_dep\.get_pkgconfig_variable('wayland_scanner'))/'\/usr\/bin\/wayland-scanner'/g" src/meson.build
+#sed -i "s/scanner_dep =/#scanner_dep =/g" src/meson.build
+#sed -i "s/find_program(scanner_dep\.get_pkgconfig_variable('wayland_scanner'))/'\/usr\/bin\/wayland-scanner'/g" src/meson.build
 
-meson \
+meson setup \
     --prefix=/usr \
     -Ddefault_library=both \
     -Dtests=false \
