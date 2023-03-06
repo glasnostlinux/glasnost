@@ -1,0 +1,13 @@
+diff --git a/configure b/configure
+index 95b92f0..ab192d3 100755
+--- a/configure
++++ b/configure
+@@ -504,7 +504,7 @@ fi
+ 
+ # Find a C compiler to use
+ if test -n "$target" && test x${build} != x${target} ; then
+-  cross=${target}-
++  cross=
+ else
+   cross=
+ fi

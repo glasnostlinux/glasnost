@@ -1,0 +1,13 @@
+#!/bin/sh -e
+
+patch -p1 < cross.patch
+
+./configure \
+    --prefix=/usr \
+    --build=$KISS_XBUILD_TRIPLE \
+    --target=$KISS_XHOST_TRIPLE \
+    --with-sysdep-devurandom=yes \
+    --enable-shared
+
+make
+make DESTDIR="$1" install
