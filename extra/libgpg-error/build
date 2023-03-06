@@ -5,9 +5,6 @@ export CXXFLAGS="$CXXFLAGS -fno-lto "
 export LDFLAGS="$LDFLAGS -fno-lto "
 export CC_FOR_BUILD=clang
 
-patch -p1 < cross.patch
-patch -p1 < echo-fix.patch
-
 ./configure \
     --prefix=/usr \
     --build=$KISS_XBUILD_TRIPLE \
