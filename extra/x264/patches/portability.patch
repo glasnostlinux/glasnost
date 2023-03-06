@@ -1,43 +1,23 @@
-diff --git a/tools/cltostr.sh b/tools/cltostr.sh
-index 23b6cc7..3feaafe 100755
---- a/tools/cltostr.sh
-+++ b/tools/cltostr.sh
-@@ -18,7 +18,7 @@ dump() {
- }
-
- # Print MD5 hash w/o newline character to not embed the character in the array.
--hash() {
-+_hash() {
-     # md5sum is not standard, so try different platform-specific alternatives.
-     { md5sum "$1" || md5 -q "$1" || digest -a md5 "$1"; } 2>/dev/null |
-         cut -b -32 | tr -d '\n\r'
-@@ -29,5 +29,5 @@ trap 'rm -f "$1.temp"' EXIT
- sanitize | tee "$1.temp" |
-     dump 'x264_opencl_source' > "$1"
-
--hash "$1.temp" |
-+_hash "$1.temp" |
-     dump 'x264_opencl_source_hash' >> "$1"
-diff --git a/configure b/configure-posix
-index 3cf63e0..1e1fce5 100755
---- a/configure-posix
+diff --git a/configure b/configure
+index e242e73..687c45d 100755
+--- a/configure
 +++ b/configure
 @@ -1,4 +1,4 @@
 -#!/bin/bash
 +#!/bin/sh
-
+ 
  if test x"$1" = x"-h" -o x"$1" = x"--help" ; then
  cat <<EOF
-@@ -59,7 +59,7 @@ exit 1
+@@ -62,7 +62,7 @@ exit 1
  fi
-
+ 
  log_check() {
 -    echo -n "checking $1... " >> config.log
 +    echo "checking $1... " >> config.log
  }
-
+ 
  log_ok() {
-@@ -78,13 +78,12 @@ cc_cflags() {
+@@ -81,13 +81,12 @@ cc_cflags() {
      # several non gcc compilers issue an incredibly large number of warnings on high warning levels,
      # suppress them by reducing the warning level rather than having to use #pragmas
      for arg in $*; do
@@ -54,15 +34,15 @@ index 3cf63e0..1e1fce5 100755
          if [ $compiler_style = MS ]; then
              [ "$arg" = -ffast-math ] && arg="-fp:fast"
              [ "$arg" = -Wall ] && arg=
-@@ -100,14 +99,14 @@ cc_cflags() {
+@@ -103,14 +102,14 @@ cc_cflags() {
          fi
          [ $compiler = CL -a "$arg" = -O3 ] && arg=-O2
-
+ 
 -        [ -n "$arg" ] && echo -n "$arg "
 +        [ -n "$arg" ] && printf %s "$arg "
      done
  }
-
+ 
  cl_ldflags() {
      for arg in $*; do
 -        arg=${arg/LIBPATH/libpath}
@@ -72,28 +52,28 @@ index 3cf63e0..1e1fce5 100755
          [ "${arg#-L}" != "$arg" ] && arg=-libpath:${arg#-L}
          [ "$arg" = -Wl,--large-address-aware ] && arg=-largeaddressaware
          [ "$arg" = -s ] && arg=
-@@ -116,14 +115,17 @@ cl_ldflags() {
+@@ -119,15 +118,17 @@ cl_ldflags() {
          [ "$arg" = -Werror ] && arg=
          [ "$arg" = -Wshadow ] && arg=
          [ "$arg" = -Wmaybe-uninitialized ] && arg=
 -        [[ "$arg" = -Qdiag-error* ]] && arg=
-
--        arg=${arg/pthreadGC/pthreadVC}
 +        case $arg in
 +            -Qdiag-error*) arg=
 +        esac
-+
+ 
+-        arg=${arg/pthreadGC/pthreadVC}
 +        arg=$(echo "$arg" | sed -e 's/pthreadGC/pthreadVC/')
          [ "$arg" = avifil32.lib ] && arg=vfw32.lib
          [ "$arg" = gpac_static.lib ] && arg=libgpac_static.lib
+         [ "$arg" = gpac.lib ] && arg=libgpac.lib
          [ "$arg" = x264.lib ] && arg=libx264.lib
-
+ 
 -        [ -n "$arg" ] && echo -n "$arg "
 +        [ -n "$arg" ] && printf %s "$arg "
      done
  }
-
-@@ -180,7 +182,7 @@ cpp_check() {
+ 
+@@ -191,7 +192,7 @@ cpp_check() {
      for arg in $1; do
          echo "#include <$arg>" >> conftest.c
      done
@@ -102,8 +82,8 @@ index 3cf63e0..1e1fce5 100755
      if [ $compiler_style = MS ]; then
          cpp_cmd="$CC conftest.c $(cc_cflags $CFLAGS $2) -P"
      else
-@@ -329,11 +331,15 @@ rm -rf conftest*
-
+@@ -340,11 +341,15 @@ rm -rf conftest*
+ 
  # Construct a path to the specified directory relative to the working directory
  relative_path() {
 -    local base="${PWD%/}"
@@ -117,16 +97,16 @@ index 3cf63e0..1e1fce5 100755
 +        case $path in
 +            "$base/"*) break ;;
 +        esac
-
+ 
 -    while [[ $path != "$base/"* ]]; do
          base="${base%/*}"
          up="../$up"
      done
-@@ -564,48 +570,6 @@ trap 'rm -rf conftest*' EXIT
+@@ -589,48 +594,6 @@ trap 'rm -rf conftest*' EXIT
  # test for use of compilers that require specific handling
  cc_base="$(basename "$CC")"
  QPRE="-"
--if [[ $host_os = mingw* || $host_os = cygwin* ]]; then
+-if [[ $host_os = mingw* || $host_os = msys* || $host_os = cygwin* ]]; then
 -    if [[ "$cc_base" = icl || "$cc_base" = icl[\ .]* ]]; then
 -        # Windows Intel Compiler creates dependency generation with absolute Windows paths, Cygwin's make does not support Windows paths.
 -        [[ $host_os = cygwin* ]] && die "Windows Intel Compiler support requires MSYS"
@@ -168,10 +148,10 @@ index 3cf63e0..1e1fce5 100755
 -        compiler=ICC
 -    fi
 -fi
-
+ 
  if [ $compiler = GNU ]; then
      if cc_check '' -Werror=unknown-warning-option ; then
-@@ -653,18 +617,6 @@ case $host_os in
+@@ -687,18 +650,6 @@ case $host_os in
          define HAVE_MALLOC_H
          libm="-lm"
          ;;
@@ -190,7 +170,7 @@ index 3cf63e0..1e1fce5 100755
      sunos*|solaris*)
          SYS="SunOS"
          define HAVE_MALLOC_H
-@@ -705,30 +657,6 @@ LDFLAGS="$LDFLAGS $libm"
+@@ -739,30 +690,6 @@ LDFLAGS="$LDFLAGS $libm"
  stack_alignment=4
  case $host_cpu in
      i*86)
@@ -221,22 +201,42 @@ index 3cf63e0..1e1fce5 100755
          ;;
      x86_64)
          ARCH="X86_64"
-@@ -931,7 +859,7 @@ fi
-
+@@ -972,7 +899,7 @@ fi
+ 
  if [ $asm = auto -a $ARCH = ARM ] ; then
      # set flags so neon is built by default
 -    [ $compiler == CL ] || echo $CFLAGS | grep -Eq '(-mcpu|-march|-mfpu)' || CFLAGS="$CFLAGS -mcpu=cortex-a8 -mfpu=neon"
 +    [ $compiler = CL ] || echo $CFLAGS | grep -Eq '(-mcpu|-march|-mfpu)' || CFLAGS="$CFLAGS -mcpu=cortex-a8 -mfpu=neon"
-
+ 
      cc_check '' '' '__asm__("add r0, r1, r2");' && define HAVE_ARM_INLINE_ASM
      if [ $compiler = CL ] && cpp_check '' '' 'defined(_M_ARM) && _M_ARM >= 7' ; then
-@@ -1576,7 +1504,8 @@ cat conftest.log >> config.log
+@@ -1674,7 +1601,8 @@ cat conftest.log >> config.log
  cat conftest.log
-
+ 
  [ "$SRCPATH" != "." ] && ln -sf ${SRCPATH}/Makefile ./Makefile
 -mkdir -p common/{aarch64,arm,mips,ppc,x86} encoder extras filters/video input output tools
 +mkdir -p common/aarch64 common/arm common/mips common/ppc common/x86
 +mkdir -p encoder extras filters/video input output tools
-
+ 
  echo
  echo "You can run 'make' or 'make fprofiled' now."
+diff --git a/tools/cltostr.sh b/tools/cltostr.sh
+index 23b6cc7..3feaafe 100755
+--- a/tools/cltostr.sh
++++ b/tools/cltostr.sh
+@@ -18,7 +18,7 @@ dump() {
+ }
+ 
+ # Print MD5 hash w/o newline character to not embed the character in the array.
+-hash() {
++_hash() {
+     # md5sum is not standard, so try different platform-specific alternatives.
+     { md5sum "$1" || md5 -q "$1" || digest -a md5 "$1"; } 2>/dev/null |
+         cut -b -32 | tr -d '\n\r'
+@@ -29,5 +29,5 @@ trap 'rm -f "$1.temp"' EXIT
+ sanitize | tee "$1.temp" |
+     dump 'x264_opencl_source' > "$1"
+ 
+-hash "$1.temp" |
++_hash "$1.temp" |
+     dump 'x264_opencl_source_hash' >> "$1"
