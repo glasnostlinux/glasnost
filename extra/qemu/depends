@@ -2,6 +2,7 @@ bzip2
 curl
 glib
 libffi
+libjpeg-turbo
 libslirp
 libudev-zero
 libxkbcommon
