@@ -1,17 +1,5 @@
 #!/bin/sh -e
 
-# Remove 'libelf' dependency.
-sed 's/HAVE_LIBELF/HAVE_KISS/' gio/meson.build > _
-mv -f _ gio/meson.build
-
-# Remove 'util-linux' dependency.
-sed 's/libmount_dep.found()/false/' meson.build > _
-mv -f _ meson.build
-
-: > glib/tests/meson.build
-: > tests/meson.build
-: > gobject/tests/mesom.build
-: > gio/tests/meson.build
 : > fuzzing/meson.build
 
 kiss-meson-config > config.meson
@@ -23,6 +11,9 @@ meson \
     -Dinstalled_tests=false \
     -Ddefault_library=both \
     -Dman=false \
+    -Dtests=false \
+    -Dlibelf=disabled \
+    -Dnls=disabled \
     . build
 
 ninja -C build
