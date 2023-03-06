@@ -1,5 +1,7 @@
 #!/bin/sh -e
 
+export CFLAGS="$CFLAGS -Wno-implicit-int"
+
 ./configure \
     --prefix=/usr \
     --build=$KISS_XBUILD_TRIPLE \
