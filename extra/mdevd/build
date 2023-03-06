@@ -1,35 +1,18 @@
 #!/bin/sh -e
 
-mkdir -p junk
+patch -p1 < cross.patch
 
 export CROSS_COMPILE=""
-
-(
-    cd skalibs
-
-    ./configure \
-        --prefix=/usr \
-        --build=$KISS_XBUILD_TRIPLE \
-        --host=$KISS_XHOST_TRIPLE \
-        --with-sysdep-devurandom=yes \
-        --disable-shared
-
-    sed -i "/CROSS_COMPILE/d" config.mak
-    echo "CROSS_COMPILE := " >> config.mak
-
-    make
-    make DESTDIR="$PWD/../junk" install
-)
 
 ./configure \
     --prefix=/usr \
     --build=$KISS_XBUILD_TRIPLE \
     --host=$KISS_XHOST_TRIPLE \
-    --enable-static-libc \
-    --disable-shared \
-    --with-sysdeps="$PWD/junk/usr/lib/skalibs/sysdeps" \
-    --with-lib="$PWD/junk/usr/lib/skalibs" \
-    --with-include="$PWD/junk/usr/include"
+    --with-sysdeps="$KISS_ROOT/usr/lib/skalibs/sysdeps" \
+    --with-lib="$KISS_ROOT/usr/lib/skalibs" \
+    --with-dynlib="$KISS_ROOT/usr/lib/skalibs" \
+    --with-include="$KISS_ROOT/usr/include" \
+    --enable-static-libc
 
 make
 make install
