@@ -1,24 +1,5 @@
 #!/bin/sh -e
 
-(
-    cd libX11
-
-    patch -p1 < ../compose-only.patch
-
-     xorg_cv_malloc0_returns_null=y \
-    ./configure \
-        --prefix=/usr \
-        --build=$KISS_XBUILD_TRIPLE \
-        --host=$KISS_XHOST_TRIPLE \
-        --disable-specs \
-        --disable-xkb \
-        --without-fop \
-        --without-xmlto
-
-    make -C nls
-    make -C nls install
-)
-
 # Swap to shell script instead of perl script
 # for conversion of rules files. See files/xml2lst.
 sed 's/xml2lst\.pl/xml2lst/' rules/meson.build > _
