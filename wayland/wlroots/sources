@@ -1,1 +1,2 @@
 https://gitlab.freedesktop.org/wlroots/wlroots/-/archive/VERSION/wlroots-VERSION.tar.bz2
+patches/cross.patch
